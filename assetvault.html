@@ -440,6 +440,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 .b-retired  { background: rgba(128,128,128,0.12); color: var(--text3); }
 .b-repair   { background: var(--amber-bg); color: var(--amber); }
 .b-lost     { background: var(--red-bg);   color: var(--red);   }
+.b-return   { background: rgba(139,90,168,0.12); color: #8b5aa8; }
 
 .row-actions { display: flex; gap: 6px; }
 
@@ -534,6 +535,95 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 .toast.show { transform: translateY(0); opacity: 1; }
 .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
 .toast-dot.err { background: var(--red); }
+
+
+/* ── LOADING OVERLAY ── */
+#loadingOverlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+}
+#loadingOverlay.show { display: flex; }
+.spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.15);
+  border-top-color: var(--accent);
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: #fff; font-size: 14px; font-weight: 500; opacity: 0.85; }
+
+
+/* ── AUDIT VIEW ── */
+.audit-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
+}
+.audit-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.audit-total-badge {
+  font-size: 12px; font-weight: 600; color: var(--text3);
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: 20px; padding: 5px 14px;
+}
+.audit-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
+.audit-row {
+  display: grid;
+  grid-template-columns: 36px 110px 90px 1fr auto;
+  align-items: center; gap: 14px;
+  padding: 12px 18px;
+  background: var(--glass-bg); border: 1px solid var(--glass-border2);
+  border-radius: var(--radius); transition: background 0.12s;
+}
+.audit-row:hover { background: var(--glass-bg-hover); }
+.audit-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.audit-icon.ai-login  { background: var(--blue-bg); }
+.audit-icon.ai-add    { background: var(--green-bg); }
+.audit-icon.ai-edit   { background: var(--amber-bg); }
+.audit-icon.ai-delete { background: var(--red-bg); }
+.audit-icon.ai-import { background: var(--glass-bg-deep); }
+.audit-time { font-size: 11px; color: var(--text3); white-space: nowrap; }
+.audit-user {
+  font-size: 12px; font-weight: 700; color: var(--accent);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.audit-detail { font-size: 13px; color: var(--text); }
+.audit-detail span { color: var(--text3); font-size: 12px; }
+.audit-badge {
+  font-size: 10px; font-weight: 700; padding: 3px 9px;
+  border-radius: 20px; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.4px;
+}
+.ab-login  { background: var(--blue-bg);  color: var(--blue); }
+.ab-add    { background: var(--green-bg); color: var(--green); }
+.ab-edit   { background: var(--amber-bg); color: var(--amber); }
+.ab-delete { background: var(--red-bg);   color: var(--red); }
+.ab-import { background: var(--glass-bg-deep); color: var(--text2); }
+.audit-empty {
+  text-align: center; padding: 64px 24px; color: var(--text3);
+  font-size: 14px;
+}
+.audit-pagination {
+  display: flex; gap: 6px; align-items: center; justify-content: center;
+  flex-wrap: wrap;
+}
+.page-btn {
+  min-width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--glass-border);
+  background: var(--glass-bg); color: var(--text2); font-size: 13px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0 10px; transition: all 0.15s;
+}
+.page-btn:hover { background: var(--glass-bg-hover); color: var(--text); }
+.page-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; border-color: transparent;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+.page-btn:disabled { opacity: 0.35; cursor: default; }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -761,6 +851,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
     <div class="nav-tabs">
       <button class="nav-tab active" id="tabDash" onclick="switchView('dash')">📊 Dashboard</button>
       <button class="nav-tab" id="tabInv" onclick="switchView('inv')">💻 Inventory</button>
+      <button class="nav-tab" id="tabAudit" onclick="switchView('audit')">🔍 Audit</button>
     </div>
     <div class="header-actions">
       <div class="user-chip">
@@ -825,8 +916,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       <div class="dash-section-title">Asset Overview</div>
       <div class="dash-big-grid" id="dashBigGrid"></div>
 
-      <div class="dash-bar-section">
-        <div class="dash-section-title">Status Breakdown</div>
+      <div style="margin-bottom:24px;">
         <div class="bar-chart-wrap" id="dashBarChart"></div>
       </div>
 
@@ -879,8 +969,8 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         </div>
         <select class="filter-select" id="statusFilter" onchange="renderTable()">
           <option value="">All Status</option>
-          <option>Deployed</option><option>Spare</option><option>Retired</option>
-          <option>Under Repair</option><option>Lost</option>
+          <option>Deployed</option><option>Spare</option><option>Repair</option>
+          <option>End of Life</option><option>For Return</option>
         </select>
         <select class="filter-select" id="siteFilter" onchange="renderTable()">
           <option value="">All Sites</option>
@@ -912,6 +1002,32 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
           <tbody id="tableBody"></tbody>
         </table>
       </div>
+    </div>
+
+
+    <!-- ══════════ AUDIT VIEW ══════════ -->
+    <div class="view" id="auditView">
+      <div class="audit-toolbar">
+        <div class="audit-filters">
+          <select class="filter-select" id="auditTypeFilter" onchange="renderAudit()">
+            <option value="">All Activities</option>
+            <option value="login">Logins</option>
+            <option value="add">Added</option>
+            <option value="edit">Modified</option>
+            <option value="delete">Deleted</option>
+            <option value="import">Imports</option>
+          </select>
+          <select class="filter-select" id="auditUserFilter" onchange="renderAudit()">
+            <option value="">All Users</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="audit-total-badge" id="auditTotalBadge">0 events</span>
+          <button class="btn btn-sm" onclick="clearAuditLog()" title="Clear all audit logs" style="color:var(--red)">🗑 Clear Log</button>
+        </div>
+      </div>
+      <div class="audit-list" id="auditList"></div>
+      <div class="audit-pagination" id="auditPagination"></div>
     </div>
 
   </main>
@@ -969,8 +1085,8 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         </div>
         <div class="fg"><label>Asset Status</label>
           <select id="f_assetStatus"><option value="">Select Status</option>
-            <option>Deployed</option><option>Spare</option><option>Retired</option>
-            <option>Under Repair</option><option>Lost</option>
+            <option>Deployed</option><option>Spare</option><option>Repair</option>
+            <option>End of Life</option><option>For Return</option>
           </select>
         </div>
         <div class="fg full"><label>Current Owner</label><input type="text" id="f_currentOwner" placeholder="e.g. Juan Dela Cruz"></div>
@@ -1042,7 +1158,23 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
   <span id="toastMsg"></span>
 </div>
 
-<script>
+<script type="module">
+// ── FIREBASE ──
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDL8FLt7q_febvA116cXYaRNSO3uhiUINA",
+  authDomain: "assetvault-op360.firebaseapp.com",
+  projectId: "assetvault-op360",
+  storageBucket: "assetvault-op360.firebasestorage.app",
+  messagingSenderId: "89473530750",
+  appId: "1:89473530750:web:85530f9ec8543ea741512f"
+};
+const _app = initializeApp(firebaseConfig);
+const db = getFirestore(_app);
+const LAPTOPS_COL = "laptops";
+
 const STORAGE_KEY = 'laptopAssets_v1';
 const THEME_KEY   = 'laptopAssets_theme';
 const USERS_KEY   = 'laptopAssets_users';
@@ -1081,9 +1213,12 @@ function loadTheme(){
 function switchView(v){
   document.getElementById('dashView').classList.toggle('active', v==='dash');
   document.getElementById('invView').classList.toggle('active', v==='inv');
+  document.getElementById('auditView').classList.toggle('active', v==='audit');
   document.getElementById('tabDash').classList.toggle('active', v==='dash');
   document.getElementById('tabInv').classList.toggle('active', v==='inv');
+  document.getElementById('tabAudit').classList.toggle('active', v==='audit');
   if(v==='dash') renderDashboard();
+  if(v==='audit'){ auditPage=1; renderAudit(); }
 }
 
 /* AUTH */
@@ -1120,7 +1255,7 @@ function doLogin(){
   if(!user){err.textContent='Incorrect username or password.';err.classList.add('show');document.getElementById('loginPass').value='';return;}
   err.classList.remove('show');
   sessionStorage.setItem(SESSION_KEY,JSON.stringify({username:user.username,role:user.role}));
-  currentUser=user;showApp();
+  currentUser=user;loadAudit();addAuditEntry('login',`Signed in`,'');showApp();
 }
 function doLogout(){
   sessionStorage.removeItem(SESSION_KEY);currentUser=null;
@@ -1132,21 +1267,51 @@ function checkSession(){
   try{const s=JSON.parse(sessionStorage.getItem(SESSION_KEY));if(s&&s.username){currentUser=s;return true;}}catch{}
   return false;
 }
-function showApp(){
+async function showApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='block';
   const init=currentUser.username.slice(0,2).toUpperCase();
   document.getElementById('userAvatar').textContent=init;
   document.getElementById('userNameDisplay').textContent=currentUser.username;
   document.getElementById('userRoleDisplay').textContent=currentUser.role||'User';
-  load();render();renderDashboard();
+  loadAudit();await load();render();renderDashboard();
 }
 ['loginPass','loginUser'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
 if(localStorage.getItem(USERS_KEY))document.getElementById('csvLoadedTag').classList.add('show');
 
-/* DATA */
-function load(){try{records=JSON.parse(localStorage.getItem(STORAGE_KEY))||[];}catch{records=[];}}
-function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(records));}
+/* DATA – Firestore */
+function showLoading(msg='Loading…'){
+  document.getElementById('loadingText').textContent=msg;
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
+
+async function load(){
+  try{
+    showLoading('Loading inventory…');
+    const snap=await getDocs(collection(db,LAPTOPS_COL));
+    records=snap.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){showToast('Failed to load from Firestore: '+e.message,true);records=[];}
+  finally{hideLoading();}
+}
+async function saveDoc(rec){
+  const {id,...data}=rec;
+  await setDoc(doc(db,LAPTOPS_COL,id),data);
+}
+async function deleteDoc2(id){
+  await deleteDoc(doc(db,LAPTOPS_COL,id));
+}
+// legacy save() no longer used for single records — kept for import bulk write
+async function bulkSave(recs){
+  // Firestore batch limit is 500 docs
+  const chunks=[];
+  for(let i=0;i<recs.length;i+=400)chunks.push(recs.slice(i,i+400));
+  for(const chunk of chunks){
+    const batch=writeBatch(db);
+    chunk.forEach(r=>{const{id,...data}=r;batch.set(doc(db,LAPTOPS_COL,id),data);});
+    await batch.commit();
+  }
+}
 function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 function nowISO(){return new Date().toISOString();}
 function fmtDate(iso){
@@ -1171,11 +1336,11 @@ function statCardClick(status){
 
 /* RENDER */
 function badge(s){
-  const m={Deployed:'b-deployed',Spare:'b-spare',Retired:'b-retired','Under Repair':'b-repair',Lost:'b-lost'};
+  const m={Deployed:'b-deployed',Spare:'b-spare',Repair:'b-repair','End of Life':'b-retired','For Return':'b-return'};
   return`<span class="badge ${m[s]||'b-retired'}">${s||'—'}</span>`;
 }
 function renderStats(){
-  const c={total:records.length,Deployed:0,Spare:0,Retired:0,'Under Repair':0,Lost:0};
+  const c={total:records.length,Deployed:0,Spare:0,Repair:0,'End of Life':0,'For Return':0};
   records.forEach(r=>{if(c[r.assetStatus]!==undefined)c[r.assetStatus]++;});
   const mkCard=(lbl,val,cls,status,title)=>{
     const isActive=activeStatusFilter===status;
@@ -1188,9 +1353,9 @@ function renderStats(){
     mkCard('Total Assets',c.total,'sv-total','','all')+
     mkCard('Deployed',c.Deployed,'sv-deployed','Deployed')+
     mkCard('Spare',c.Spare,'sv-spare','Spare')+
-    mkCard('Under Repair',c['Under Repair'],'sv-repair','Under Repair')+
-    mkCard('Retired',c.Retired,'sv-retired','Retired')+
-    mkCard('Lost',c.Lost,'sv-lost','Lost');
+    mkCard('Repair',c.Repair,'sv-repair','Repair')+
+    mkCard('End of Life',c['End of Life'],'sv-retired','End of Life')+
+    mkCard('For Return',c['For Return'],'sv-lost','For Return');
 }
 function updateSiteFilter(){
   const sites=[...new Set(records.map(r=>r.siteLocation).filter(Boolean))].sort();
@@ -1246,7 +1411,7 @@ function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderTab
 
 /* ── DASHBOARD RENDER ── */
 function renderDashboard(){
-  const c={total:records.length,Deployed:0,Spare:0,Retired:0,'Under Repair':0,Lost:0};
+  const c={total:records.length,Deployed:0,Spare:0,Repair:0,'End of Life':0,'For Return':0};
   records.forEach(r=>{if(c[r.assetStatus]!==undefined)c[r.assetStatus]++;});
 
   // Big cards
@@ -1254,9 +1419,9 @@ function renderDashboard(){
     {cls:'dbc-total',icon:'🖥️',num:c.total,lbl:'Total Assets',status:''},
     {cls:'dbc-deployed',icon:'✅',num:c.Deployed,lbl:'Deployed',status:'Deployed'},
     {cls:'dbc-spare',icon:'📦',num:c.Spare,lbl:'Spare',status:'Spare'},
-    {cls:'dbc-repair',icon:'🔧',num:c['Under Repair'],lbl:'Under Repair',status:'Under Repair'},
-    {cls:'dbc-retired',icon:'🗃️',num:c.Retired,lbl:'Retired',status:'Retired'},
-    {cls:'dbc-lost',icon:'❓',num:c.Lost,lbl:'Lost',status:'Lost'},
+    {cls:'dbc-repair',icon:'🔧',num:c.Repair,lbl:'Repair',status:'Repair'},
+    {cls:'dbc-retired',icon:'🗃️',num:c['End of Life'],lbl:'End of Life',status:'End of Life'},
+    {cls:'dbc-lost',icon:'↩️',num:c['For Return'],lbl:'For Return',status:'For Return'},
   ];
   document.getElementById('dashBigGrid').innerHTML=bigCards.map(card=>`
     <div class="dash-big-card ${card.cls}" onclick="dashCardClick('${card.status}')" title="Click to filter inventory">
@@ -1266,7 +1431,7 @@ function renderDashboard(){
     </div>`).join('');
 
   // Bar chart
-  const barColors={Deployed:'var(--green)',Spare:'var(--blue)','Under Repair':'var(--amber)',Retired:'var(--text3)',Lost:'var(--red)'};
+  const barColors={Deployed:'var(--green)',Spare:'var(--blue)',Repair:'var(--amber)','End of Life':'var(--text3)','For Return':'#8b5aa8'};
   const maxVal=Math.max(1,...Object.keys(barColors).map(k=>c[k]));
   document.getElementById('dashBarChart').innerHTML=Object.entries(barColors).map(([k,col])=>`
     <div class="bar-row">
@@ -1294,7 +1459,7 @@ function renderDashboard(){
     const tb=b.dateModified||b.dateAdded||'';
     return tb.localeCompare(ta);
   }).slice(0,8);
-  const dotColor={Deployed:'var(--green)',Spare:'var(--blue)','Under Repair':'var(--amber)',Retired:'var(--text3)',Lost:'var(--red)'};
+  const dotColor={Deployed:'var(--green)',Spare:'var(--blue)',Repair:'var(--amber)','End of Life':'var(--text3)','For Return':'#8b5aa8'};
   document.getElementById('dashActivity').innerHTML=recent.length
     ?recent.map(r=>{
       const isNew=!r.dateModified;
@@ -1386,28 +1551,35 @@ function openEditModal(id){
   document.getElementById('formOverlay').classList.add('open');
 }
 function closeFormModal(){document.getElementById('formOverlay').classList.remove('open');}
-function saveRecord(){
+async function saveRecord(){
   const rec={};
   FIELDS.forEach(f=>{rec[f.key]=(document.getElementById('f_'+f.key)?.value||'').trim();});
   if(!rec.brand&&!rec.serialNumber&&!rec.assetTag){showToast('Fill in at least Brand, Serial Number, or Asset Tag.',true);return;}
   const now=nowISO();
+  let finalRec;
   if(editId){
     const i=records.findIndex(r=>r.id===editId);
     if(i>-1){
       const old=records[i];
-      // Track owner change
       const ownerHistory=old.ownerHistory||[];
       if(old.currentOwner && old.currentOwner!==rec.currentOwner){
         ownerHistory.push({owner:old.currentOwner, to:now, changedBy:currentUser?.username||'—'});
       }
-      records[i]={...old,...rec,ownerHistory,modifiedBy:currentUser?.username||'—',dateModified:now};
+      finalRec={...old,...rec,ownerHistory,modifiedBy:currentUser?.username||'—',dateModified:now};
+      records[i]=finalRec;
     }
-    showToast('Record updated.');
+    showToast('Record updated.');addAuditEntry('edit',`Updated ${finalRec.brand||''} ${finalRec.model||''}`,finalRec.assetTag||finalRec.serialNumber||'');
   }else{
     rec.id=genId();rec.dateAdded=now;rec.dateModified=null;rec.ownerHistory=[];rec.modifiedBy=null;
-    records.push(rec);showToast('Laptop added!');
+    finalRec=rec;
+    records.push(rec);showToast('Laptop added!');addAuditEntry('add',`Added ${rec.brand||''} ${rec.model||''}`,rec.assetTag||rec.serialNumber||'');
   }
-  save();render();renderDashboard();closeFormModal();
+  try{
+    showLoading('Saving…');
+    await saveDoc(finalRec);
+  }catch(e){showToast('Save failed: '+e.message,true);}
+  finally{hideLoading();}
+  render();renderDashboard();closeFormModal();
 }
 function openDeleteModal(id){
   deleteId=id;const r=records.find(x=>x.id===id);
@@ -1415,7 +1587,18 @@ function openDeleteModal(id){
   document.getElementById('deleteOverlay').classList.add('open');
 }
 function closeDeleteModal(){document.getElementById('deleteOverlay').classList.remove('open');}
-function confirmDelete(){records=records.filter(r=>r.id!==deleteId);save();render();renderDashboard();closeDeleteModal();showToast('Record deleted.')}
+async function confirmDelete(){
+  const delRec=records.find(r=>r.id===deleteId);
+  records=records.filter(r=>r.id!==deleteId);
+  try{
+    showLoading('Deleting…');
+    await deleteDoc2(deleteId);
+    addAuditEntry('delete',`Deleted ${delRec?.brand||''} ${delRec?.model||''}`,delRec?.assetTag||delRec?.serialNumber||'');
+    showToast('Record deleted.');
+  }catch(e){showToast('Delete failed: '+e.message,true);}
+  finally{hideLoading();}
+  render();renderDashboard();closeDeleteModal();
+}
 
 /* IMPORT/EXPORT */
 function openImportModal(){document.getElementById('importOverlay').classList.add('open');}
@@ -1423,7 +1606,7 @@ function closeImportModal(){document.getElementById('importOverlay').classList.r
 function handleImport(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
-  reader.onload=e=>{
+  reader.onload=async e=>{
     try{
       if(file.name.endsWith('.json')){
         const d=JSON.parse(e.target.result);
@@ -1437,8 +1620,13 @@ function handleImport(input){
           Object.entries(km).forEach(([k,i])=>{rec[k]=(cols[i]||'').trim()||null;});return rec;
         });
       }
-      save();render();renderDashboard();closeImportModal();input.value='';showToast(`Imported ${records.length} records.`);
-    }catch{showToast('Import failed.',true);}
+      showLoading(`Saving ${records.length} records to Firestore…`);
+      await bulkSave(records);
+      hideLoading();
+      render();renderDashboard();closeImportModal();input.value='';
+      addAuditEntry('import',`Imported ${records.length} records from ${file.name}`,'');
+      showToast(`Imported ${records.length} records.`);
+    }catch(e){hideLoading();showToast('Import failed: '+e.message,true);}
   };
   reader.readAsText(file);
 }
@@ -1476,9 +1664,134 @@ function showToast(msg,isErr=false){
 
 document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open');}));
 
+
+/* ══════════════════════════════
+   AUDIT LOG
+══════════════════════════════ */
+const AUDIT_KEY = 'laptopAssets_audit';
+let auditLog = [];
+let auditPage = 1;
+const AUDIT_PER_PAGE = 15;
+
+function loadAudit(){
+  try{ auditLog = JSON.parse(localStorage.getItem(AUDIT_KEY)) || []; }
+  catch{ auditLog = []; }
+}
+function saveAudit(){
+  // Keep last 500 entries
+  if(auditLog.length > 500) auditLog = auditLog.slice(-500);
+  localStorage.setItem(AUDIT_KEY, JSON.stringify(auditLog));
+}
+function addAuditEntry(type, detail, assetRef=''){
+  auditLog.push({
+    id: genId(),
+    type,            // login | add | edit | delete | import
+    user: currentUser?.username || '—',
+    detail,
+    assetRef,
+    ts: nowISO()
+  });
+  saveAudit();
+}
+function clearAuditLog(){
+  if(!confirm('Clear all audit log entries? This cannot be undone.')) return;
+  auditLog = [];
+  saveAudit();
+  renderAudit();
+  showToast('Audit log cleared.');
+}
+
+function renderAudit(){
+  loadAudit();
+  const typeF = document.getElementById('auditTypeFilter').value;
+  const userF = document.getElementById('auditUserFilter').value;
+
+  // Populate user filter
+  const users = [...new Set(auditLog.map(e=>e.user).filter(Boolean))].sort();
+  const userSel = document.getElementById('auditUserFilter');
+  const curUser = userSel.value;
+  userSel.innerHTML = '<option value="">All Users</option>' +
+    users.map(u=>`<option${u===curUser?' selected':''}>${u}</option>`).join('');
+
+  let filtered = [...auditLog].reverse(); // newest first
+  if(typeF) filtered = filtered.filter(e=>e.type===typeF);
+  if(userF) filtered = filtered.filter(e=>e.user===userF);
+
+  document.getElementById('auditTotalBadge').textContent = `${filtered.length} event${filtered.length!==1?'s':''}`;
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / AUDIT_PER_PAGE));
+  if(auditPage > totalPages) auditPage = totalPages;
+  const start = (auditPage-1)*AUDIT_PER_PAGE;
+  const page = filtered.slice(start, start+AUDIT_PER_PAGE);
+
+  const iconMap = { login:'🔐', add:'➕', edit:'✏️', delete:'🗑️', import:'📥' };
+  const labelMap = { login:'Login', add:'Added', edit:'Modified', delete:'Deleted', import:'Import' };
+
+  const list = document.getElementById('auditList');
+  if(!filtered.length){
+    list.innerHTML = '<div class="audit-empty">📋 No audit events yet.</div>';
+  } else {
+    list.innerHTML = page.map(e=>`
+      <div class="audit-row">
+        <div class="audit-icon ai-${e.type}">${iconMap[e.type]||'📌'}</div>
+        <div class="audit-time">${fmtDate(e.ts)}</div>
+        <div class="audit-user">${e.user}</div>
+        <div class="audit-detail">${e.detail} ${e.assetRef?`<span>· ${e.assetRef}</span>`:''}</div>
+        <span class="audit-badge ab-${e.type}">${labelMap[e.type]||e.type}</span>
+      </div>`).join('');
+  }
+
+  // Pagination
+  const pag = document.getElementById('auditPagination');
+  if(totalPages <= 1){ pag.innerHTML=''; return; }
+  let html = `<button class="page-btn" onclick="goAuditPage(${auditPage-1})" ${auditPage===1?'disabled':''}>‹</button>`;
+  const range = 2;
+  for(let p=1; p<=totalPages; p++){
+    if(p===1||p===totalPages||Math.abs(p-auditPage)<=range){
+      html+=`<button class="page-btn${p===auditPage?' active':''}" onclick="goAuditPage(${p})">${p}</button>`;
+    } else if(Math.abs(p-auditPage)===range+1){
+      html+=`<span style="color:var(--text3);padding:0 4px">…</span>`;
+    }
+  }
+  html+=`<button class="page-btn" onclick="goAuditPage(${auditPage+1})" ${auditPage===totalPages?'disabled':''}>›</button>`;
+  pag.innerHTML = html;
+}
+function goAuditPage(p){ auditPage=p; renderAudit(); }
+
+// ── Expose functions to global scope (required for inline onclick in module scripts) ──
+window.toggleTheme=toggleTheme;
+window.switchView=switchView;
+window.doLogin=doLogin;
+window.doLogout=doLogout;
+window.loadUserCSV=loadUserCSV;
+window.openAddModal=openAddModal;
+window.openEditModal=openEditModal;
+window.closeFormModal=closeFormModal;
+window.saveRecord=saveRecord;
+window.openDeleteModal=openDeleteModal;
+window.closeDeleteModal=closeDeleteModal;
+window.confirmDelete=confirmDelete;
+window.openImportModal=openImportModal;
+window.closeImportModal=closeImportModal;
+window.handleImport=handleImport;
+window.exportCSV=exportCSV;
+window.exportJSON=exportJSON;
+window.sortBy=sortBy;
+window.statCardClick=statCardClick;
+window.dashCardClick=dashCardClick;
+window.renderAudit=renderAudit;
+window.goAuditPage=goAuditPage;
+window.clearAuditLog=clearAuditLog;
+
 loadTheme();
 if(checkSession())showApp();
 else document.getElementById('loginScreen').style.display='flex';
 </script>
+
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Loading…</div>
+</div>
+
 </body>
 </html>
