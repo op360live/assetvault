@@ -1037,7 +1037,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         <input type="password" class="field-input" id="loginPass" placeholder="Enter password" autocomplete="current-password">
       </div>
       <div class="login-error" id="loginError">Incorrect username or password.</div>
-      <button class="btn-signin" onclick="doLogin()">Sign In</button>
+      <button class="btn-signin" id="btnSignIn">Sign In</button>
     </div>
     <div class="login-footer">
       <div class="csv-hint" style="font-size:12px;color:var(--text3);">AssetVault · IT Department</div>
@@ -1514,7 +1514,7 @@ async function doLogin(){
   const p=document.getElementById('loginPass').value;
   const err=document.getElementById('loginError');
   if(!u||!p){err.textContent='Please enter your username and password.';err.classList.add('show');return;}
-  //await loadUsersFromFirestore(); // always fetch fresh from Firestore on login
+  await loadUsersFromFirestore(); // always fetch fresh from Firestore on login
   const users=getUsers();
   const hash=await hashPassword(p);
   const user=users.find(x=>x.username.toLowerCase()===u.toLowerCase()&&x.passwordHash===hash);
@@ -1569,6 +1569,7 @@ async function showApp(){
   loadAudit();await loadAuditFromFirestore();startPresenceHeartbeat();await load();render();renderDashboard();
 }
 ['loginPass','loginUser'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
+document.getElementById('btnSignIn').addEventListener('click', doLogin);
 // Users are loaded from localStorage automatically
 
 /* DATA – Firestore */
