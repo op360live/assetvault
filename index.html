@@ -1514,7 +1514,7 @@ async function doLogin(){
   const p=document.getElementById('loginPass').value;
   const err=document.getElementById('loginError');
   if(!u||!p){err.textContent='Please enter your username and password.';err.classList.add('show');return;}
-  await loadUsersFromFirestore(); // always fetch fresh from Firestore on login
+  //await loadUsersFromFirestore(); // always fetch fresh from Firestore on login
   const users=getUsers();
   const hash=await hashPassword(p);
   const user=users.find(x=>x.username.toLowerCase()===u.toLowerCase()&&x.passwordHash===hash);
