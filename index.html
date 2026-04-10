@@ -875,7 +875,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       <button class="btn-signin" onclick="doLogin()">Sign In</button>
     </div>
     <div class="login-footer">
-      <div class="csv-hint" style="font-size:12px;color:var(--text3);">AssetVault · VERSION 0.12</div>
+      <div class="csv-hint" style="font-size:12px;color:var(--text3);">AssetVault · V.0.13</div>
       <div style="font-size:11px;color:var(--text3);">Contact your IT admin for access</div>
     </div>
   </div>
@@ -1316,14 +1316,14 @@ function switchView(v){
 }
 
 /* AUTH */
-/* ── USER STORE (Firestore) ── */
-let _usersCache = null; // in-memory cache so sync callers still work after first load
+/* ── USER STORE (Firestore + localStorage fallback) ── */
+let _usersCache = null;
+let _useFirestoreUsers = true; // flips false if Firestore users collection is inaccessible
 
 async function loadUsersFromFirestore(){
   try{
     const snap = await getDocs(collection(db, USERS_COL));
     if(snap.empty){
-      // First run — seed users into Firestore
       const batch = writeBatch(db);
       SEEDED_USERS.forEach(u => batch.set(doc(db, USERS_COL, u.username), u));
       await batch.commit();
@@ -1331,27 +1331,37 @@ async function loadUsersFromFirestore(){
     } else {
       _usersCache = snap.docs.map(d => ({...d.data()}));
     }
+    _useFirestoreUsers = true;
   }catch(e){
-    console.error('Failed to load users from Firestore:', e);
-    // fallback to seeded list so login still works
-    if(!_usersCache) _usersCache = SEEDED_USERS.map(u=>({...u}));
+    console.warn('Firestore users unavailable, using localStorage fallback:', e.message);
+    _useFirestoreUsers = false;
+    try{
+      const s = JSON.parse(localStorage.getItem('laptopAssets_users'));
+      if(Array.isArray(s) && s.length){ _usersCache = s; return; }
+    }catch{}
+    _usersCache = SEEDED_USERS.map(u=>({...u}));
+    localStorage.setItem('laptopAssets_users', JSON.stringify(_usersCache));
   }
 }
 
 function getUsers(){
-  // Returns the in-memory cache (populated by loadUsersFromFirestore on startup)
   return _usersCache || SEEDED_USERS.map(u=>({...u}));
 }
 
 async function saveUsers(users){
   _usersCache = users;
-  try{
-    const batch = writeBatch(db);
-    users.forEach(u => batch.set(doc(db, USERS_COL, u.username), u));
-    await batch.commit();
-  }catch(e){
-    showToast('Failed to save users: '+e.message, true);
+  if(_useFirestoreUsers){
+    try{
+      const batch = writeBatch(db);
+      users.forEach(u => batch.set(doc(db, USERS_COL, u.username), u));
+      await batch.commit();
+      return;
+    }catch(e){
+      console.warn('Firestore saveUsers failed, falling back to localStorage:', e.message);
+      _useFirestoreUsers = false;
+    }
   }
+  localStorage.setItem('laptopAssets_users', JSON.stringify(users));
 }
 
 async function hashPassword(pw){
@@ -2097,7 +2107,7 @@ window.toggleTheme=toggleTheme;
 window.switchView=switchView;
 window.doLogin=doLogin;
 window.doLogout=doLogout;
-window.loadUserCSV=loadUserCSV;
+
 window.openAddModal=openAddModal;
 window.openEditModal=openEditModal;
 window.closeFormModal=closeFormModal;
@@ -2122,7 +2132,6 @@ window.openEditUserModal=openEditUserModal;
 window.saveUserForm=saveUserForm;
 window.resetUserPassword=resetUserPassword;
 window.toggleUserActive=toggleUserActive;
-window.submitForceChange=submitForceChange;
 window.openProfileModal=openProfileModal;
 window.saveProfile=saveProfile;
 
@@ -2131,6 +2140,9 @@ loadTheme();
   await loadUsersFromFirestore();
   if(checkSession()) showApp();
   else document.getElementById('loginScreen').style.display='flex';
+  // Wire force-change button inside module after DOM is ready
+  const btnFC = document.getElementById('btnForceChange');
+  if(btnFC) btnFC.addEventListener('click', submitForceChange);
 })();
 </script>
 
@@ -2152,7 +2164,7 @@ loadTheme();
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-primary" style="width:100%" onclick="submitForceChange()">Set Password &amp; Continue</button>
+      <button class="btn btn-primary" style="width:100%" id="btnForceChange">Set Password &amp; Continue</button>
     </div>
   </div>
 </div>
