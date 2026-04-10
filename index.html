@@ -625,6 +625,65 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 }
 .page-btn:disabled { opacity: 0.35; cursor: default; }
 
+
+/* ── USERS PAGE ── */
+.users-toolbar {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.user-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--glass-shadow-sm);
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.user-card:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow); }
+.user-card.disabled-user { opacity: 0.55; }
+.user-card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.user-card-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.user-card-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.user-card-username { font-size: 12px; color: var(--text3); margin-top: 1px; }
+.user-role-badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.urb-superadmin { background: linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; }
+.urb-admin   { background: var(--amber-bg); color: var(--amber); }
+.urb-member  { background: var(--green-bg);  color: var(--green); }
+.user-card-meta { font-size: 12px; color: var(--text3); margin-top: 8px; display:flex; gap:10px; flex-wrap:wrap; }
+.user-status-dot { display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px; }
+.user-card-actions { display: flex; gap: 6px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--glass-border2); }
+
+/* ── PROFILE MODAL ── */
+.profile-avatar-row {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px; background: var(--surface-tint);
+  border-radius: var(--radius); margin-bottom: 4px;
+}
+.profile-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.profile-role-badge {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+}
+
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
@@ -816,20 +875,8 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       <button class="btn-signin" onclick="doLogin()">Sign In</button>
     </div>
     <div class="login-footer">
-      <div>
-        <div class="csv-hint">Managed via users.csv</div>
-        <div class="csv-loaded" id="csvLoadedTag">
-          <span class="dot-green"></span> users.csv loaded
-        </div>
-      </div>
-      <label class="btn-load" onclick="document.getElementById('csvFile').click()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
-          <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
-        </svg>
-        Load users.csv
-        <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="loadUserCSV(this)">
-      </label>
+      <div class="csv-hint" style="font-size:12px;color:var(--text3);">AssetVault · VERSION 0.12</div>
+      <div style="font-size:11px;color:var(--text3);">Contact your IT admin for access</div>
     </div>
   </div>
 </div>
@@ -852,9 +899,10 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       <button class="nav-tab active" id="tabDash" onclick="switchView('dash')">📊 Dashboard</button>
       <button class="nav-tab" id="tabInv" onclick="switchView('inv')">💻 Inventory</button>
       <button class="nav-tab" id="tabAudit" onclick="switchView('audit')">🔍 Audit</button>
+      <button class="nav-tab" id="tabUsers" onclick="switchView('users')" style="display:none">👥 Users</button>
     </div>
     <div class="header-actions">
-      <div class="user-chip">
+      <div class="user-chip" onclick="openProfileModal()" style="cursor:pointer" title="My Profile">
         <div class="avatar" id="userAvatar">--</div>
         <div>
           <div class="chip-name" id="userNameDisplay">—</div>
@@ -868,7 +916,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         <span class="pill-label" id="themeLabel">Light</span>
       </div>
       <!-- Import -->
-      <button class="btn" onclick="openImportModal()">
+      <button class="btn" id="btnImport" onclick="openImportModal()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
           <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
@@ -892,7 +940,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         Export JSON
       </button>
       <!-- Add Laptop -->
-      <button class="btn btn-primary" onclick="openAddModal()">
+      <button class="btn btn-primary" id="btnAddLaptop" onclick="openAddModal()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
@@ -1028,6 +1076,21 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       </div>
       <div class="audit-list" id="auditList"></div>
       <div class="audit-pagination" id="auditPagination"></div>
+    </div>
+
+    <!-- ══════════ USERS VIEW ══════════ -->
+    <div class="view" id="usersView">
+      <div class="users-toolbar">
+        <div>
+          <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;">User Management</div>
+          <div style="font-size:13px;color:var(--text3);">Manage accounts, roles and permissions</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddUserModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add User
+        </button>
+      </div>
+      <div class="users-grid" id="usersGrid"></div>
     </div>
 
   </main>
@@ -1174,12 +1237,42 @@ const firebaseConfig = {
 const _app = initializeApp(firebaseConfig);
 const db = getFirestore(_app);
 const LAPTOPS_COL = "laptops";
+const USERS_COL   = "users";
 
-const STORAGE_KEY = 'laptopAssets_v1';
-const THEME_KEY   = 'laptopAssets_theme';
-const USERS_KEY   = 'laptopAssets_users';
-const SESSION_KEY = 'laptopAssets_session';
-const DEFAULT_USERS = [{username:'admin',password:'admin123',role:'Admin'}];
+const STORAGE_KEY  = 'laptopAssets_v1';
+const THEME_KEY    = 'laptopAssets_theme';
+const SESSION_KEY  = 'laptopAssets_session';
+const DEFAULT_PW   = 'ae33a34216f00d844796e3ab70b2aaedd30e8544b7e8f8fd105a03d7f7a7dbb5'; // SHA-256 of Welcome@360!
+
+// ROLES: superadmin | admin | member
+const SEEDED_USERS = [
+  // Superadmins
+  {username:'rcabil',  displayName:'R. Cabil',   role:'superadmin', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  {username:'aalbia',  displayName:'A. Albia',   role:'superadmin', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  // Admins
+  {username:'cinuabia',displayName:'C. Inuabia', role:'admin', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  {username:'cllanto', displayName:'C. Llanto',  role:'admin', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  {username:'jmalalay',displayName:'J. Malalay', role:'admin', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  {username:'ipintor', displayName:'I. Pintor',  role:'admin', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  {username:'grosco',  displayName:'G. Rosco',   role:'admin', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  {username:'wdacay',  displayName:'W. Dacay',   role:'admin', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  {username:'kipogosa',displayName:'K. Ipogosa', role:'admin', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  {username:'aninting',displayName:'A. Ninting', role:'admin', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  // Members
+  {username:'ritase',  displayName:'R. Itase',   role:'member', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  {username:'chrcastro',displayName:'C. Castro', role:'member', passwordHash:DEFAULT_PW, mustChangePassword:true},
+  {username:'jasoy',   displayName:'J. Asoy',    role:'member', passwordHash:DEFAULT_PW, mustChangePassword:true},
+];
+
+// Permissions helper
+function can(action){
+  const r = currentUser?.role;
+  if(r==='superadmin') return true;
+  if(r==='admin')      return ['add','edit','import','export'].includes(action); // no delete
+
+  if(r==='member')     return ['export'].includes(action);
+  return false;
+}
 
 let records=[], editId=null, deleteId=null, sortCol='dateAdded', sortDir=-1, currentUser=null;
 let activeStatusFilter = null; // for clickable stat cards
@@ -1211,51 +1304,78 @@ function loadTheme(){
 
 /* VIEW SWITCHING */
 function switchView(v){
-  document.getElementById('dashView').classList.toggle('active', v==='dash');
-  document.getElementById('invView').classList.toggle('active', v==='inv');
-  document.getElementById('auditView').classList.toggle('active', v==='audit');
-  document.getElementById('tabDash').classList.toggle('active', v==='dash');
-  document.getElementById('tabInv').classList.toggle('active', v==='inv');
-  document.getElementById('tabAudit').classList.toggle('active', v==='audit');
+  ['dash','inv','audit','users'].forEach(id=>{
+    const view=document.getElementById(id+'View');
+    const tab=document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1));
+    if(view) view.classList.toggle('active',v===id);
+    if(tab) tab.classList.toggle('active',v===id);
+  });
   if(v==='dash') renderDashboard();
   if(v==='audit'){ auditPage=1; renderAudit(); }
+  if(v==='users') renderUsersGrid();
 }
 
 /* AUTH */
+/* ── USER STORE (Firestore) ── */
+let _usersCache = null; // in-memory cache so sync callers still work after first load
+
+async function loadUsersFromFirestore(){
+  try{
+    const snap = await getDocs(collection(db, USERS_COL));
+    if(snap.empty){
+      // First run — seed users into Firestore
+      const batch = writeBatch(db);
+      SEEDED_USERS.forEach(u => batch.set(doc(db, USERS_COL, u.username), u));
+      await batch.commit();
+      _usersCache = SEEDED_USERS.map(u=>({...u}));
+    } else {
+      _usersCache = snap.docs.map(d => ({...d.data()}));
+    }
+  }catch(e){
+    console.error('Failed to load users from Firestore:', e);
+    // fallback to seeded list so login still works
+    if(!_usersCache) _usersCache = SEEDED_USERS.map(u=>({...u}));
+  }
+}
+
 function getUsers(){
-  try{const s=JSON.parse(localStorage.getItem(USERS_KEY));if(Array.isArray(s)&&s.length)return s;}catch{}
-  return DEFAULT_USERS;
+  // Returns the in-memory cache (populated by loadUsersFromFirestore on startup)
+  return _usersCache || SEEDED_USERS.map(u=>({...u}));
 }
-function loadUserCSV(input){
-  const file=input.files[0];if(!file)return;
-  const r=new FileReader();
-  r.onload=e=>{
-    try{
-      const lines=e.target.result.trim().split('\n').filter(l=>l.trim());
-      const start=lines[0].toLowerCase().includes('username')?1:0;
-      const users=lines.slice(start).map(line=>{
-        const p=parseCSVLine(line);
-        return{username:(p[0]||'').trim(),password:(p[1]||'').trim(),role:(p[2]||'User').trim()};
-      }).filter(u=>u.username&&u.password);
-      if(!users.length){showToast('No valid users found.',true);return;}
-      if(!users.some(u=>u.username==='admin'))users.unshift(DEFAULT_USERS[0]);
-      localStorage.setItem(USERS_KEY,JSON.stringify(users));
-      document.getElementById('csvLoadedTag').classList.add('show');
-      showToast(`${users.length} user(s) loaded.`);input.value='';
-    }catch{showToast('Failed to parse users.csv.',true);}
-  };
-  r.readAsText(file);
+
+async function saveUsers(users){
+  _usersCache = users;
+  try{
+    const batch = writeBatch(db);
+    users.forEach(u => batch.set(doc(db, USERS_COL, u.username), u));
+    await batch.commit();
+  }catch(e){
+    showToast('Failed to save users: '+e.message, true);
+  }
 }
-function doLogin(){
+
+async function hashPassword(pw){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function doLogin(){
   const u=document.getElementById('loginUser').value.trim();
   const p=document.getElementById('loginPass').value;
   const err=document.getElementById('loginError');
   if(!u||!p){err.textContent='Please enter your username and password.';err.classList.add('show');return;}
-  const user=getUsers().find(x=>x.username.toLowerCase()===u.toLowerCase()&&x.password===p);
+  await loadUsersFromFirestore(); // always fetch fresh from Firestore on login
+  const users=getUsers();
+  const hash=await hashPassword(p);
+  const user=users.find(x=>x.username.toLowerCase()===u.toLowerCase()&&x.passwordHash===hash);
   if(!user){err.textContent='Incorrect username or password.';err.classList.add('show');document.getElementById('loginPass').value='';return;}
+  if(!user.active&&user.active!==undefined){err.textContent='This account has been disabled.';err.classList.add('show');return;}
   err.classList.remove('show');
-  sessionStorage.setItem(SESSION_KEY,JSON.stringify({username:user.username,role:user.role}));
-  currentUser=user;loadAudit();addAuditEntry('login',`Signed in`,'');showApp();
+  currentUser={...user};
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  loadAudit();addAuditEntry('login','Signed in','');
+  if(user.mustChangePassword){ openForceChangeModal(); return; }
+  showApp();
 }
 function doLogout(){
   sessionStorage.removeItem(SESSION_KEY);currentUser=null;
@@ -1264,20 +1384,40 @@ function doLogout(){
   document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';
 }
 function checkSession(){
-  try{const s=JSON.parse(sessionStorage.getItem(SESSION_KEY));if(s&&s.username){currentUser=s;return true;}}catch{}
+  try{
+    const s=JSON.parse(sessionStorage.getItem(SESSION_KEY));
+    if(s&&s.username){
+      // Reload fresh user data from store in case it was updated
+      const users=getUsers();
+      const fresh=users.find(u=>u.username===s.username);
+      currentUser=fresh||s;
+      return true;
+    }
+  }catch{}
   return false;
 }
 async function showApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='block';
-  const init=currentUser.username.slice(0,2).toUpperCase();
+  const name=currentUser.displayName||currentUser.username;
+  const init=name.slice(0,2).toUpperCase();
   document.getElementById('userAvatar').textContent=init;
-  document.getElementById('userNameDisplay').textContent=currentUser.username;
-  document.getElementById('userRoleDisplay').textContent=currentUser.role||'User';
+  document.getElementById('userNameDisplay').textContent=name;
+  document.getElementById('userRoleDisplay').textContent=
+    currentUser.role==='superadmin'?'Super Admin':
+    currentUser.role==='admin'?'Admin':'Member';
+  // Show/hide tabs based on role
+  const usersTab=document.getElementById('tabUsers');
+  if(usersTab) usersTab.style.display=currentUser.role==='superadmin'?'':'none';
+  // Show/hide action buttons
+  const addBtn=document.getElementById('btnAddLaptop');
+  if(addBtn) addBtn.style.display=can('add')?'':'none';
+  const importBtn=document.getElementById('btnImport');
+  if(importBtn) importBtn.style.display=can('import')?'':'none';
   loadAudit();await load();render();renderDashboard();
 }
 ['loginPass','loginUser'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
-if(localStorage.getItem(USERS_KEY))document.getElementById('csvLoadedTag').classList.add('show');
+// Users are loaded from localStorage automatically
 
 /* DATA – Firestore */
 function showLoading(msg='Loading…'){
@@ -1395,14 +1535,8 @@ function renderTable(){
     <td class="date-cell">${fmtDate(r.dateAdded)}</td>
     <td class="date-cell">${fmtDate(r.dateModified)}</td>
     <td><div class="row-actions">
-      <button class="btn btn-sm" onclick="openEditModal('${r.id}')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Edit
-      </button>
-      <button class="btn btn-sm btn-danger" onclick="openDeleteModal('${r.id}')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
-        Delete
-      </button>
+      ${can('edit')?`<button class="btn btn-sm" onclick="openEditModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit</button>`:''}
+      ${can('delete')?`<button class="btn btn-sm btn-danger" onclick="openDeleteModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg> Delete</button>`:''}
     </div></td>
   </tr>`).join('');
 }
@@ -1494,14 +1628,8 @@ function renderDashboard(){
     <td>${r.currentOwner||'—'}</td>
     <td class="date-cell">${fmtDate(r.dateModified||r.dateAdded)}</td>
     <td><div class="row-actions">
-      <button class="btn btn-sm" onclick="openEditModal('${r.id}')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        Edit
-      </button>
-      <button class="btn btn-sm btn-danger" onclick="openDeleteModal('${r.id}')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
-        Delete
-      </button>
+      ${can('edit')?`<button class="btn btn-sm" onclick="openEditModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit</button>`:''}
+      ${can('delete')?`<button class="btn btn-sm btn-danger" onclick="openDeleteModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg> Delete</button>`:''}
     </div></td>
   </tr>`).join('');
 }
@@ -1758,6 +1886,212 @@ function renderAudit(){
 }
 function goAuditPage(p){ auditPage=p; renderAudit(); }
 
+/* ══════════════════════════════
+   USER MANAGEMENT JS
+══════════════════════════════ */
+let editUserId = null;
+
+function roleBadgeClass(r){
+  return r==='superadmin'?'urb-superadmin':r==='admin'?'urb-admin':'urb-member';
+}
+function roleLabel(r){
+  return r==='superadmin'?'Super Admin':r==='admin'?'Admin':'Member';
+}
+
+function renderUsersGrid(){
+  const users = getUsers();
+  const grid = document.getElementById('usersGrid');
+  if(!grid) return;
+  grid.innerHTML = users.map(u=>{
+    const isSuperadmin = u.role==='superadmin';
+    const name = u.displayName||u.username;
+    const init = name.slice(0,2).toUpperCase();
+    const statusDot = u.active===false?'background:var(--red)':'background:var(--green)';
+    const statusLbl = u.active===false?'Disabled':'Active';
+    const canEdit = !isSuperadmin; // admins cannot edit superadmins
+    return `<div class="user-card${u.active===false?' disabled-user':''}">
+      <div class="user-card-header">
+        <div class="user-card-avatar">${init}</div>
+        <div style="flex:1">
+          <div class="user-card-name">${name}</div>
+          <div class="user-card-username">@${u.username}</div>
+        </div>
+        <span class="user-role-badge ${roleBadgeClass(u.role)}">${roleLabel(u.role)}</span>
+      </div>
+      <div class="user-card-meta">
+        <span><span class="user-status-dot" style="${statusDot}"></span>${statusLbl}</span>
+        ${u.mustChangePassword?'<span style="color:var(--amber)">⚠ Temp password</span>':''}
+      </div>
+      ${canEdit?`<div class="user-card-actions">
+        <button class="btn btn-sm" style="flex:1" onclick="openEditUserModal('${u.username}')">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button class="btn btn-sm" style="flex:1;color:var(--amber)" onclick="resetUserPassword('${u.username}')">
+          🔑 Reset PW
+        </button>
+        <button class="btn btn-sm btn-danger" onclick="toggleUserActive('${u.username}',${u.active!==false})">
+          ${u.active===false?'Enable':'Disable'}
+        </button>
+      </div>`:'<div style="height:8px"></div>'}
+    </div>`;
+  }).join('');
+}
+
+function openAddUserModal(){
+  editUserId=null;
+  document.getElementById('userFormTitle').textContent='Add User';
+  document.getElementById('uf_username').value='';
+  document.getElementById('uf_username').disabled=false;
+  document.getElementById('uf_displayName').value='';
+  document.getElementById('uf_role').value='member';
+  document.getElementById('uf_active').value='true';
+  document.getElementById('uf_password').value='';
+  document.getElementById('userFormError').style.display='none';
+  document.getElementById('userFormOverlay').classList.add('open');
+}
+function openEditUserModal(username){
+  const users=getUsers();
+  const u=users.find(x=>x.username===username);
+  if(!u)return;
+  editUserId=username;
+  document.getElementById('userFormTitle').textContent='Edit User';
+  document.getElementById('uf_username').value=u.username;
+  document.getElementById('uf_username').disabled=true;
+  document.getElementById('uf_displayName').value=u.displayName||'';
+  document.getElementById('uf_role').value=u.role==='superadmin'?'admin':u.role;
+  document.getElementById('uf_active').value=u.active===false?'false':'true';
+  document.getElementById('uf_password').value='';
+  document.getElementById('userFormError').style.display='none';
+  document.getElementById('userFormOverlay').classList.add('open');
+}
+async function saveUserForm(){
+  const errEl=document.getElementById('userFormError');
+  const username=document.getElementById('uf_username').value.trim().toLowerCase();
+  const displayName=document.getElementById('uf_displayName').value.trim();
+  const role=document.getElementById('uf_role').value;
+  const active=document.getElementById('uf_active').value==='true';
+  const pw=document.getElementById('uf_password').value;
+  if(!username){errEl.textContent='Username is required.';errEl.style.display='block';return;}
+  const users=getUsers();
+  if(!editUserId&&users.find(u=>u.username===username)){
+    errEl.textContent='Username already exists.';errEl.style.display='block';return;
+  }
+  errEl.style.display='none';
+  if(editUserId){
+    const i=users.findIndex(u=>u.username===editUserId);
+    if(i>-1){
+      users[i]={...users[i],displayName,role,active};
+      if(pw) users[i].passwordHash=await hashPassword(pw);
+    }
+    addAuditEntry('edit',`Updated user @${editUserId}`,'');
+  } else {
+    const hash=pw?await hashPassword(pw):DEFAULT_PW;
+    users.push({username,displayName:displayName||username,role,active:true,passwordHash:hash,mustChangePassword:!pw});
+    addAuditEntry('add',`Created user @${username}`,'');
+  }
+  await saveUsers(users);
+  renderUsersGrid();
+  document.getElementById('userFormOverlay').classList.remove('open');
+  showToast(editUserId?'User updated.':'User created.');
+}
+async function resetUserPassword(username){
+  if(!confirm(`Reset password for @${username} to Welcome@360!?`)) return;
+  const users=getUsers();
+  const i=users.findIndex(u=>u.username===username);
+  if(i>-1){ users[i].passwordHash=DEFAULT_PW; users[i].mustChangePassword=true; }
+  await saveUsers(users);
+  addAuditEntry('edit',`Reset password for @${username}`,'');
+  showToast(`Password reset for @${username}.`);
+  renderUsersGrid();
+}
+async function toggleUserActive(username,currentlyActive){
+  const users=getUsers();
+  const i=users.findIndex(u=>u.username===username);
+  if(i>-1) users[i].active=!currentlyActive;
+  await saveUsers(users);
+  addAuditEntry('edit',`${currentlyActive?'Disabled':'Enabled'} account @${username}`,'');
+  showToast(`Account ${currentlyActive?'disabled':'enabled'}.`);
+  renderUsersGrid();
+}
+
+/* ── FORCE PASSWORD CHANGE ── */
+function openForceChangeModal(){
+  document.getElementById('forceNewPw').value='';
+  document.getElementById('forceConfirmPw').value='';
+  document.getElementById('forcePwError').style.display='none';
+  document.getElementById('forceChangeOverlay').classList.add('open');
+}
+async function submitForceChange(){
+  const np=document.getElementById('forceNewPw').value;
+  const cp=document.getElementById('forceConfirmPw').value;
+  const errEl=document.getElementById('forcePwError');
+  if(np.length<8){errEl.textContent='Password must be at least 8 characters.';errEl.style.display='block';return;}
+  if(np!==cp){errEl.textContent='Passwords do not match.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  const btn=document.querySelector('#forceChangeOverlay .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  try{
+    const users=getUsers();
+    const i=users.findIndex(u=>u.username===currentUser.username);
+    if(i>-1){users[i].passwordHash=await hashPassword(np);users[i].mustChangePassword=false;await saveUsers(users);currentUser=users[i];}
+    sessionStorage.setItem(SESSION_KEY,JSON.stringify(currentUser));
+    document.getElementById('forceChangeOverlay').classList.remove('open');
+    addAuditEntry('edit','Changed password (first login)','');
+    showToast('Password updated. Welcome!');
+    showApp();
+  }catch(e){
+    errEl.textContent='Error saving password. Please try again.';errEl.style.display='block';
+    if(btn){btn.disabled=false;btn.textContent='Set Password & Continue';}
+  }
+}
+
+/* ── PROFILE ── */
+function openProfileModal(){
+  const name=currentUser.displayName||currentUser.username;
+  document.getElementById('profileAvatar').textContent=name.slice(0,2).toUpperCase();
+  document.getElementById('profileUsername').textContent='@'+currentUser.username;
+  document.getElementById('profileDisplayName').value=currentUser.displayName||'';
+  document.getElementById('profileCurrentPw').value='';
+  document.getElementById('profileNewPw').value='';
+  document.getElementById('profileConfirmPw').value='';
+  document.getElementById('profileError').style.display='none';
+  const rb=document.getElementById('profileRoleBadge');
+  rb.textContent=roleLabel(currentUser.role);
+  rb.className='profile-role-badge '+roleBadgeClass(currentUser.role);
+  document.getElementById('profileOverlay').classList.add('open');
+}
+async function saveProfile(){
+  const displayName=document.getElementById('profileDisplayName').value.trim();
+  const curPw=document.getElementById('profileCurrentPw').value;
+  const newPw=document.getElementById('profileNewPw').value;
+  const conPw=document.getElementById('profileConfirmPw').value;
+  const errEl=document.getElementById('profileError');
+  errEl.style.display='none';
+  const users=getUsers();
+  const i=users.findIndex(u=>u.username===currentUser.username);
+  if(i<0){showToast('User not found.',true);return;}
+  // Password change requested?
+  if(newPw){
+    if(!curPw){errEl.textContent='Enter your current password to change it.';errEl.style.display='block';return;}
+    const curHash=await hashPassword(curPw);
+    if(curHash!==users[i].passwordHash){errEl.textContent='Current password is incorrect.';errEl.style.display='block';return;}
+    if(newPw.length<8){errEl.textContent='New password must be at least 8 characters.';errEl.style.display='block';return;}
+    if(newPw!==conPw){errEl.textContent='New passwords do not match.';errEl.style.display='block';return;}
+    users[i].passwordHash=await hashPassword(newPw);
+    addAuditEntry('edit','Changed own password','');
+  }
+  if(displayName) users[i].displayName=displayName;
+  await saveUsers(users);
+  currentUser=users[i];
+  sessionStorage.setItem(SESSION_KEY,JSON.stringify(currentUser));
+  const newName=currentUser.displayName||currentUser.username;
+  document.getElementById('userNameDisplay').textContent=newName;
+  document.getElementById('userAvatar').textContent=newName.slice(0,2).toUpperCase();
+  document.getElementById('profileOverlay').classList.remove('open');
+  showToast('Profile saved.');
+}
+
 // ── Expose functions to global scope (required for inline onclick in module scripts) ──
 window.toggleTheme=toggleTheme;
 window.switchView=switchView;
@@ -1782,11 +2116,119 @@ window.dashCardClick=dashCardClick;
 window.renderAudit=renderAudit;
 window.goAuditPage=goAuditPage;
 window.clearAuditLog=clearAuditLog;
+window.renderUsersGrid=renderUsersGrid;
+window.openAddUserModal=openAddUserModal;
+window.openEditUserModal=openEditUserModal;
+window.saveUserForm=saveUserForm;
+window.resetUserPassword=resetUserPassword;
+window.toggleUserActive=toggleUserActive;
+window.submitForceChange=submitForceChange;
+window.openProfileModal=openProfileModal;
+window.saveProfile=saveProfile;
 
 loadTheme();
-if(checkSession())showApp();
-else document.getElementById('loginScreen').style.display='flex';
+(async()=>{
+  await loadUsersFromFirestore();
+  if(checkSession()) showApp();
+  else document.getElementById('loginScreen').style.display='flex';
+})();
 </script>
+
+
+<!-- FORCE PASSWORD CHANGE MODAL -->
+<div class="overlay" id="forceChangeOverlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <span class="modal-title">🔐 Set New Password</span>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text2);font-size:14px;margin-bottom:20px;line-height:1.6;">
+        Welcome! Your account uses the default password. Please set a new password before continuing.
+      </p>
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div class="fg"><label>New Password</label><input type="password" id="forceNewPw" placeholder="At least 8 characters"></div>
+        <div class="fg"><label>Confirm Password</label><input type="password" id="forceConfirmPw" placeholder="Repeat new password"></div>
+        <div id="forcePwError" style="display:none;color:var(--red);font-size:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" style="width:100%" onclick="submitForceChange()">Set Password &amp; Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="overlay" id="profileOverlay">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <span class="modal-title">👤 My Profile</span>
+      <button class="modal-close" onclick="document.getElementById('profileOverlay').classList.remove('open')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="profile-avatar-row">
+        <div class="profile-avatar" id="profileAvatar">--</div>
+        <div>
+          <div id="profileRoleBadge" class="profile-role-badge"></div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px;" id="profileUsername"></div>
+        </div>
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr;margin-top:20px;gap:12px;">
+        <div class="fg"><label>Display Name</label><input type="text" id="profileDisplayName" placeholder="Your full name"></div>
+        <div style="border-top:1px solid var(--glass-border2);padding-top:16px;margin-top:4px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px;">Change Password</div>
+          <div class="fg" style="margin-bottom:10px;"><label>Current Password</label><input type="password" id="profileCurrentPw" placeholder="Enter current password"></div>
+          <div class="fg" style="margin-bottom:10px;"><label>New Password</label><input type="password" id="profileNewPw" placeholder="Leave blank to keep current"></div>
+          <div class="fg"><label>Confirm New Password</label><input type="password" id="profileConfirmPw" placeholder="Repeat new password"></div>
+        </div>
+        <div id="profileError" style="display:none;color:var(--red);font-size:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('profileOverlay').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT USER MODAL -->
+<div class="overlay" id="userFormOverlay">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <span class="modal-title" id="userFormTitle">Add User</span>
+      <button class="modal-close" onclick="document.getElementById('userFormOverlay').classList.remove('open')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg"><label>Username</label><input type="text" id="uf_username" placeholder="e.g. jdelacruz"></div>
+        <div class="fg"><label>Display Name</label><input type="text" id="uf_displayName" placeholder="e.g. Juan Dela Cruz"></div>
+        <div class="fg">
+          <label>Role</label>
+          <select id="uf_role">
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Status</label>
+          <select id="uf_active">
+            <option value="true">Active</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+        <div class="fg full" id="uf_pw_row"><label>Password <span style="color:var(--text3);font-style:italic;text-transform:none;font-weight:400;">(leave blank = Welcome@360!)</span></label><input type="password" id="uf_password" placeholder="Custom password (optional)"></div>
+        <div id="userFormError" class="fg full" style="display:none;color:var(--red);font-size:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('userFormOverlay').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUserForm()">Save User</button>
+    </div>
+  </div>
+</div>
 
 <div id="loadingOverlay">
   <div class="spinner"></div>
@@ -1795,4 +2237,3 @@ else document.getElementById('loginScreen').style.display='flex';
 
 </body>
 </html>
-
