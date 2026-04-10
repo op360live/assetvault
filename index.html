@@ -101,17 +101,29 @@ body {
   box-shadow: var(--glass-shadow-sm);
 }
 
-/* ════════════════════════════════
-   LOGIN SCREEN
-════════════════════════════════ */
+
+/* ── LOGIN BACKGROUND ── */
 #loginScreen {
   min-height: 100vh; display: flex; align-items: center;
   justify-content: center; padding: 24px;
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #0f1a35 0%, #1a0f35 50%, #0f2535 100%);
 }
+.login-bg-canvas {
+  position: absolute; inset: 0; z-index: 0;
+  pointer-events: none; overflow: hidden;
+}
+.login-card { position: relative; z-index: 1; }
+.login-version {
+  position: absolute; bottom: 20px; right: 24px; z-index: 2;
+  font-size: 11px; color: rgba(255,255,255,0.25); font-weight: 500;
+  font-family: monospace;
+}
+
 
 .login-card {
   width: 100%; max-width: 420px;
-  background: var(--glass-bg-deep);
+  background: rgba(255,255,255,0.92);
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
   border: 1px solid var(--glass-border);
@@ -163,7 +175,7 @@ body {
 
 .field-wrap { display: flex; flex-direction: column; gap: 7px; }
 .field-label {
-  font-size: 12px; font-weight: 600; color: var(--text2);
+  font-size: 12px; font-weight: 600; color: var(--text2); /* works on glass-bg-deep */
   text-transform: uppercase; letter-spacing: 0.6px;
 }
 .field-input {
@@ -296,6 +308,7 @@ body {
   background: var(--glass-border); position: relative; transition: background 0.2s;
 }
 [data-theme="dark"] .pill-track { background: var(--accent); }
+[data-theme="dark"] .login-card { background: rgba(15,15,30,0.92); }
 .pill-knob {
   position: absolute; top: 2px; left: 2px;
   width: 14px; height: 14px; border-radius: 50%;
@@ -308,6 +321,44 @@ body {
 .icon-moon { display: none; }
 [data-theme="dark"] .icon-sun { display: none; }
 [data-theme="dark"] .icon-moon { display: inline; }
+
+
+/* ── ACCOUNT DROPDOWN ── */
+.acct-wrap { position: relative; }
+.acct-btn {
+  display: flex; align-items: center; gap: 9px;
+  padding: 6px 12px 6px 6px;
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: 40px; cursor: pointer; backdrop-filter: blur(16px);
+  transition: background 0.15s; user-select: none;
+}
+.acct-btn:hover { background: var(--glass-bg-hover); }
+.acct-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  min-width: 200px;
+  background: var(--glass-bg-deep);
+  backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  z-index: 200; display: none; overflow: hidden;
+}
+.acct-dropdown.open { display: block; }
+.acct-dd-header {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--glass-border2);
+}
+.acct-dd-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.acct-dd-role { font-size: 11px; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+.acct-dd-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; cursor: pointer;
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  transition: background 0.12s;
+}
+.acct-dd-item:hover { background: var(--surface-tint); color: var(--text); }
+.acct-dd-item.danger { color: var(--red); }
+.acct-dd-item.danger:hover { background: var(--red-bg); }
 
 /* GLASS BUTTONS */
 .btn {
@@ -382,6 +433,37 @@ body {
 }
 .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
 .search-input::placeholder { color: var(--text3); }
+
+
+/* ── FILTER CHIPS ── */
+.filter-chips-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.filter-chips { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--text); color: var(--glass-bg-deep);
+  border-radius: 20px; padding: 4px 10px 4px 12px;
+  font-size: 12px; font-weight: 600; cursor: default;
+  animation: chipIn 0.15s ease;
+}
+[data-theme="dark"] .filter-chip { background: var(--text2); color: var(--bg-from); }
+@keyframes chipIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+.chip-x {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: rgba(0,0,0,0.15); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: inherit;
+  transition: background 0.12s; flex-shrink: 0; padding: 0;
+}
+.chip-x:hover { background: rgba(0,0,0,0.3); }
+.chip-clear-all {
+  font-size: 12px; font-weight: 600; color: var(--accent);
+  background: none; border: none; cursor: pointer; white-space: nowrap;
+  padding: 4px 6px; border-radius: 8px;
+  transition: background 0.12s;
+}
+.chip-clear-all:hover { background: var(--glass-bg); }
 
 .filter-select {
   background: var(--glass-bg);
@@ -819,6 +901,56 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 .act-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
 .act-time { font-size: 11px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; white-space: nowrap; }
 
+/* ── DASHBOARD TWO-COL ── */
+.dash-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-top: 8px;
+}
+@media(max-width:900px){ .dash-two-col { grid-template-columns: 1fr; } }
+.dash-extra-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.dash-extra-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--glass-shadow-sm);
+}
+.dec-icon { font-size: 20px; margin-bottom: 8px; }
+.dec-num { font-size: 26px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+.dec-lbl { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 4px; }
+
+/* ── WHO'S ONLINE ── */
+.online-list { display: flex; flex-direction: column; gap: 6px; }
+.online-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: var(--glass-bg); border: 1px solid var(--glass-border2);
+  border-radius: var(--radius); transition: background 0.12s;
+}
+.online-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), #00c9a7);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.online-pulse {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 0 2px rgba(0,168,107,0.25); flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 2px rgba(0,168,107,0.25)} 50%{box-shadow:0 0 0 5px rgba(0,168,107,0.1)} }
+.online-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+.online-since { font-size: 11px; color: var(--text3); }
+.online-empty { font-size: 13px; color: var(--text3); padding: 12px 0; font-style: italic; }
+
+
 /* ── OWNER HISTORY IN MODAL ── */
 .history-section {
   margin-top: 20px; padding-top: 18px;
@@ -847,6 +979,39 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
      LOGIN SCREEN
 ════════════════════════════════ -->
 <div id="loginScreen">
+  <div class="login-bg-canvas">
+    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+          <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(99,179,237,0.07)" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)"/>
+      <!-- Floating laptop icons -->
+      <g opacity="0.06" stroke="rgba(147,197,253,1)" stroke-width="1.5" fill="none">
+        <g transform="translate(8%,12%)"><rect x="0" y="0" width="28" height="18" rx="2"/><line x1="-3" y1="19" x2="31" y2="19"/></g>
+        <g transform="translate(85%,8%)"><rect x="0" y="0" width="28" height="18" rx="2"/><line x1="-3" y1="19" x2="31" y2="19"/></g>
+        <g transform="translate(5%,72%)"><rect x="0" y="0" width="22" height="14" rx="2"/><line x1="-2" y1="15" x2="24" y2="15"/></g>
+        <g transform="translate(88%,75%)"><rect x="0" y="0" width="22" height="14" rx="2"/><line x1="-2" y1="15" x2="24" y2="15"/></g>
+        <g transform="translate(45%,5%)"><rect x="0" y="0" width="20" height="13" rx="2"/><line x1="-2" y1="14" x2="22" y2="14"/></g>
+        <g transform="translate(48%,85%)"><rect x="0" y="0" width="20" height="13" rx="2"/><line x1="-2" y1="14" x2="22" y2="14"/></g>
+        <g transform="translate(20%,42%)"><rect x="0" y="0" width="18" height="12" rx="2"/><line x1="-2" y1="13" x2="20" y2="13"/></g>
+        <g transform="translate(75%,40%)"><rect x="0" y="0" width="18" height="12" rx="2"/><line x1="-2" y1="13" x2="20" y2="13"/></g>
+      </g>
+      <!-- Circuit lines -->
+      <g opacity="0.05" stroke="rgba(147,197,253,1)" stroke-width="1" fill="none">
+        <polyline points="0,200 120,200 120,350 280,350"/>
+        <polyline points="100%,300 80%,300 80%,150 60%,150"/>
+        <polyline points="0,500 200,500 200,420 350,420 350,500"/>
+        <circle cx="120" cy="200" r="3" fill="rgba(147,197,253,0.4)"/>
+        <circle cx="120" cy="350" r="3" fill="rgba(147,197,253,0.4)"/>
+        <circle cx="280" cy="350" r="5" fill="rgba(147,197,253,0.3)" stroke-width="2"/>
+        <circle cx="200" cy="500" r="3" fill="rgba(147,197,253,0.4)"/>
+        <circle cx="350" cy="420" r="4" fill="rgba(147,197,253,0.35)"/>
+      </g>
+    </svg>
+  </div>
+  <div class="login-version">v0.14</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -860,7 +1025,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         </div>
         <span class="login-brand">AssetVault</span>
       </div>
-      <div class="login-sub">Laptop Inventory System · OP360</div>
+      <div class="login-sub">Laptop Asset Inventory</div>
     </div>
     <div class="login-body">
       <div class="field-wrap">
@@ -875,7 +1040,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       <button class="btn-signin" onclick="doLogin()">Sign In</button>
     </div>
     <div class="login-footer">
-      <div class="csv-hint" style="font-size:12px;color:var(--text3);">AssetVault · V.0.13</div>
+      <div class="csv-hint" style="font-size:12px;color:var(--text3);">AssetVault · IT Department</div>
       <div style="font-size:11px;color:var(--text3);">Contact your IT admin for access</div>
     </div>
   </div>
@@ -902,58 +1067,49 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       <button class="nav-tab" id="tabUsers" onclick="switchView('users')" style="display:none">👥 Users</button>
     </div>
     <div class="header-actions">
-      <div class="user-chip" onclick="openProfileModal()" style="cursor:pointer" title="My Profile">
-        <div class="avatar" id="userAvatar">--</div>
-        <div>
-          <div class="chip-name" id="userNameDisplay">—</div>
-          <div class="chip-role" id="userRoleDisplay">—</div>
-        </div>
-      </div>
       <div class="theme-pill" onclick="toggleTheme()">
         <span class="icon-sun">☀️</span>
         <span class="icon-moon">🌙</span>
         <div class="pill-track"><div class="pill-knob"></div></div>
         <span class="pill-label" id="themeLabel">Light</span>
       </div>
-      <!-- Import -->
       <button class="btn" id="btnImport" onclick="openImportModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
-          <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
-        </svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
         Import
       </button>
-      <!-- Export CSV -->
       <button class="btn" onclick="exportCSV()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
-          <path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/>
-        </svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
         Export CSV
       </button>
-      <!-- Export JSON -->
-      <button class="btn" onclick="exportJSON()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
-          <path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/>
-        </svg>
-        Export JSON
-      </button>
-      <!-- Add Laptop -->
       <button class="btn btn-primary" id="btnAddLaptop" onclick="openAddModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Laptop
       </button>
-      <!-- Logout -->
-      <button class="btn btn-logout" onclick="doLogout()" title="Sign out">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-          <polyline points="16 17 21 12 16 7"/>
-          <line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
-      </button>
+      <!-- Account dropdown -->
+      <div class="acct-wrap" id="acctWrap">
+        <div class="acct-btn" onclick="toggleAcctMenu()">
+          <div class="avatar" id="userAvatar">--</div>
+          <div>
+            <div class="chip-name" id="userNameDisplay">—</div>
+            <div class="chip-role" id="userRoleDisplay">—</div>
+          </div>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-left:2px;opacity:0.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="acct-dropdown" id="acctDropdown">
+          <div class="acct-dd-header">
+            <div class="acct-dd-name" id="acctDdName">—</div>
+            <div class="acct-dd-role" id="acctDdRole">—</div>
+          </div>
+          <div class="acct-dd-item" onclick="openProfileModal();closeAcctMenu()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            My Profile
+          </div>
+          <div class="acct-dd-item danger" onclick="doLogout()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out
+          </div>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -964,40 +1120,18 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       <div class="dash-section-title">Asset Overview</div>
       <div class="dash-big-grid" id="dashBigGrid"></div>
 
-      <div style="margin-bottom:24px;">
-        <div class="bar-chart-wrap" id="dashBarChart"></div>
-      </div>
-
-      <div class="dash-bar-section">
-        <div class="dash-section-title">By Site Location</div>
-        <div class="site-grid" id="dashSiteGrid"></div>
-      </div>
-
-      <div class="dash-bar-section">
-        <div class="dash-section-title">Recent Activity</div>
-        <div class="activity-list" id="dashActivity"></div>
-      </div>
-
-      <div class="dash-bar-section">
-        <div class="dash-section-title">All Assets</div>
-        <div class="count-bar"><span id="dashRecordCount">0 records</span></div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th onclick="sortBy('brand')">Brand</th>
-                <th onclick="sortBy('model')">Model</th>
-                <th onclick="sortBy('serialNumber')">Serial No.</th>
-                <th onclick="sortBy('assetTag')">Asset Tag</th>
-                <th onclick="sortBy('siteLocation')">Site</th>
-                <th onclick="sortBy('assetStatus')">Status</th>
-                <th onclick="sortBy('currentOwner')">Current Owner</th>
-                <th onclick="sortBy('dateModified')">Last Modified</th>
-                <th class="no-sort">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="dashTableBody"></tbody>
-          </table>
+      <div class="dash-two-col">
+        <div>
+          <div class="dash-section-title">Additional Statistics</div>
+          <div class="dash-extra-grid" id="dashExtraGrid"></div>
+          <div class="dash-section-title" style="margin-top:24px;">By Site Location</div>
+          <div class="site-grid" id="dashSiteGrid"></div>
+        </div>
+        <div>
+          <div class="dash-section-title">Who's Online</div>
+          <div class="online-list" id="dashOnlineList"></div>
+          <div class="dash-section-title" style="margin-top:24px;">Recent Asset Activity</div>
+          <div class="activity-list" id="dashActivity"></div>
         </div>
       </div>
     </div>
@@ -1007,22 +1141,27 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       <div class="stats-grid" id="statsGrid"></div>
 
       <div class="toolbar">
-        <div class="search-wrap">
+        <div class="search-wrap" style="flex:1;min-width:260px;">
           <span class="search-icon">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
           </span>
-          <input type="text" class="search-input" id="searchInput" placeholder="Search anything…" oninput="renderTable()">
+          <input type="text" class="search-input" id="searchInput" placeholder="Search brand, model, serial, owner…" oninput="onSearchInput()">
         </div>
-        <select class="filter-select" id="statusFilter" onchange="renderTable()">
+        <select class="filter-select" id="statusFilter" onchange="onStatusFilter()">
           <option value="">All Status</option>
           <option>Deployed</option><option>Spare</option><option>Repair</option>
           <option>End of Life</option><option>For Return</option>
         </select>
-        <select class="filter-select" id="siteFilter" onchange="renderTable()">
+        <select class="filter-select" id="siteFilter" onchange="onSiteFilter()">
           <option value="">All Sites</option>
         </select>
+      </div>
+      <!-- ACTIVE FILTER CHIPS -->
+      <div class="filter-chips-row" id="filterChipsRow" style="display:none;margin-bottom:10px;">
+        <div class="filter-chips" id="filterChips"></div>
+        <button class="chip-clear-all" onclick="clearAllFilters()">Clear all</button>
       </div>
 
       <div class="count-bar"><span id="recordCount">0 records</span></div>
@@ -1123,7 +1262,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         </div>
         <div class="fg"><label>Model</label><input type="text" id="f_model" placeholder="e.g. Latitude 5530"></div>
         <div class="fg"><label>Serial Number</label><input type="text" id="f_serialNumber" placeholder="e.g. ABC123XYZ"></div>
-        <div class="fg"><label>Asset Tag</label><input type="text" id="f_assetTag" placeholder="e.g. OP360-LT-0001"></div>
+        <div class="fg"><label>Asset Tag</label><input type="text" id="f_assetTag" placeholder="e.g. -LT-0001"></div>
         <div class="fg"><label>PO #</label><input type="text" id="f_po" placeholder="e.g. PO-2024-001"></div>
         <div class="fg"><label>Processor</label>
           <select id="f_processor"><option value="">Select Processor</option>
@@ -1275,7 +1414,8 @@ function can(action){
 }
 
 let records=[], editId=null, deleteId=null, sortCol='dateAdded', sortDir=-1, currentUser=null;
-let activeStatusFilter = null; // for clickable stat cards
+let activeStatusFilter = null;
+const activeFilters = {status:'', site:'', search:''};
 
 const FIELDS=[
   {key:'brand',label:'Brand'},{key:'model',label:'Model'},
@@ -1311,7 +1451,7 @@ function switchView(v){
     if(tab) tab.classList.toggle('active',v===id);
   });
   if(v==='dash') renderDashboard();
-  if(v==='audit'){ auditPage=1; renderAudit(); }
+  if(v==='audit'){ auditPage=1; renderAudit().catch(()=>{}); }
   if(v==='users') renderUsersGrid();
 }
 
@@ -1383,11 +1523,12 @@ async function doLogin(){
   err.classList.remove('show');
   currentUser={...user};
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
-  loadAudit();addAuditEntry('login','Signed in','');
+  loadAudit();addAuditEntryFS('login','Signed in','');
   if(user.mustChangePassword){ openForceChangeModal(); return; }
   showApp();
 }
-function doLogout(){
+async function doLogout(){
+  await stopPresence();
   sessionStorage.removeItem(SESSION_KEY);currentUser=null;
   document.getElementById('appScreen').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
@@ -1413,9 +1554,10 @@ async function showApp(){
   const init=name.slice(0,2).toUpperCase();
   document.getElementById('userAvatar').textContent=init;
   document.getElementById('userNameDisplay').textContent=name;
-  document.getElementById('userRoleDisplay').textContent=
-    currentUser.role==='superadmin'?'Super Admin':
-    currentUser.role==='admin'?'Admin':'Member';
+  const roleDisp=currentUser.role==='superadmin'?'Super Admin':currentUser.role==='admin'?'Admin':'Member';
+  document.getElementById('userRoleDisplay').textContent=roleDisp;
+  const acctName=document.getElementById('acctDdName');const acctRole=document.getElementById('acctDdRole');
+  if(acctName)acctName.textContent=name;if(acctRole)acctRole.textContent=roleDisp;
   // Show/hide tabs based on role
   const usersTab=document.getElementById('tabUsers');
   if(usersTab) usersTab.style.display=currentUser.role==='superadmin'?'':'none';
@@ -1424,7 +1566,7 @@ async function showApp(){
   if(addBtn) addBtn.style.display=can('add')?'':'none';
   const importBtn=document.getElementById('btnImport');
   if(importBtn) importBtn.style.display=can('import')?'':'none';
-  loadAudit();await load();render();renderDashboard();
+  loadAudit();await loadAuditFromFirestore();startPresenceHeartbeat();await load();render();renderDashboard();
 }
 ['loginPass','loginUser'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
 // Users are loaded from localStorage automatically
@@ -1472,15 +1614,15 @@ function fmtDate(iso){
 
 /* ── STAT CARD CLICK FILTER ── */
 function statCardClick(status){
-  // toggle: clicking same status again resets
   const sf=document.getElementById('statusFilter');
-  if(activeStatusFilter===status){
-    activeStatusFilter=null;sf.value='';
+  if(activeStatusFilter===status&&status!==''){
+    activeStatusFilter=null;sf.value='';activeFilters.status='';
+  }else if(status===''){
+    activeStatusFilter=null;sf.value='';activeFilters.status='';
   }else{
-    activeStatusFilter=status;sf.value=status||'';
+    activeStatusFilter=status;sf.value=status;activeFilters.status=status;
   }
-  renderStats();renderTable();
-  // switch to inventory view
+  renderChips();renderStats();renderTable();
   switchView('inv');
 }
 
@@ -1509,15 +1651,17 @@ function renderStats(){
 }
 function updateSiteFilter(){
   const sites=[...new Set(records.map(r=>r.siteLocation).filter(Boolean))].sort();
-  const sel=document.getElementById('siteFilter'),cur=sel.value;
+  const sel=document.getElementById('siteFilter'),cur=activeFilters.site||sel.value;
   sel.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option${s===cur?' selected':''}>${s}</option>`).join('');
+  if(cur) sel.value=cur;
 }
 function renderTable(){
-  const q=document.getElementById('searchInput').value.toLowerCase();
-  const sf=document.getElementById('statusFilter').value;
-  const lf=document.getElementById('siteFilter').value;
+  // Use activeFilters object as single source of truth
+  const sf=activeFilters.status||document.getElementById('statusFilter').value||'';
+  const lf=activeFilters.site||document.getElementById('siteFilter').value||'';
+  const q=(activeFilters.search||document.getElementById('searchInput').value||'').toLowerCase().trim();
   let f=records.filter(r=>(!sf||r.assetStatus===sf)&&(!lf||r.siteLocation===lf)&&
-    (!q||[...FIELDS.map(x=>r[x.key]||''),fmtDate(r.dateAdded),fmtDate(r.dateModified)].some(v=>v.toLowerCase().includes(q))));
+    (!q||[...FIELDS.map(x=>r[x.key]||''),fmtDate(r.dateAdded),fmtDate(r.dateModified)].some(v=>String(v).toLowerCase().includes(q))));
   f.sort((a,b)=>{
     let av=a[sortCol]||'',bv=b[sortCol]||'';
     if(sortCol!=='dateAdded'&&sortCol!=='dateModified'){av=av.toLowerCase();bv=bv.toLowerCase();}
@@ -1550,13 +1694,15 @@ function renderTable(){
     </div></td>
   </tr>`).join('');
 }
-function render(){renderStats();updateSiteFilter();renderTable();}
+function render(){renderStats();updateSiteFilter();renderTable();renderChips();}
 function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderTable();renderDashboard();}
 
 /* ── DASHBOARD RENDER ── */
 function renderDashboard(){
   const c={total:records.length,Deployed:0,Spare:0,Repair:0,'End of Life':0,'For Return':0};
   records.forEach(r=>{if(c[r.assetStatus]!==undefined)c[r.assetStatus]++;});
+  renderDashboardExtras();
+  loadPresence();
 
   // Big cards
   const bigCards=[
@@ -1574,15 +1720,7 @@ function renderDashboard(){
       <div class="dbc-lbl">${card.lbl}</div>
     </div>`).join('');
 
-  // Bar chart
-  const barColors={Deployed:'var(--green)',Spare:'var(--blue)',Repair:'var(--amber)','End of Life':'var(--text3)','For Return':'#8b5aa8'};
-  const maxVal=Math.max(1,...Object.keys(barColors).map(k=>c[k]));
-  document.getElementById('dashBarChart').innerHTML=Object.entries(barColors).map(([k,col])=>`
-    <div class="bar-row">
-      <div class="bar-label">${k}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round((c[k]/maxVal)*100)}%;background:${col}"></div></div>
-      <div class="bar-count">${c[k]}</div>
-    </div>`).join('');
+  // Bar chart removed
 
   // Site grid
   const sites={};
@@ -1619,36 +1757,14 @@ function renderDashboard(){
       </div>`;}).join('')
     :`<p style="color:var(--text3);font-size:13px;padding:12px 0;">No activity yet.</p>`;
 
-  // Full table in dashboard
-  const sorted=[...records].sort((a,b)=>{
-    let av=a[sortCol]||'',bv=b[sortCol]||'';
-    if(sortCol!=='dateAdded'&&sortCol!=='dateModified'){av=av.toLowerCase();bv=bv.toLowerCase();}
-    return av<bv?-sortDir:av>bv?sortDir:0;
-  });
-  document.getElementById('dashRecordCount').textContent=`${sorted.length} records`;
-  const dbody=document.getElementById('dashTableBody');
-  if(!sorted.length){
-    dbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">💻</div><p>No records yet.</p></div></td></tr>`;
-    return;
-  }
-  dbody.innerHTML=sorted.map(r=>`<tr>
-    <td>${r.brand||'—'}</td><td>${r.model||'—'}</td>
-    <td class="mono">${r.serialNumber||'—'}</td><td class="mono">${r.assetTag||'—'}</td>
-    <td>${r.siteLocation||'—'}</td><td>${badge(r.assetStatus)}</td>
-    <td>${r.currentOwner||'—'}</td>
-    <td class="date-cell">${fmtDate(r.dateModified||r.dateAdded)}</td>
-    <td><div class="row-actions">
-      ${can('edit')?`<button class="btn btn-sm" onclick="openEditModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit</button>`:''}
-      ${can('delete')?`<button class="btn btn-sm btn-danger" onclick="openDeleteModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg> Delete</button>`:''}
-    </div></td>
-  </tr>`).join('');
 }
 function dashCardClick(status){
   switchView('inv');
   const sf=document.getElementById('statusFilter');
-  sf.value=status;
+  sf.value=status||'';
   activeStatusFilter=status||null;
-  renderStats();renderTable();
+  activeFilters.status=status||'';
+  renderChips();renderStats();renderTable();
 }
 
 /* CRUD */
@@ -1706,11 +1822,11 @@ async function saveRecord(){
       finalRec={...old,...rec,ownerHistory,modifiedBy:currentUser?.username||'—',dateModified:now};
       records[i]=finalRec;
     }
-    showToast('Record updated.');addAuditEntry('edit',`Updated ${finalRec.brand||''} ${finalRec.model||''}`,finalRec.assetTag||finalRec.serialNumber||'');
+    showToast('Record updated.');addAuditEntryFS('edit',`Updated ${finalRec.brand||''} ${finalRec.model||''}`,finalRec.assetTag||finalRec.serialNumber||'');
   }else{
     rec.id=genId();rec.dateAdded=now;rec.dateModified=null;rec.ownerHistory=[];rec.modifiedBy=null;
     finalRec=rec;
-    records.push(rec);showToast('Laptop added!');addAuditEntry('add',`Added ${rec.brand||''} ${rec.model||''}`,rec.assetTag||rec.serialNumber||'');
+    records.push(rec);showToast('Laptop added!');addAuditEntryFS('add',`Added ${rec.brand||''} ${rec.model||''}`,rec.assetTag||rec.serialNumber||'');
   }
   try{
     showLoading('Saving…');
@@ -1731,7 +1847,7 @@ async function confirmDelete(){
   try{
     showLoading('Deleting…');
     await deleteDoc2(deleteId);
-    addAuditEntry('delete',`Deleted ${delRec?.brand||''} ${delRec?.model||''}`,delRec?.assetTag||delRec?.serialNumber||'');
+    addAuditEntryFS('delete',`Deleted ${delRec?.brand||''} ${delRec?.model||''}`,delRec?.assetTag||delRec?.serialNumber||'');
     showToast('Record deleted.');
   }catch(e){showToast('Delete failed: '+e.message,true);}
   finally{hideLoading();}
@@ -1762,7 +1878,7 @@ function handleImport(input){
       await bulkSave(records);
       hideLoading();
       render();renderDashboard();closeImportModal();input.value='';
-      addAuditEntry('import',`Imported ${records.length} records from ${file.name}`,'');
+      addAuditEntryFS('import',`Imported ${records.length} records from ${file.name}`,'');
       showToast(`Imported ${records.length} records.`);
     }catch(e){hideLoading();showToast('Import failed: '+e.message,true);}
   };
@@ -1820,7 +1936,7 @@ function saveAudit(){
   if(auditLog.length > 500) auditLog = auditLog.slice(-500);
   localStorage.setItem(AUDIT_KEY, JSON.stringify(auditLog));
 }
-function addAuditEntry(type, detail, assetRef=''){
+function addAuditEntryFS(type, detail, assetRef=''){
   auditLog.push({
     id: genId(),
     type,            // login | add | edit | delete | import
@@ -1839,8 +1955,8 @@ function clearAuditLog(){
   showToast('Audit log cleared.');
 }
 
-function renderAudit(){
-  loadAudit();
+async function renderAudit(){
+  await loadAuditFromFirestore();
   const typeF = document.getElementById('auditTypeFilter').value;
   const userF = document.getElementById('auditUserFilter').value;
 
@@ -1994,11 +2110,11 @@ async function saveUserForm(){
       users[i]={...users[i],displayName,role,active};
       if(pw) users[i].passwordHash=await hashPassword(pw);
     }
-    addAuditEntry('edit',`Updated user @${editUserId}`,'');
+    addAuditEntryFS('edit',`Updated user @${editUserId}`,'');
   } else {
     const hash=pw?await hashPassword(pw):DEFAULT_PW;
     users.push({username,displayName:displayName||username,role,active:true,passwordHash:hash,mustChangePassword:!pw});
-    addAuditEntry('add',`Created user @${username}`,'');
+    addAuditEntryFS('add',`Created user @${username}`,'');
   }
   await saveUsers(users);
   renderUsersGrid();
@@ -2011,7 +2127,7 @@ async function resetUserPassword(username){
   const i=users.findIndex(u=>u.username===username);
   if(i>-1){ users[i].passwordHash=DEFAULT_PW; users[i].mustChangePassword=true; }
   await saveUsers(users);
-  addAuditEntry('edit',`Reset password for @${username}`,'');
+  addAuditEntryFS('edit',`Reset password for @${username}`,'');
   showToast(`Password reset for @${username}.`);
   renderUsersGrid();
 }
@@ -2020,7 +2136,7 @@ async function toggleUserActive(username,currentlyActive){
   const i=users.findIndex(u=>u.username===username);
   if(i>-1) users[i].active=!currentlyActive;
   await saveUsers(users);
-  addAuditEntry('edit',`${currentlyActive?'Disabled':'Enabled'} account @${username}`,'');
+  addAuditEntryFS('edit',`${currentlyActive?'Disabled':'Enabled'} account @${username}`,'');
   showToast(`Account ${currentlyActive?'disabled':'enabled'}.`);
   renderUsersGrid();
 }
@@ -2047,7 +2163,7 @@ async function submitForceChange(){
     if(i>-1){users[i].passwordHash=await hashPassword(np);users[i].mustChangePassword=false;await saveUsers(users);currentUser=users[i];}
     sessionStorage.setItem(SESSION_KEY,JSON.stringify(currentUser));
     document.getElementById('forceChangeOverlay').classList.remove('open');
-    addAuditEntry('edit','Changed password (first login)','');
+    addAuditEntryFS('edit','Changed password (first login)','');
     showToast('Password updated. Welcome!');
     showApp();
   }catch(e){
@@ -2089,7 +2205,7 @@ async function saveProfile(){
     if(newPw.length<8){errEl.textContent='New password must be at least 8 characters.';errEl.style.display='block';return;}
     if(newPw!==conPw){errEl.textContent='New passwords do not match.';errEl.style.display='block';return;}
     users[i].passwordHash=await hashPassword(newPw);
-    addAuditEntry('edit','Changed own password','');
+    addAuditEntryFS('edit','Changed own password','');
   }
   if(displayName) users[i].displayName=displayName;
   await saveUsers(users);
@@ -2100,6 +2216,225 @@ async function saveProfile(){
   document.getElementById('userAvatar').textContent=newName.slice(0,2).toUpperCase();
   document.getElementById('profileOverlay').classList.remove('open');
   showToast('Profile saved.');
+}
+
+
+/* ── ACCOUNT DROPDOWN ── */
+function toggleAcctMenu(){
+  document.getElementById('acctDropdown').classList.toggle('open');
+}
+function closeAcctMenu(){
+  document.getElementById('acctDropdown').classList.remove('open');
+}
+document.addEventListener('click', e=>{
+  const wrap = document.getElementById('acctWrap');
+  if(wrap && !wrap.contains(e.target)) closeAcctMenu();
+});
+
+/* ── FILTER CHIPS ── */
+// activeFilters is declared globally above
+
+function onSearchInput(){
+  activeFilters.search = document.getElementById('searchInput').value.trim();
+  renderChips(); renderTable();
+}
+function onStatusFilter(){
+  activeFilters.status = document.getElementById('statusFilter').value;
+  activeStatusFilter = activeFilters.status || null;
+  renderChips(); renderStats(); renderTable();
+}
+function onSiteFilter(){
+  activeFilters.site = document.getElementById('siteFilter').value;
+  renderChips(); renderTable();
+}
+function removeFilter(type){
+  activeFilters[type]='';
+  if(type==='status'){document.getElementById('statusFilter').value='';activeStatusFilter=null;}
+  if(type==='site')  document.getElementById('siteFilter').value='';
+  if(type==='search'){document.getElementById('searchInput').value='';}
+  renderChips(); renderStats(); renderTable();
+}
+function clearAllFilters(){
+  activeFilters.status='';activeFilters.site='';activeFilters.search='';
+  activeStatusFilter=null;
+  document.getElementById('statusFilter').value='';
+  document.getElementById('siteFilter').value='';
+  document.getElementById('searchInput').value='';
+  renderChips(); renderStats(); renderTable();
+}
+function renderChips(){
+  const chips=[];
+  if(activeFilters.status) chips.push({type:'status',label:'Status: '+activeFilters.status});
+  if(activeFilters.site)   chips.push({type:'site',  label:'Site: '+activeFilters.site});
+  if(activeFilters.search) chips.push({type:'search',label:'Search: "'+activeFilters.search+'"'});
+  const row=document.getElementById('filterChipsRow');
+  const container=document.getElementById('filterChips');
+  if(!row||!container) return;
+  row.style.display=chips.length?'flex':'none';
+  container.innerHTML=chips.map(c=>`
+    <span class="filter-chip">
+      ${c.label}
+      <button class="chip-x" onclick="removeFilter('${c.type}')" title="Remove filter">✕</button>
+    </span>`).join('');
+}
+
+/* ── FIX renderTable to use activeFilters ── */
+// Override renderTable to use activeFilters object
+const _origRenderTable = renderTable;
+// We redefine renderTable below
+
+/* ── VIEW RECORD MODAL ── */
+let viewId = null;
+function openViewModal(id){
+  const r = records.find(x=>x.id===id); if(!r) return;
+  viewId = id;
+  document.getElementById('viewModalTitle').textContent = (r.brand||'') + ' ' + (r.model||'');
+  document.getElementById('viewModalSub').textContent = (r.assetTag?'Tag: '+r.assetTag+' · ':'') + (r.serialNumber?'S/N: '+r.serialNumber:'');
+  // Show edit/delete btns based on permissions
+  document.getElementById('viewEditBtn').style.display = can('edit')?'':'none';
+  document.getElementById('viewDeleteBtn').style.display = can('delete')?'':'none';
+  const hist = r.ownerHistory||[];
+  document.getElementById('viewModalBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-bottom:18px;">
+      ${viewField('Brand', r.brand)}
+      ${viewField('Model', r.model)}
+      ${viewField('Serial Number', r.serialNumber, true)}
+      ${viewField('Asset Tag', r.assetTag, true)}
+      ${viewField('PO #', r.po, true)}
+      ${viewField('Processor', r.processor)}
+      ${viewField('RAM', r.ram)}
+      ${viewField('OS', r.os)}
+      ${viewField('Site Location', r.siteLocation)}
+      ${viewField('Status', badge(r.assetStatus))}
+      ${viewField('Current Owner', r.currentOwner)}
+      ${viewField('Modified By', r.modifiedBy)}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;background:var(--surface-tint);border-radius:var(--radius);padding:12px 14px;margin-bottom:${hist.length?'16px':'0'};">
+      ${viewField('Date Added', fmtDate(r.dateAdded))}
+      ${viewField('Last Modified', fmtDate(r.dateModified)||'Never')}
+    </div>
+    ${hist.length?`<div class="history-section">
+      <div class="history-title">👤 Previous Owners</div>
+      ${[...hist].reverse().map(h=>`<div class="history-item"><span class="history-icon">👤</span><div class="history-detail"><div class="history-owner">${h.owner||'(unknown)'}</div><div class="history-meta">Until ${fmtDate(h.to)} · Changed by ${h.changedBy||'—'}</div></div></div>`).join('')}
+    </div>`:''}
+  `;
+  document.getElementById('viewOverlay').classList.add('open');
+}
+function viewField(label, value, mono=false){
+  return `<div><div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;">${label}</div><div style="font-size:13px;font-weight:500;color:var(--text);${mono?'font-family:monospace;':''}">${value||'—'}</div></div>`;
+}
+function openEditFromView(){
+  document.getElementById('viewOverlay').classList.remove('open');
+  openEditModal(viewId);
+}
+function openDeleteFromView(){
+  document.getElementById('viewOverlay').classList.remove('open');
+  openDeleteModal(viewId);
+}
+
+/* ── PRESENCE / WHO'S ONLINE ── */
+const PRESENCE_COL = 'presence';
+async function setPresence(online){
+  if(!currentUser) return;
+  try{
+    if(online){
+      await setDoc(doc(db, PRESENCE_COL, currentUser.username), {
+        username: currentUser.username,
+        displayName: currentUser.displayName||currentUser.username,
+        role: currentUser.role,
+        lastSeen: new Date().toISOString(),
+        online: true
+      });
+    } else {
+      await deleteDoc(doc(db, PRESENCE_COL, currentUser.username));
+    }
+  }catch(e){}
+}
+async function loadPresence(){
+  try{
+    const snap = await getDocs(collection(db, PRESENCE_COL));
+    const now = Date.now();
+    const online = snap.docs
+      .map(d=>d.data())
+      .filter(p=>{
+        // consider online if lastSeen within 10 min
+        const ms = now - new Date(p.lastSeen).getTime();
+        return ms < 10*60*1000;
+      });
+    const el = document.getElementById('dashOnlineList');
+    if(!el) return;
+    if(!online.length){
+      el.innerHTML='<div class="online-empty">No other users currently online.</div>';
+    } else {
+      el.innerHTML = online.map(p=>`
+        <div class="online-row">
+          <div class="online-avatar">${(p.displayName||p.username).slice(0,2).toUpperCase()}</div>
+          <div class="online-name">${p.displayName||p.username}</div>
+          <div class="online-pulse"></div>
+          <div class="online-since">${roleLabel(p.role)}</div>
+        </div>`).join('');
+    }
+  }catch(e){}
+}
+// Heartbeat: update presence every 5 min
+let presenceTimer;
+function startPresenceHeartbeat(){
+  setPresence(true);
+  presenceTimer = setInterval(()=>setPresence(true), 5*60*1000);
+}
+function stopPresence(){
+  clearInterval(presenceTimer);
+  setPresence(false);
+}
+
+/* ── AUDIT TO FIRESTORE ── */
+const AUDIT_COL = 'auditLog';
+async function addAuditEntryFS(type, detail, assetRef=''){
+  const entry = {
+    id: genId(), type,
+    user: currentUser?.username||'—',
+    displayName: currentUser?.displayName||currentUser?.username||'—',
+    detail, assetRef,
+    ts: new Date().toISOString()
+  };
+  auditLog.push(entry);
+  saveAudit(); // keep local copy
+  // Also write to Firestore
+  try{
+    await setDoc(doc(db, AUDIT_COL, entry.id), entry);
+  }catch(e){}
+}
+async function loadAuditFromFirestore(){
+  try{
+    const snap = await getDocs(collection(db, AUDIT_COL));
+    auditLog = snap.docs.map(d=>({...d.data()}));
+    auditLog.sort((a,b)=>a.ts.localeCompare(b.ts));
+    saveAudit();
+  }catch(e){
+    loadAudit(); // fall back to localStorage
+  }
+}
+
+/* ── EXTRA DASHBOARD STATS ── */
+function renderDashboardExtras(){
+  const now = new Date();
+  const thisMonth = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const noOwner = records.filter(r=>!r.currentOwner||r.currentOwner.trim()==='').length;
+  const addedThisMonth = records.filter(r=>r.dateAdded&&r.dateAdded.startsWith(thisMonth)).length;
+  const modifiedThisMonth = records.filter(r=>r.dateModified&&r.dateModified.startsWith(thisMonth)).length;
+  const withHistory = records.filter(r=>r.ownerHistory&&r.ownerHistory.length>0).length;
+  const el = document.getElementById('dashExtraGrid');
+  if(!el) return;
+  el.innerHTML = [
+    {icon:'👤',num:noOwner,lbl:'No Owner'},
+    {icon:'📅',num:addedThisMonth,lbl:'Added This Month'},
+    {icon:'✏️',num:modifiedThisMonth,lbl:'Updated This Month'},
+    {icon:'🔄',num:withHistory,lbl:'Owner Changes'},
+  ].map(c=>`<div class="dash-extra-card">
+    <div class="dec-icon">${c.icon}</div>
+    <div class="dec-num">${c.num}</div>
+    <div class="dec-lbl">${c.lbl}</div>
+  </div>`).join('');
 }
 
 // ── Expose functions to global scope (required for inline onclick in module scripts) ──
@@ -2134,6 +2469,19 @@ window.resetUserPassword=resetUserPassword;
 window.toggleUserActive=toggleUserActive;
 window.openProfileModal=openProfileModal;
 window.saveProfile=saveProfile;
+window.toggleAcctMenu=toggleAcctMenu;
+window.closeAcctMenu=closeAcctMenu;
+window.onSearchInput=onSearchInput;
+window.onStatusFilter=onStatusFilter;
+window.onSiteFilter=onSiteFilter;
+window.removeFilter=removeFilter;
+window.clearAllFilters=clearAllFilters;
+window.openViewModal=openViewModal;
+window.openEditFromView=openEditFromView;
+window.openDeleteFromView=openDeleteFromView;
+window.loadPresence=loadPresence;
+window.submitForceChange=submitForceChange;
+window.addAuditEntryFS=addAuditEntryFS;
 
 loadTheme();
 (async()=>{
@@ -2146,6 +2494,33 @@ loadTheme();
 })();
 </script>
 
+
+<!-- VIEW RECORD MODAL -->
+<div class="overlay" id="viewOverlay">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <div>
+        <span class="modal-title" id="viewModalTitle">Asset Details</span>
+        <div style="font-size:12px;color:var(--text3);margin-top:3px;" id="viewModalSub"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-sm" id="viewEditBtn" onclick="openEditFromView()" style="display:none">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button class="btn btn-sm btn-danger" id="viewDeleteBtn" onclick="openDeleteFromView()" style="display:none">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+          Delete
+        </button>
+        <button class="modal-close" onclick="document.getElementById('viewOverlay').classList.remove('open')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="modal-body" id="viewModalBody">
+    </div>
+  </div>
+</div>
 
 <!-- FORCE PASSWORD CHANGE MODAL -->
 <div class="overlay" id="forceChangeOverlay">
