@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v15</title>
+<title>AssetVault — Laptop Inventory v16</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1037,6 +1037,108 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 .history-detail { flex: 1; }
 .history-owner { font-size: 13px; font-weight: 600; color: var(--text); }
 .history-meta { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
+/* ── v16: READ-ONLY vs EDITABLE field distinction ── */
+.fg input[readonly], .fg select[disabled] {
+  background: var(--surface-tint);
+  border: 1px dashed var(--glass-border);
+  color: var(--text2);
+  cursor: default;
+}
+.fg input:not([readonly]), .fg select:not([disabled]) {
+  background: var(--glass-bg-deep);
+  border: 1.5px solid var(--glass-border);
+  color: var(--text);
+}
+.fg input:not([readonly]):focus, .fg select:not([disabled]):focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.field-readonly-label {
+  font-size: 10px; font-weight: 600; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  background: var(--surface-tint); border-radius: 6px;
+  padding: 2px 7px; margin-left: 6px;
+}
+
+/* ── v16: Owner cell in table ── */
+.owner-cell {
+  cursor: pointer; color: var(--accent);
+  font-weight: 700; white-space: nowrap;
+  display: flex; align-items: center; gap: 5px;
+}
+.owner-cell:hover { text-decoration: underline; }
+.owner-cell svg { flex-shrink: 0; opacity: 0.6; }
+
+/* ── v16: Column visibility toggle ── */
+.col-toggle-bar {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 10px; align-items: center;
+}
+.col-toggle-label {
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px;
+}
+.col-toggle-btn {
+  font-size: 11px; font-weight: 600; padding: 4px 11px;
+  border-radius: 20px; cursor: pointer; border: 1px solid var(--glass-border);
+  background: var(--glass-bg); color: var(--text2);
+  transition: all 0.15s; user-select: none;
+}
+.col-toggle-btn.hidden-col {
+  background: transparent; color: var(--text3);
+  border-style: dashed; text-decoration: line-through;
+}
+.col-hidden { display: none !important; }
+
+/* ── v16: Accountability badge ── */
+.b-signed     { background: rgba(0,168,107,0.13); color: var(--green); }
+.b-unsigned   { background: rgba(220,38,38,0.12); color: var(--red); }
+.b-fordepl    { background: rgba(37,99,235,0.12); color: var(--blue); }
+.b-manualsign { background: rgba(217,119,6,0.12); color: var(--amber); }
+.b-depsite    { background: rgba(139,92,246,0.12); color: #7c3aed; }
+
+/* ── v16: Audit detail clickable ── */
+.audit-detail-link {
+  cursor: pointer; color: var(--accent);
+  text-decoration: underline dotted;
+  font-weight: 600;
+}
+.audit-detail-link:hover { color: var(--accent2); }
+
+/* ── v16: Audit diff modal ── */
+.audit-diff-grid {
+  display: flex; flex-direction: column; gap: 8px; margin-top: 4px;
+}
+.audit-diff-row {
+  display: grid; grid-template-columns: 130px 1fr 1fr;
+  gap: 10px; align-items: start;
+  padding: 8px 12px; border-radius: var(--radius);
+  background: var(--surface-tint); border: 1px solid var(--glass-border2);
+}
+.audit-diff-field { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+.audit-diff-old { font-size: 12px; color: var(--red); text-decoration: line-through; word-break: break-word; }
+.audit-diff-new { font-size: 12px; color: var(--green); font-weight: 600; word-break: break-word; }
+.audit-diff-same { font-size: 12px; color: var(--text3); word-break: break-word; }
+
+/* ── v16: Presence last-seen ── */
+.online-last-seen { font-size: 11px; color: var(--text3); flex: 1; text-align: right; }
+
+/* ── v16: Ownership modal ── */
+.owner-modal-hero {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 24px 20px 18px; gap: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  margin: -22px -26px 20px;
+}
+.owner-modal-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(255,255,255,0.22); border: 2px solid rgba(255,255,255,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800; color: #fff;
+}
+.owner-modal-name { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+.owner-modal-sub  { font-size: 12px; color: rgba(255,255,255,0.72); }
 </style>
 </head>
 <body>
@@ -1077,7 +1179,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.15</div>
+  <div class="login-version">v0.16</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -1241,25 +1343,44 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         <button class="chip-clear-all" onclick="clearAllFilters()">Clear all</button>
       </div>
 
+      <!-- COLUMN VISIBILITY TOGGLE -->
+      <div class="col-toggle-bar">
+        <span class="col-toggle-label">Columns:</span>
+        <button class="col-toggle-btn" data-col="brand" onclick="toggleCol('brand')">Brand</button>
+        <button class="col-toggle-btn" data-col="model" onclick="toggleCol('model')">Model</button>
+        <button class="col-toggle-btn" data-col="serialNumber" onclick="toggleCol('serialNumber')">Serial No.</button>
+        <button class="col-toggle-btn" data-col="assetTag" onclick="toggleCol('assetTag')">Asset Tag</button>
+        <button class="col-toggle-btn" data-col="po" onclick="toggleCol('po')">PO #</button>
+        <button class="col-toggle-btn hidden-col" data-col="processor" onclick="toggleCol('processor')">Processor</button>
+        <button class="col-toggle-btn hidden-col" data-col="ram" onclick="toggleCol('ram')">RAM</button>
+        <button class="col-toggle-btn hidden-col" data-col="os" onclick="toggleCol('os')">OS</button>
+        <button class="col-toggle-btn" data-col="siteLocation" onclick="toggleCol('siteLocation')">Site</button>
+        <button class="col-toggle-btn" data-col="assetStatus" onclick="toggleCol('assetStatus')">Status</button>
+        <button class="col-toggle-btn" data-col="accountabilityStatus" onclick="toggleCol('accountabilityStatus')">Accountability</button>
+        <button class="col-toggle-btn" data-col="dateAdded" onclick="toggleCol('dateAdded')">Date Added</button>
+        <button class="col-toggle-btn" data-col="dateModified" onclick="toggleCol('dateModified')">Date Modified</button>
+      </div>
+
       <div class="count-bar"><span id="recordCount">0 records</span></div>
 
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th onclick="sortBy('brand')">Brand</th>
-              <th onclick="sortBy('model')">Model</th>
-              <th onclick="sortBy('serialNumber')">Serial No.</th>
-              <th onclick="sortBy('assetTag')">Asset Tag</th>
-              <th onclick="sortBy('po')">PO #</th>
-              <th onclick="sortBy('processor')">Processor</th>
-              <th onclick="sortBy('ram')">RAM</th>
-              <th onclick="sortBy('os')">OS</th>
-              <th onclick="sortBy('siteLocation')">Site</th>
-              <th onclick="sortBy('assetStatus')">Status</th>
               <th onclick="sortBy('currentOwner')">Current Owner</th>
-              <th onclick="sortBy('dateAdded')">Date Added</th>
-              <th onclick="sortBy('dateModified')">Date Modified</th>
+              <th data-col="brand" onclick="sortBy('brand')">Brand</th>
+              <th data-col="model" onclick="sortBy('model')">Model</th>
+              <th data-col="serialNumber" onclick="sortBy('serialNumber')">Serial No.</th>
+              <th data-col="assetTag" onclick="sortBy('assetTag')">Asset Tag</th>
+              <th data-col="po" onclick="sortBy('po')">PO #</th>
+              <th data-col="processor" class="col-hidden" onclick="sortBy('processor')">Processor</th>
+              <th data-col="ram" class="col-hidden" onclick="sortBy('ram')">RAM</th>
+              <th data-col="os" class="col-hidden" onclick="sortBy('os')">OS</th>
+              <th data-col="siteLocation" onclick="sortBy('siteLocation')">Site</th>
+              <th data-col="assetStatus" onclick="sortBy('assetStatus')">Status</th>
+              <th data-col="accountabilityStatus" onclick="sortBy('accountabilityStatus')">Accountability</th>
+              <th data-col="dateAdded" onclick="sortBy('dateAdded')">Date Added</th>
+              <th data-col="dateModified" onclick="sortBy('dateModified')">Date Modified</th>
               <th class="no-sort">Actions</th>
             </tr>
           </thead>
@@ -1333,16 +1454,16 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         <div class="ds-item"><span class="ds-label">Modified By</span><span class="ds-value" id="ds_modifiedBy">—</span></div>
       </div>
       <div class="form-grid">
-        <div class="fg full"><label>Current Owner</label><input type="text" id="f_currentOwner" placeholder="e.g. Juan Dela Cruz"></div>
-        <div class="fg"><label>Brand</label>
-          <select id="f_brand"><option value="">Select Brand</option>
+        <div class="fg full"><label>Current Owner <span style="color:var(--red)">*</span></label><input type="text" id="f_currentOwner" placeholder="e.g. Juan Dela Cruz" required></div>
+        <div class="fg"><label>Brand <span style="color:var(--red)">*</span></label>
+          <select id="f_brand" required><option value="">Select Brand</option>
             <option>Acer</option><option>Apple</option><option>Asus</option>
             <option>Dell</option><option>HP</option><option>Lenovo</option>
             <option>Microsoft</option><option>MSI</option>
           </select>
         </div>
-        <div class="fg"><label>Model</label><input type="text" id="f_model" placeholder="e.g. Latitude 5530"></div>
-        <div class="fg"><label>Serial Number</label><input type="text" id="f_serialNumber" placeholder="e.g. ABC123XYZ"></div>
+        <div class="fg"><label>Model <span style="color:var(--red)">*</span></label><input type="text" id="f_model" placeholder="e.g. Latitude 5530" required></div>
+        <div class="fg"><label>Serial Number <span style="color:var(--red)">*</span></label><input type="text" id="f_serialNumber" placeholder="e.g. ABC123XYZ" required></div>
         <div class="fg"><label>Asset Tag</label><input type="text" id="f_assetTag" placeholder="e.g. -LT-0001"></div>
         <div class="fg"><label>PO #</label><input type="text" id="f_po" placeholder="e.g. PO-2024-001"></div>
         <div class="fg"><label>Processor</label>
@@ -1361,15 +1482,21 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
             <option>Windows 10</option><option>Windows 11</option>
           </select>
         </div>
-        <div class="fg"><label>Site Location</label>
-          <select id="f_siteLocation"><option value="">Select Site</option>
+        <div class="fg"><label>Site Location <span style="color:var(--red)">*</span></label>
+          <select id="f_siteLocation" required><option value="">Select Site</option>
             <option>DMD</option><option>EB2</option><option>EB3</option><option>SDP</option>
           </select>
         </div>
-        <div class="fg"><label>Asset Status</label>
-          <select id="f_assetStatus" onchange="onStatusChange(this.value)"><option value="">Select Status</option>
+        <div class="fg"><label>Asset Status <span style="color:var(--red)">*</span></label>
+          <select id="f_assetStatus" onchange="onStatusChange(this.value)" required><option value="">Select Status</option>
             <option>Deployed</option><option>Spare</option><option>Repair</option>
             <option>End of Life</option><option>For Return</option>
+          </select>
+        </div>
+        <div class="fg"><label>Accountability Status <span style="color:var(--red)">*</span></label>
+          <select id="f_accountabilityStatus" required><option value="">Select Accountability</option>
+            <option>Signed</option><option>Unsigned</option><option>For Deployment</option>
+            <option>Manual Signed</option><option>Deployed Onsite</option>
           </select>
         </div>
         <div class="fg full" id="repairRemarksRow" style="display:none;">
@@ -1507,6 +1634,7 @@ const FIELDS=[
   {key:'po',label:'PO #'},{key:'processor',label:'Processor'},
   {key:'ram',label:'RAM'},{key:'os',label:'Operating System'},
   {key:'siteLocation',label:'Site Location'},{key:'assetStatus',label:'Asset Status'},
+  {key:'accountabilityStatus',label:'Accountability Status'},
   {key:'currentOwner',label:'Current Owner'},{key:'repairRemarks',label:'Repair Remarks'}
 ];
 const COL_KEYS=[...FIELDS.map(f=>f.key),'dateAdded','dateModified'];
@@ -1739,8 +1867,24 @@ function updateSiteFilter(){
   sel.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option${s===cur?' selected':''}>${s}</option>`).join('');
   if(cur) sel.value=cur;
 }
+/* ── v16: Column visibility state ── */
+const hiddenCols = new Set(['processor','ram','os']);
+function toggleCol(col){
+  if(hiddenCols.has(col)) hiddenCols.delete(col); else hiddenCols.add(col);
+  const btn = document.querySelector(`.col-toggle-btn[data-col="${col}"]`);
+  if(btn) btn.classList.toggle('hidden-col', hiddenCols.has(col));
+  // Show/hide all cells with that data-col in table
+  document.querySelectorAll(`[data-col="${col}"]`).forEach(el=>{
+    el.classList.toggle('col-hidden', hiddenCols.has(col));
+  });
+}
+
+function acctBadge(s){
+  const m={'Signed':'b-signed','Unsigned':'b-unsigned','For Deployment':'b-fordepl','Manual Signed':'b-manualsign','Deployed Onsite':'b-depsite'};
+  return s?`<span class="badge ${m[s]||'b-unsigned'}">${s}</span>`:'<span style="color:var(--text3)">—</span>';
+}
+
 function renderTable(){
-  // Use activeFilters object as single source of truth
   const sf=activeFilters.status||document.getElementById('statusFilter').value||'';
   const lf=activeFilters.site||document.getElementById('siteFilter').value||'';
   const q=(activeFilters.search||document.getElementById('searchInput').value||'').toLowerCase().trim();
@@ -1752,26 +1896,33 @@ function renderTable(){
     return av<bv?-sortDir:av>bv?sortDir:0;
   });
   document.getElementById('recordCount').textContent=`${f.length} of ${records.length} records`;
-  document.querySelectorAll('#invView thead th').forEach((th,i)=>{
-    if(i===13){th.className='no-sort';return;}
-    th.className=COL_KEYS[i]===sortCol?(sortDir===1?'sort-asc':'sort-desc'):'';
-  });
   const tbody=document.getElementById('tableBody');
   if(!f.length){
-    tbody.innerHTML=`<tr><td colspan="14"><div class="empty-state">
+    tbody.innerHTML=`<tr><td colspan="15"><div class="empty-state">
       <div class="empty-icon">💻</div>
       <p>${records.length===0?'No laptops yet — click Add Laptop to get started.':'No records match your search.'}</p>
     </div></td></tr>`;return;
   }
   tbody.innerHTML=f.map(r=>`<tr>
-    <td>${r.brand||'—'}</td><td>${r.model||'—'}</td>
-    <td class="mono">${r.serialNumber||'—'}</td><td class="mono">${r.assetTag||'—'}</td>
-    <td class="mono">${r.po||'—'}</td><td>${r.processor||'—'}</td>
-    <td>${r.ram||'—'}</td><td>${r.os||'—'}</td>
-    <td>${r.siteLocation||'—'}</td><td>${badge(r.assetStatus)}</td>
-    <td>${r.currentOwner||'—'}</td>
-    <td class="date-cell">${fmtDate(r.dateAdded)}</td>
-    <td class="date-cell">${fmtDate(r.dateModified)}</td>
+    <td>
+      <div class="owner-cell" onclick="openOwnershipModal('${r.id}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        ${r.currentOwner||'<span style="color:var(--text3);font-weight:400">No owner</span>'}
+      </div>
+    </td>
+    <td data-col="brand">${r.brand||'—'}</td>
+    <td data-col="model">${r.model||'—'}</td>
+    <td data-col="serialNumber" class="mono">${r.serialNumber||'—'}</td>
+    <td data-col="assetTag" class="mono">${r.assetTag||'—'}</td>
+    <td data-col="po" class="mono">${r.po||'—'}</td>
+    <td data-col="processor" class="${hiddenCols.has('processor')?'col-hidden':''}">${r.processor||'—'}</td>
+    <td data-col="ram" class="${hiddenCols.has('ram')?'col-hidden':''}">${r.ram||'—'}</td>
+    <td data-col="os" class="${hiddenCols.has('os')?'col-hidden':''}">${r.os||'—'}</td>
+    <td data-col="siteLocation">${r.siteLocation||'—'}</td>
+    <td data-col="assetStatus">${badge(r.assetStatus)}</td>
+    <td data-col="accountabilityStatus">${acctBadge(r.accountabilityStatus)}</td>
+    <td data-col="dateAdded" class="date-cell">${fmtDate(r.dateAdded)}</td>
+    <td data-col="dateModified" class="date-cell">${fmtDate(r.dateModified)}</td>
     <td><div class="row-actions">
       ${can('edit')?`<button class="btn btn-sm" onclick="openViewModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Record</button>`:'<button class="btn btn-sm" onclick="openViewModal(\''+r.id+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> View</button>'}
     </div></td>
@@ -1946,7 +2097,10 @@ function openEditModal(id){
   const rec=records.find(r=>r.id===id);if(!rec)return;
   editId=id;
   document.getElementById('modalTitle').textContent='Edit Record';
-  FIELDS.forEach(f=>{const el=document.getElementById('f_'+f.key);if(el)el.value=rec[f.key]||'';});
+  FIELDS.forEach(f=>{
+    if(f.key==='repairRemarks') return;
+    const el=document.getElementById('f_'+f.key);if(el)el.value=rec[f.key]||'';
+  });
   // Handle repairRemarks textarea separately
   const ta=document.getElementById('f_repairRemarks');if(ta)ta.value=rec.repairRemarks||'';
   document.getElementById('repairRemarksRow').style.display=rec.assetStatus==='Repair'?'block':'none';
@@ -1980,21 +2134,45 @@ function onStatusChange(val){
 async function saveRecord(){
   const rec={};
   FIELDS.forEach(f=>{
-    if(f.key==='repairRemarks') return; // handled separately below
+    if(f.key==='repairRemarks') return;
     const el=document.getElementById('f_'+f.key);
     rec[f.key]=(el?.value||'').trim();
   });
-  // Repair remarks from textarea
   rec.repairRemarks = rec.assetStatus==='Repair'
     ? (document.getElementById('f_repairRemarks')?.value||'').trim()
     : '';
-  if(!rec.brand&&!rec.serialNumber&&!rec.assetTag){showToast('Fill in at least Brand, Serial Number, or Asset Tag.',true);return;}
+
+  // ── Required field validation ──
+  const required=[
+    {key:'currentOwner',label:'Current Owner'},
+    {key:'brand',label:'Brand'},
+    {key:'model',label:'Model'},
+    {key:'serialNumber',label:'Serial Number'},
+    {key:'siteLocation',label:'Site Location'},
+    {key:'assetStatus',label:'Asset Status'},
+    {key:'accountabilityStatus',label:'Accountability Status'},
+  ];
+  const missing=required.filter(f=>!rec[f.key]);
+  if(missing.length){
+    showToast(`Required: ${missing.map(f=>f.label).join(', ')}`,true);
+    // Highlight missing fields
+    required.forEach(f=>{
+      const el=document.getElementById('f_'+f.key);
+      if(!el) return;
+      if(!rec[f.key]){el.style.borderColor='var(--red)';el.style.boxShadow='0 0 0 3px rgba(220,38,38,0.15)';}
+      else{el.style.borderColor='';el.style.boxShadow='';}
+    });
+    return;
+  }
+  required.forEach(f=>{const el=document.getElementById('f_'+f.key);if(el){el.style.borderColor='';el.style.boxShadow='';}});
+
   const now=nowISO();
-  let finalRec;
+  let finalRec, beforeSnap=null;
   if(editId){
     const i=records.findIndex(r=>r.id===editId);
     if(i>-1){
       const old=records[i];
+      beforeSnap={...old}; // snapshot before changes for diff
       const ownerHistory=old.ownerHistory||[];
       if(old.currentOwner && old.currentOwner!==rec.currentOwner){
         ownerHistory.push({owner:old.currentOwner, to:now, changedBy:currentUser?.username||'—'});
@@ -2002,11 +2180,17 @@ async function saveRecord(){
       finalRec={...old,...rec,ownerHistory,modifiedBy:currentUser?.username||'—',dateModified:now};
       records[i]=finalRec;
     }
-    showToast('Record updated.');addAuditEntryFS('edit',`Updated ${finalRec.brand||''} ${finalRec.model||''}`,finalRec.assetTag||finalRec.serialNumber||'');
+    // Build diff for audit
+    const diffFields=FIELDS.filter(f=>f.key!=='repairRemarks'&&beforeSnap&&String(beforeSnap[f.key]||'')!==String(rec[f.key]||''));
+    const diffStr=diffFields.map(f=>`${f.label}: "${beforeSnap[f.key]||''}"→"${rec[f.key]||''}"`).join('; ');
+    showToast('Record updated.');
+    addAuditEntryFS('edit',`Updated ${finalRec.brand||''} ${finalRec.model||''}`,finalRec.assetTag||finalRec.serialNumber||'',{before:beforeSnap,after:{...finalRec},diff:diffStr});
   }else{
     rec.id=genId();rec.dateAdded=now;rec.dateModified=null;rec.ownerHistory=[];rec.modifiedBy=null;
     finalRec=rec;
-    records.push(rec);showToast('Laptop added!');addAuditEntryFS('add',`Added ${rec.brand||''} ${rec.model||''}`,rec.assetTag||rec.serialNumber||'');
+    records.push(rec);
+    showToast('Laptop added!');
+    addAuditEntryFS('add',`Added ${rec.brand||''} ${rec.model||''}`,rec.assetTag||rec.serialNumber||'',{after:{...rec}});
   }
   try{
     showLoading('Saving…');
@@ -2154,14 +2338,19 @@ async function renderAudit(){
   if(!filtered.length){
     list.innerHTML = '<div class="audit-empty">📋 No audit events yet.</div>';
   } else {
-    list.innerHTML = page.map(e=>`
-      <div class="audit-row">
+    list.innerHTML = page.map((e,idx)=>{
+      const hasDetail = (e.type==='edit'&&e.meta)||e.type==='add';
+      const detailHtml = hasDetail
+        ? `<div class="audit-detail"><span class="audit-detail-link" onclick="openAuditDiff('${e.id}')">${e.detail}${e.assetRef?' · '+e.assetRef:''}</span></div>`
+        : `<div class="audit-detail">${e.detail} ${e.assetRef?`<span>· ${e.assetRef}</span>`:''}</div>`;
+      return`<div class="audit-row">
         <div class="audit-icon ai-${e.type}">${iconMap[e.type]||'📌'}</div>
         <div class="audit-time">${fmtDate(e.ts)}</div>
-        <div class="audit-user">${e.user}</div>
-        <div class="audit-detail">${e.detail} ${e.assetRef?`<span>· ${e.assetRef}</span>`:''}</div>
+        <div class="audit-user">${e.displayName||e.user}</div>
+        ${detailHtml}
         <span class="audit-badge ab-${e.type}">${labelMap[e.type]||e.type}</span>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   // Pagination
@@ -2476,6 +2665,7 @@ function openViewModal(id){
       ${viewField('RAM', r.ram)}
       ${viewField('OS', r.os)}
       ${viewField('Site Location', r.siteLocation)}
+      ${viewField('Accountability', acctBadge(r.accountabilityStatus))}
       ${viewField('Modified By', r.modifiedBy)}
     </div>
     ${r.assetStatus==='Repair'&&r.repairRemarks?`<div style="background:var(--amber-bg);border:1px solid rgba(217,119,6,0.25);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;"><div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">🔧 Repair Remarks</div><div style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;">${r.repairRemarks}</div></div>`:''}
@@ -2504,6 +2694,17 @@ function openDeleteFromView(){
 
 /* ── PRESENCE / WHO'S ONLINE ── */
 const PRESENCE_COL = 'presence';
+
+function relativeTime(iso){
+  const ms = Date.now() - new Date(iso).getTime();
+  const s = Math.floor(ms/1000);
+  if(s < 60) return 'just now';
+  const m = Math.floor(s/60);
+  if(m < 60) return `${m} min ago`;
+  const h = Math.floor(m/60);
+  return `${h}h ago`;
+}
+
 async function setPresence(online){
   if(!currentUser) return;
   try{
@@ -2527,39 +2728,66 @@ async function loadPresence(){
     const online = snap.docs
       .map(d=>d.data())
       .filter(p=>{
-        // consider online if lastSeen within 10 min
         const ms = now - new Date(p.lastSeen).getTime();
-        return ms < 10*60*1000;
-      });
+        return ms < 15*60*1000; // 15 min window
+      })
+      .sort((a,b)=>new Date(b.lastSeen)-new Date(a.lastSeen));
     const el = document.getElementById('dashOnlineList');
     if(!el) return;
     if(!online.length){
-      el.innerHTML='<div class="online-empty">No other users currently online.</div>';
+      el.innerHTML='<div class="online-empty">No users currently active.</div>';
     } else {
-      el.innerHTML = online.map(p=>`
-        <div class="online-row">
+      el.innerHTML = online.map(p=>{
+        const ms = now - new Date(p.lastSeen).getTime();
+        const isActive = ms < 5*60*1000; // pulse if seen < 5 min
+        return`<div class="online-row">
           <div class="online-avatar">${(p.displayName||p.username).slice(0,2).toUpperCase()}</div>
-          <div class="online-name">${p.displayName||p.username}</div>
-          <div class="online-pulse"></div>
-          <div class="online-since">${roleLabel(p.role)}</div>
-        </div>`).join('');
+          <div style="flex:1;min-width:0;">
+            <div class="online-name">${p.displayName||p.username}</div>
+            <div style="font-size:11px;color:var(--text3);">${roleLabel(p.role)}</div>
+          </div>
+          ${isActive?'<div class="online-pulse"></div>':''}
+          <div class="online-last-seen">${relativeTime(p.lastSeen)}</div>
+        </div>`;
+      }).join('');
     }
   }catch(e){}
 }
-// Heartbeat: update presence every 5 min
-let presenceTimer;
+
+// ── Heartbeat: update presence every 3 min, auto-logout after 15 min idle ──
+let presenceTimer, inactivityTimer;
+const INACTIVITY_MS = 15 * 60 * 1000;
+
+function resetInactivityTimer(){
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(async ()=>{
+    showToast('Session expired due to inactivity. Logging out…', true);
+    await new Promise(r=>setTimeout(r,2000));
+    doLogout();
+  }, INACTIVITY_MS);
+}
+
 function startPresenceHeartbeat(){
   setPresence(true);
-  presenceTimer = setInterval(()=>setPresence(true), 5*60*1000);
+  presenceTimer = setInterval(()=>setPresence(true), 3*60*1000);
+  // Wire inactivity events
+  resetInactivityTimer();
+  ['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev=>{
+    document.addEventListener(ev, resetInactivityTimer, {passive:true});
+  });
 }
 function stopPresence(){
   clearInterval(presenceTimer);
+  clearTimeout(inactivityTimer);
+  ['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev=>{
+    document.removeEventListener(ev, resetInactivityTimer);
+  });
   setPresence(false);
 }
 
 /* ── AUDIT TO FIRESTORE ── */
 const AUDIT_COL = 'auditLog';
-async function addAuditEntryFS(type, detail, assetRef=''){
+async function addAuditEntryFS(type, detail, assetRef='', meta=null){
   const entry = {
     id: genId(), type,
     user: currentUser?.username||'—',
@@ -2567,6 +2795,7 @@ async function addAuditEntryFS(type, detail, assetRef=''){
     detail, assetRef,
     ts: new Date().toISOString()
   };
+  if(meta) entry.meta = meta;
   auditLog.push(entry);
   saveAudit(); // keep local copy
   // Also write to Firestore
@@ -2625,6 +2854,91 @@ function exportAuditLog(){
   showToast(`Exported ${auditLog.length} audit entries.`);
 }
 
+/* ── v16: OWNER OWNERSHIP MODAL ── */
+function openOwnershipModal(id){
+  const r = records.find(x=>x.id===id); if(!r) return;
+  const hist = r.ownerHistory||[];
+  const ownerInit = (r.currentOwner||'?').slice(0,2).toUpperCase();
+  document.getElementById('ownershipModalBody').innerHTML = `
+    <div class="owner-modal-hero">
+      <div class="owner-modal-avatar">${ownerInit}</div>
+      <div class="owner-modal-name">${r.currentOwner||'No Owner'}</div>
+      <div class="owner-modal-sub">${r.brand||''} ${r.model||''} · ${r.assetTag||r.serialNumber||'No tag'}</div>
+    </div>
+    <div style="padding:0 26px 18px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-bottom:16px;">
+        ${viewField('Asset Status', badge(r.assetStatus))}
+        ${viewField('Accountability', acctBadge(r.accountabilityStatus))}
+        ${viewField('Site Location', r.siteLocation)}
+        ${viewField('Date Added', fmtDate(r.dateAdded))}
+      </div>
+      ${hist.length?`
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;">👤 Ownership History</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${[...hist].reverse().map((h,i)=>`
+            <div class="history-item">
+              <span class="history-icon">👤</span>
+              <div class="history-detail">
+                <div class="history-owner">${h.owner||'(unknown)'}</div>
+                <div class="history-meta">Until ${fmtDate(h.to)} · Changed by ${h.changedBy||'—'}</div>
+              </div>
+            </div>`).join('')}
+        </div>`
+      :`<p style="color:var(--text3);font-size:13px;font-style:italic;">No previous owners recorded.</p>`}
+    </div>`;
+  document.getElementById('ownershipOverlay').classList.add('open');
+}
+
+/* ── v16: AUDIT DIFF MODAL ── */
+function openAuditDiff(entryId){
+  const e = auditLog.find(x=>x.id===entryId); if(!e) return;
+  document.getElementById('auditDiffTitle').textContent = e.type==='edit' ? 'What Changed' : 'Record Added';
+  document.getElementById('auditDiffSub').textContent = `${e.displayName||e.user} · ${fmtDate(e.ts)} · ${e.assetRef||e.detail}`;
+  const body = document.getElementById('auditDiffBody');
+
+  if(e.type==='add' && e.meta?.after){
+    const after = e.meta.after;
+    const rows = FIELDS.filter(f=>f.key!=='repairRemarks'&&after[f.key])
+      .map(f=>`<div class="audit-diff-row">
+        <div class="audit-diff-field">${f.label}</div>
+        <div class="audit-diff-same" style="color:var(--text3);">—</div>
+        <div class="audit-diff-new">${after[f.key]}</div>
+      </div>`).join('');
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px;margin-bottom:10px;padding:0 0 6px;border-bottom:1px solid var(--glass-border2);">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">Field</div>
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">Before</div>
+        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;">After</div>
+      </div>
+      <div class="audit-diff-grid">${rows||'<p style="color:var(--text3);">No field data available.</p>'}</div>`;
+  } else if(e.type==='edit' && e.meta){
+    const before = e.meta.before||{};
+    const after  = e.meta.after||{};
+    const changed = FIELDS.filter(f=>f.key!=='repairRemarks'&&String(before[f.key]||'')!==String(after[f.key]||''));
+    const unchanged = FIELDS.filter(f=>f.key!=='repairRemarks'&&String(before[f.key]||'')===String(after[f.key]||'')&&(before[f.key]||after[f.key]));
+    if(!changed.length){
+      body.innerHTML='<p style="color:var(--text3);padding:12px 0;">No field-level changes recorded for this entry.</p>';
+    } else {
+      const changedRows = changed.map(f=>`<div class="audit-diff-row">
+        <div class="audit-diff-field">${f.label}</div>
+        <div class="audit-diff-old">${before[f.key]||'—'}</div>
+        <div class="audit-diff-new">${after[f.key]||'—'}</div>
+      </div>`).join('');
+      body.innerHTML = `
+        <div style="display:grid;grid-template-columns:130px 1fr 1fr;gap:6px;margin-bottom:10px;padding:0 0 6px;border-bottom:1px solid var(--glass-border2);">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">Field</div>
+          <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;">Before</div>
+          <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;">After</div>
+        </div>
+        <div class="audit-diff-grid">${changedRows}</div>
+        ${unchanged.length?`<div style="font-size:11px;color:var(--text3);margin-top:12px;">${unchanged.length} field${unchanged.length>1?'s':''} unchanged.</div>`:''}`;
+    }
+  } else {
+    body.innerHTML='<p style="color:var(--text3);">No change detail available for this entry.</p>';
+  }
+  document.getElementById('auditDiffOverlay').classList.add('open');
+}
+
 // ── Expose functions to global scope (required for inline onclick in module scripts) ──
 window.toggleTheme=toggleTheme;
 window.switchView=switchView;
@@ -2672,6 +2986,9 @@ window.submitForceChange=submitForceChange;
 window.addAuditEntryFS=addAuditEntryFS;
 window.exportAuditLog=exportAuditLog;
 window.onStatusChange=onStatusChange;
+window.toggleCol=toggleCol;
+window.openOwnershipModal=openOwnershipModal;
+window.openAuditDiff=openAuditDiff;
 
 loadTheme();
 (async()=>{
@@ -2804,6 +3121,33 @@ loadTheme();
       <button class="btn" onclick="document.getElementById('userFormOverlay').classList.remove('open')">Cancel</button>
       <button class="btn btn-primary" onclick="saveUserForm()">Save User</button>
     </div>
+  </div>
+</div>
+
+<!-- OWNER OWNERSHIP MODAL -->
+<div class="overlay" id="ownershipOverlay">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-body" id="ownershipModalBody" style="padding:0;">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('ownershipOverlay').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIT DIFF MODAL -->
+<div class="overlay" id="auditDiffOverlay">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <div>
+        <span class="modal-title" id="auditDiffTitle">Change Details</span>
+        <div style="font-size:12px;color:var(--text3);margin-top:3px;" id="auditDiffSub"></div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('auditDiffOverlay').classList.remove('open')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="auditDiffBody"></div>
   </div>
 </div>
 
