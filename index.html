@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory</title>
+<title>AssetVault — Laptop Inventory v15</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -951,6 +951,72 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 .online-empty { font-size: 13px; color: var(--text3); padding: 12px 0; font-style: italic; }
 
 
+/* ── BRAND BREAKDOWN ── */
+.brand-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px; margin-top: 14px;
+}
+.brand-card {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-icon { font-size: 18px; flex-shrink: 0; }
+.brand-info { flex: 1; min-width: 0; }
+.brand-name { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand-count { font-size: 20px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+/* ── SITE STATUS TABLE ── */
+.site-status-table-wrap {
+  overflow-x: auto; margin-top: 14px; border-radius: var(--radius-lg);
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-sm);
+}
+.site-status-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 340px; }
+.site-status-table th {
+  background: var(--surface-tint); padding: 9px 14px;
+  text-align: left; font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.7px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.site-status-table td {
+  padding: 9px 14px; border-bottom: 1px solid var(--glass-border2);
+  color: var(--text); vertical-align: middle;
+}
+.site-status-table tr:last-child td { border-bottom: none; }
+.site-status-table tr:hover td { background: var(--surface-tint); }
+.sst-num { font-weight: 700; font-variant-numeric: tabular-nums; }
+.sst-zero { color: var(--text3); font-weight: 400; }
+
+/* ── TREND CARD ── */
+.trend-card {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg); padding: 18px 20px;
+  box-shadow: var(--glass-shadow-sm);
+}
+.trend-bars { display: flex; align-items: flex-end; gap: 8px; height: 80px; margin-bottom: 8px; }
+.trend-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.trend-bar-wrap { width: 100%; display: flex; align-items: flex-end; height: 64px; }
+.trend-bar {
+  width: 100%; border-radius: 5px 5px 0 0;
+  background: linear-gradient(180deg, var(--accent), var(--accent2));
+  opacity: 0.85; transition: height 0.5s cubic-bezier(.34,1,.64,1);
+  min-height: 3px;
+}
+.trend-month { font-size: 10px; color: var(--text3); font-weight: 600; text-align: center; }
+.trend-val { font-size: 10px; color: var(--text2); font-weight: 700; text-align: center; }
+.trend-legend { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* ── ACTIVITY ROW — more spacing ── */
+.activity-list { display: flex; flex-direction: column; gap: 8px; }
+.activity-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  background: var(--glass-bg); border: 1px solid var(--glass-border2);
+  border-radius: var(--radius-lg); transition: background 0.12s;
+}
+.activity-row:hover { background: var(--glass-bg-hover); }
+
 /* ── OWNER HISTORY IN MODAL ── */
 .history-section {
   margin-top: 20px; padding-top: 18px;
@@ -1011,7 +1077,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.14</div>
+  <div class="login-version">v0.15</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -1124,12 +1190,23 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         <div>
           <div class="dash-section-title">Additional Statistics</div>
           <div class="dash-extra-grid" id="dashExtraGrid"></div>
+
+          <div class="dash-section-title" style="margin-top:24px;">By Brand</div>
+          <div class="brand-grid" id="dashBrandGrid"></div>
+
+          <div class="dash-section-title" style="margin-top:24px;">Status by Site</div>
+          <div class="site-status-table-wrap" id="dashSiteStatusTable"></div>
+
           <div class="dash-section-title" style="margin-top:24px;">By Site Location</div>
           <div class="site-grid" id="dashSiteGrid"></div>
         </div>
         <div>
-          <div class="dash-section-title">Who's Online</div>
+          <div class="dash-section-title">Asset Trend (Last 6 Months)</div>
+          <div class="trend-card" id="dashTrendCard"></div>
+
+          <div class="dash-section-title" style="margin-top:24px;">Who's Online</div>
           <div class="online-list" id="dashOnlineList"></div>
+
           <div class="dash-section-title" style="margin-top:24px;">Recent Asset Activity</div>
           <div class="activity-list" id="dashActivity"></div>
         </div>
@@ -1210,7 +1287,10 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <span class="audit-total-badge" id="auditTotalBadge">0 events</span>
-          <button class="btn btn-sm" onclick="clearAuditLog()" title="Clear all audit logs" style="color:var(--red)">🗑 Clear Log</button>
+          <button class="btn btn-sm btn-primary" onclick="exportAuditLog()" title="Download audit log as CSV">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
+            Export Logs
+          </button>
         </div>
       </div>
       <div class="audit-list" id="auditList"></div>
@@ -1253,6 +1333,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         <div class="ds-item"><span class="ds-label">Modified By</span><span class="ds-value" id="ds_modifiedBy">—</span></div>
       </div>
       <div class="form-grid">
+        <div class="fg full"><label>Current Owner</label><input type="text" id="f_currentOwner" placeholder="e.g. Juan Dela Cruz"></div>
         <div class="fg"><label>Brand</label>
           <select id="f_brand"><option value="">Select Brand</option>
             <option>Acer</option><option>Apple</option><option>Asus</option>
@@ -1286,12 +1367,15 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
           </select>
         </div>
         <div class="fg"><label>Asset Status</label>
-          <select id="f_assetStatus"><option value="">Select Status</option>
+          <select id="f_assetStatus" onchange="onStatusChange(this.value)"><option value="">Select Status</option>
             <option>Deployed</option><option>Spare</option><option>Repair</option>
             <option>End of Life</option><option>For Return</option>
           </select>
         </div>
-        <div class="fg full"><label>Current Owner</label><input type="text" id="f_currentOwner" placeholder="e.g. Juan Dela Cruz"></div>
+        <div class="fg full" id="repairRemarksRow" style="display:none;">
+          <label>Repair Remarks / Notes <span style="color:var(--amber);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;">● Repair</span></label>
+          <textarea id="f_repairRemarks" placeholder="Describe the issue, repair details, or notes…" rows="3" style="background:var(--surface-tint);border:1px solid var(--amber);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-size:13px;outline:none;width:100%;resize:vertical;font-family:inherit;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.boxShadow='0 0 0 3px rgba(217,119,6,0.2)'" onblur="this.style.boxShadow=''"></textarea>
+        </div>
       </div>
       <div class="history-section" id="ownerHistorySection" style="display:none;">
         <div class="history-title">👤 Previous Owners</div>
@@ -1423,7 +1507,7 @@ const FIELDS=[
   {key:'po',label:'PO #'},{key:'processor',label:'Processor'},
   {key:'ram',label:'RAM'},{key:'os',label:'Operating System'},
   {key:'siteLocation',label:'Site Location'},{key:'assetStatus',label:'Asset Status'},
-  {key:'currentOwner',label:'Current Owner'}
+  {key:'currentOwner',label:'Current Owner'},{key:'repairRemarks',label:'Repair Remarks'}
 ];
 const COL_KEYS=[...FIELDS.map(f=>f.key),'dateAdded','dateModified'];
 const EXPORT_FIELDS=[...FIELDS,{key:'dateAdded',label:'Date Added'},{key:'dateModified',label:'Date Modified'},{key:'modifiedBy',label:'Modified By'}];
@@ -1689,8 +1773,7 @@ function renderTable(){
     <td class="date-cell">${fmtDate(r.dateAdded)}</td>
     <td class="date-cell">${fmtDate(r.dateModified)}</td>
     <td><div class="row-actions">
-      ${can('edit')?`<button class="btn btn-sm" onclick="openEditModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit</button>`:''}
-      ${can('delete')?`<button class="btn btn-sm btn-danger" onclick="openDeleteModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg> Delete</button>`:''}
+      ${can('edit')?`<button class="btn btn-sm" onclick="openViewModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Record</button>`:'<button class="btn btn-sm" onclick="openViewModal(\''+r.id+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> View</button>'}
     </div></td>
   </tr>`).join('');
 }
@@ -1720,9 +1803,62 @@ function renderDashboard(){
       <div class="dbc-lbl">${card.lbl}</div>
     </div>`).join('');
 
-  // Bar chart removed
+  // ── Brand breakdown ──
+  const brandIcons={'Apple':'🍎','Lenovo':'🖥️','Dell':'💻','HP':'🖨️','Asus':'⚡','Acer':'🔷','Microsoft':'🪟','MSI':'🎮'};
+  const brands={};
+  records.forEach(r=>{if(r.brand)brands[r.brand]=(brands[r.brand]||0)+1;});
+  const brandEntries=Object.entries(brands).sort((a,b)=>b[1]-a[1]);
+  const brandEl=document.getElementById('dashBrandGrid');
+  if(brandEl) brandEl.innerHTML=brandEntries.length
+    ?brandEntries.map(([b,n])=>`
+      <div class="brand-card">
+        <div class="brand-icon">${brandIcons[b]||'💻'}</div>
+        <div class="brand-info">
+          <div class="brand-name">${b}</div>
+          <div class="brand-count">${n}</div>
+        </div>
+      </div>`).join('')
+    :`<p style="color:var(--text3);font-size:13px;">No brand data yet.</p>`;
 
-  // Site grid
+  // ── Status by Site table ──
+  const allSites=[...new Set(records.map(r=>r.siteLocation).filter(Boolean))].sort();
+  const statuses=['Deployed','Spare','Repair','End of Life','For Return'];
+  const siteStatus={};
+  records.forEach(r=>{
+    if(!r.siteLocation) return;
+    if(!siteStatus[r.siteLocation]) siteStatus[r.siteLocation]={};
+    siteStatus[r.siteLocation][r.assetStatus]=(siteStatus[r.siteLocation][r.assetStatus]||0)+1;
+  });
+  const siteStatusEl=document.getElementById('dashSiteStatusTable');
+  if(siteStatusEl){
+    if(!allSites.length){
+      siteStatusEl.innerHTML=`<p style="color:var(--text3);font-size:13px;padding:12px 16px;">No site data yet.</p>`;
+    }else{
+      siteStatusEl.innerHTML=`<table class="site-status-table">
+        <thead><tr>
+          <th>Site</th>
+          <th>🟢 Deployed</th>
+          <th>📦 Spare</th>
+          <th>🔧 Repair</th>
+          <th>🗃️ EOL</th>
+          <th>↩️ Return</th>
+          <th>Total</th>
+        </tr></thead>
+        <tbody>${allSites.map(site=>{
+          const d=siteStatus[site]||{};
+          const row=statuses.map(s=>d[s]||0);
+          const total=row.reduce((a,b)=>a+b,0);
+          return`<tr>
+            <td style="font-weight:700;">${site}</td>
+            ${row.map(n=>`<td class="sst-num ${n===0?'sst-zero':''}">${n||'—'}</td>`).join('')}
+            <td style="font-weight:800;color:var(--accent);">${total}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>`;
+    }
+  }
+
+  // ── Site total grid ──
   const sites={};
   records.forEach(r=>{if(r.siteLocation){sites[r.siteLocation]=(sites[r.siteLocation]||0)+1;}});
   const siteEntries=Object.entries(sites).sort((a,b)=>b[1]-a[1]);
@@ -1735,12 +1871,38 @@ function renderDashboard(){
       </div>`).join('')
     :`<p style="color:var(--text3);font-size:13px;">No site data yet.</p>`;
 
-  // Recent activity — last 8 modified/added
+  // ── Asset Trend (last 6 months added) ──
+  const trendEl=document.getElementById('dashTrendCard');
+  if(trendEl){
+    const months=[];
+    for(let i=5;i>=0;i--){
+      const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-i);
+      const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      const label=d.toLocaleString('default',{month:'short'});
+      months.push({key,label});
+    }
+    const counts=months.map(m=>records.filter(r=>r.dateAdded&&r.dateAdded.startsWith(m.key)).length);
+    const maxCount=Math.max(...counts,1);
+    trendEl.innerHTML=`
+      <div class="trend-bars">
+        ${months.map((m,i)=>`
+          <div class="trend-col">
+            <div class="trend-val">${counts[i]||''}</div>
+            <div class="trend-bar-wrap">
+              <div class="trend-bar" style="height:${Math.round((counts[i]/maxCount)*60)+4}px"></div>
+            </div>
+            <div class="trend-month">${m.label}</div>
+          </div>`).join('')}
+      </div>
+      <div class="trend-legend">Assets added per month · Total ${records.length}</div>`;
+  }
+
+  // ── Recent activity — last 10 modified/added ──
   const recent=[...records].sort((a,b)=>{
     const ta=a.dateModified||a.dateAdded||'';
     const tb=b.dateModified||b.dateAdded||'';
     return tb.localeCompare(ta);
-  }).slice(0,8);
+  }).slice(0,10);
   const dotColor={Deployed:'var(--green)',Spare:'var(--blue)',Repair:'var(--amber)','End of Life':'var(--text3)','For Return':'#8b5aa8'};
   document.getElementById('dashActivity').innerHTML=recent.length
     ?recent.map(r=>{
@@ -1753,10 +1915,12 @@ function renderDashboard(){
           <div class="act-title">${r.brand||'—'} ${r.model||''} <span style="font-size:11px;color:var(--text3)">${r.assetTag||r.serialNumber||''}</span></div>
           <div class="act-sub">${isNew?'Added':'Updated'} · ${r.currentOwner||'No owner'}${by}</div>
         </div>
-        <div class="act-time">${fmtDate(dt)}</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <span class="badge ${({Deployed:'b-deployed',Spare:'b-spare',Repair:'b-repair','End of Life':'b-retired','For Return':'b-return'}[r.assetStatus]||'b-retired')}" style="font-size:10px;padding:2px 8px;">${r.assetStatus||'—'}</span>
+          <div class="act-time">${fmtDate(dt)}</div>
+        </div>
       </div>`;}).join('')
     :`<p style="color:var(--text3);font-size:13px;padding:12px 0;">No activity yet.</p>`;
-
 }
 function dashCardClick(status){
   switchView('inv');
@@ -1774,13 +1938,18 @@ function openAddModal(){
   document.getElementById('dateStrip').style.display='none';
   document.getElementById('ownerHistorySection').style.display='none';
   FIELDS.forEach(f=>{const el=document.getElementById('f_'+f.key);if(el)el.value='';});
+  const ta=document.getElementById('f_repairRemarks');if(ta)ta.value='';
+  document.getElementById('repairRemarksRow').style.display='none';
   document.getElementById('formOverlay').classList.add('open');
 }
 function openEditModal(id){
   const rec=records.find(r=>r.id===id);if(!rec)return;
   editId=id;
-  document.getElementById('modalTitle').textContent='Edit Laptop';
+  document.getElementById('modalTitle').textContent='Edit Record';
   FIELDS.forEach(f=>{const el=document.getElementById('f_'+f.key);if(el)el.value=rec[f.key]||'';});
+  // Handle repairRemarks textarea separately
+  const ta=document.getElementById('f_repairRemarks');if(ta)ta.value=rec.repairRemarks||'';
+  document.getElementById('repairRemarksRow').style.display=rec.assetStatus==='Repair'?'block':'none';
   document.getElementById('dateStrip').style.display='flex';
   document.getElementById('ds_added').textContent=fmtDate(rec.dateAdded);
   document.getElementById('ds_modified').textContent=rec.dateModified?fmtDate(rec.dateModified):'Never modified';
@@ -1805,9 +1974,20 @@ function openEditModal(id){
   document.getElementById('formOverlay').classList.add('open');
 }
 function closeFormModal(){document.getElementById('formOverlay').classList.remove('open');}
+function onStatusChange(val){
+  document.getElementById('repairRemarksRow').style.display=val==='Repair'?'block':'none';
+}
 async function saveRecord(){
   const rec={};
-  FIELDS.forEach(f=>{rec[f.key]=(document.getElementById('f_'+f.key)?.value||'').trim();});
+  FIELDS.forEach(f=>{
+    if(f.key==='repairRemarks') return; // handled separately below
+    const el=document.getElementById('f_'+f.key);
+    rec[f.key]=(el?.value||'').trim();
+  });
+  // Repair remarks from textarea
+  rec.repairRemarks = rec.assetStatus==='Repair'
+    ? (document.getElementById('f_repairRemarks')?.value||'').trim()
+    : '';
   if(!rec.brand&&!rec.serialNumber&&!rec.assetTag){showToast('Fill in at least Brand, Serial Number, or Asset Tag.',true);return;}
   const now=nowISO();
   let finalRec;
@@ -2285,6 +2465,8 @@ function openViewModal(id){
   const hist = r.ownerHistory||[];
   document.getElementById('viewModalBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-bottom:18px;">
+      ${viewField('Current Owner', r.currentOwner)}
+      ${viewField('Status', badge(r.assetStatus))}
       ${viewField('Brand', r.brand)}
       ${viewField('Model', r.model)}
       ${viewField('Serial Number', r.serialNumber, true)}
@@ -2294,10 +2476,9 @@ function openViewModal(id){
       ${viewField('RAM', r.ram)}
       ${viewField('OS', r.os)}
       ${viewField('Site Location', r.siteLocation)}
-      ${viewField('Status', badge(r.assetStatus))}
-      ${viewField('Current Owner', r.currentOwner)}
       ${viewField('Modified By', r.modifiedBy)}
     </div>
+    ${r.assetStatus==='Repair'&&r.repairRemarks?`<div style="background:var(--amber-bg);border:1px solid rgba(217,119,6,0.25);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;"><div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">🔧 Repair Remarks</div><div style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;">${r.repairRemarks}</div></div>`:''}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;background:var(--surface-tint);border-radius:var(--radius);padding:12px 14px;margin-bottom:${hist.length?'16px':'0'};">
       ${viewField('Date Added', fmtDate(r.dateAdded))}
       ${viewField('Last Modified', fmtDate(r.dateModified)||'Never')}
@@ -2426,6 +2607,24 @@ function renderDashboardExtras(){
   </div>`).join('');
 }
 
+/* ── EXPORT AUDIT LOG ── */
+function exportAuditLog(){
+  if(!auditLog.length){showToast('No audit entries to export.',true);return;}
+  const headers=['Timestamp','User','Display Name','Action','Detail','Asset Ref'];
+  const rows=auditLog.slice().sort((a,b)=>b.ts.localeCompare(a.ts)).map(e=>[
+    `"${e.ts||''}"`,
+    `"${e.user||''}"`,
+    `"${e.displayName||e.user||''}"`,
+    `"${e.type||''}"`,
+    `"${(e.detail||'').replace(/"/g,'""')}"`,
+    `"${e.assetRef||''}"`
+  ].join(','));
+  const now=new Date();
+  const stamp=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  dl(`audit-log-${stamp}.csv`,[headers.join(','),...rows].join('\n'),'text/csv');
+  showToast(`Exported ${auditLog.length} audit entries.`);
+}
+
 // ── Expose functions to global scope (required for inline onclick in module scripts) ──
 window.toggleTheme=toggleTheme;
 window.switchView=switchView;
@@ -2471,6 +2670,8 @@ window.openDeleteFromView=openDeleteFromView;
 window.loadPresence=loadPresence;
 window.submitForceChange=submitForceChange;
 window.addAuditEntryFS=addAuditEntryFS;
+window.exportAuditLog=exportAuditLog;
+window.onStatusChange=onStatusChange;
 
 loadTheme();
 (async()=>{
