@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v17</title>
+<title>AssetVault — Laptop Inventory v18</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -779,6 +779,121 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
   font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
 }
 
+
+/* ══════════════════════════════
+   MFA STYLES
+══════════════════════════════ */
+/* MFA setup screen overlay */
+.mfa-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.mfa-overlay.open { display: flex; animation: overlayFadeIn 0.2s ease; }
+.mfa-card {
+  background: var(--glass-bg-deep);
+  backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-shadow), 0 0 0 0.5px var(--glass-border2) inset;
+  width: 100%; max-width: 460px;
+  animation: modalSlideIn 0.25s cubic-bezier(0.34,1.3,0.64,1);
+  overflow: hidden;
+}
+.mfa-hero {
+  padding: 28px 28px 20px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  position: relative; overflow: hidden;
+}
+.mfa-hero::before {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+}
+.mfa-hero::after {
+  content:''; position:absolute; bottom:-30px; right:-30px;
+  width:100px; height:100px; border-radius:50%;
+  background:rgba(255,255,255,0.07);
+}
+.mfa-hero-title {
+  font-size: 18px; font-weight: 800; color: #fff;
+  letter-spacing: -0.3px; position: relative; z-index: 1;
+}
+.mfa-hero-sub {
+  font-size: 13px; color: rgba(255,255,255,0.72);
+  margin-top: 5px; position: relative; z-index: 1;
+}
+.mfa-body { padding: 24px 28px 20px; }
+.mfa-footer {
+  padding: 16px 28px 24px;
+  border-top: 1px solid var(--glass-border2);
+  display: flex; gap: 10px; justify-content: flex-end;
+}
+/* OTP digit input row */
+.otp-row {
+  display: flex; gap: 8px; justify-content: center;
+  margin: 20px 0 8px;
+}
+.otp-digit {
+  width: 48px; height: 58px;
+  background: var(--surface-tint);
+  border: 1.5px solid var(--glass-border);
+  border-radius: var(--radius);
+  text-align: center; font-size: 24px; font-weight: 800;
+  color: var(--text); outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  caret-color: transparent;
+}
+.otp-digit:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.otp-digit.otp-filled { border-color: var(--accent); background: var(--glass-bg-hover); }
+.otp-digit.otp-error  { border-color: var(--red); box-shadow: 0 0 0 3px rgba(217,95,95,0.2); }
+.otp-hint { font-size: 12px; color: var(--text3); text-align: center; margin-bottom: 4px; }
+/* QR code container */
+#mfaQrCode { display: flex; justify-content: center; margin: 16px 0; }
+#mfaQrCode canvas, #mfaQrCode img {
+  border-radius: 12px;
+  padding: 12px; background: #fff;
+  box-shadow: var(--glass-shadow-sm);
+}
+.mfa-secret-box {
+  background: var(--surface-tint); border: 1px solid var(--glass-border2);
+  border-radius: var(--radius); padding: 10px 14px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+  color: var(--text2); text-align: center; letter-spacing: 2px;
+  margin: 8px 0; user-select: all; cursor: copy;
+}
+.mfa-steps {
+  display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;
+}
+.mfa-step {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 13px; color: var(--text2); line-height: 1.5;
+}
+.mfa-step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; flex-shrink: 0;
+}
+.mfa-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; padding: 3px 9px;
+  border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px;
+}
+.mfa-badge-on  { background: var(--green-bg); color: var(--green); }
+.mfa-badge-off { background: var(--red-bg);   color: var(--red); }
+.mfa-err {
+  background: var(--red-bg); border: 1px solid rgba(217,95,95,0.3);
+  border-radius: var(--radius); padding: 10px 14px;
+  font-size: 13px; color: var(--red); margin-top: 8px;
+  display: none; animation: shake 0.3s ease;
+}
+.mfa-err.show { display: block; }
+
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
@@ -1246,7 +1361,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.17</div>
+  <div class="login-version">v0.18</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -1642,6 +1757,10 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
   <span id="toastMsg"></span>
 </div>
 
+<!-- TOTP + QR Code libraries for MFA -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/otpauth@9.2.2/dist/otpauth.umd.min.js"></script>
+
 <script type="module">
 // ── FIREBASE ──
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -1836,9 +1955,19 @@ async function doLogin(){
   err.classList.remove('show');
   currentUser={...user};
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
-  loadAudit();addAuditEntryFS('login','Signed in','');
-  if(user.mustChangePassword){ openForceChangeModal(); return; }
-  showApp();
+  loadAudit();
+  // ── MFA gate ──
+  if(user.mustChangePassword){
+    openForceChangeModal();
+    return;
+  }
+  if(!user.mfaEnabled || !user.totpSecret){
+    // MFA not set up yet — show setup wizard
+    openMfaSetup(user);
+    return;
+  }
+  // MFA set up — show verify screen
+  openMfaVerify(user);
 }
 async function doLogout(){
   await stopPresence();
@@ -2549,6 +2678,7 @@ function renderUsersGrid(){
       <div class="user-card-meta">
         <span><span class="user-status-dot" style="${statusDot}"></span>${statusLbl}</span>
         ${u.mustChangePassword?'<span style="color:var(--amber)">⚠ Temp password</span>':''}
+        ${u.mfaEnabled?'<span class="mfa-badge mfa-badge-on">🔐 MFA On</span>':'<span class="mfa-badge mfa-badge-off">⚠ MFA Off</span>'}
       </div>
       ${canEdit?`<div class="user-card-actions">
         <button class="btn btn-sm" style="flex:1" onclick="openEditUserModal('${u.username}')">
@@ -2557,6 +2687,9 @@ function renderUsersGrid(){
         </button>
         <button class="btn btn-sm" style="flex:1;color:var(--amber)" onclick="resetUserPassword('${u.username}')">
           🔑 Reset PW
+        </button>
+        <button class="btn btn-sm" style="flex:1;color:var(--purple)" onclick="resetUserMfa('${u.username}')" title="Reset authenticator app for this user">
+          📱 Reset MFA
         </button>
         <button class="btn btn-sm btn-danger" onclick="toggleUserActive('${u.username}',${u.active!==false})">
           ${u.active===false?'Enable':'Disable'}
@@ -2666,8 +2799,9 @@ async function submitForceChange(){
     sessionStorage.setItem(SESSION_KEY,JSON.stringify(currentUser));
     document.getElementById('forceChangeOverlay').classList.remove('open');
     addAuditEntryFS('edit','Changed password (first login)','');
-    showToast('Password updated. Welcome!');
-    showApp();
+    showToast('Password updated! Now set up your authenticator.');
+    // Route to MFA setup since this is fresh account
+    openMfaSetup(currentUser);
   }catch(e){
     errEl.textContent='Error saving password. Please try again.';errEl.style.display='block';
     if(btn){btn.disabled=false;btn.textContent='Set Password & Continue';}
@@ -3103,6 +3237,215 @@ function openAuditDiff(entryId){
   document.getElementById('auditDiffOverlay').classList.add('open');
 }
 
+
+/* ══════════════════════════════════════════════════
+   MFA — TOTP (RFC 6238)
+   Uses OTPAuth library (loaded via CDN as UMD)
+   Secrets stored in Firestore users collection
+══════════════════════════════════════════════════ */
+
+let _mfaPendingUser = null;   // user object waiting for MFA verify
+let _mfaSetupSecret = null;   // secret generated during setup
+
+/* ── OTP digit input wiring ── */
+function wireOtpRow(rowId, onComplete){
+  const row = document.getElementById(rowId);
+  if(!row) return;
+  const inputs = [...row.querySelectorAll('.otp-digit')];
+  inputs.forEach((inp, idx)=>{
+    inp.addEventListener('input', e=>{
+      // strip non-digits
+      inp.value = inp.value.replace(/\D/g,'').slice(-1);
+      if(inp.value) inp.classList.add('otp-filled');
+      else inp.classList.remove('otp-filled');
+      if(inp.value && idx < inputs.length-1) inputs[idx+1].focus();
+      // auto-submit when all filled
+      const code = inputs.map(i=>i.value).join('');
+      if(code.length === 6) onComplete(code);
+    });
+    inp.addEventListener('keydown', e=>{
+      if(e.key==='Backspace'&&!inp.value&&idx>0){
+        inputs[idx-1].value='';
+        inputs[idx-1].classList.remove('otp-filled');
+        inputs[idx-1].focus();
+      }
+      if(e.key==='Enter'){
+        const code = inputs.map(i=>i.value).join('');
+        if(code.length===6) onComplete(code);
+      }
+    });
+    inp.addEventListener('paste', e=>{
+      e.preventDefault();
+      const pasted = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
+      inputs.forEach((d,i)=>{ d.value=pasted[i]||''; if(pasted[i]) d.classList.add('otp-filled'); });
+      if(pasted.length===6){ inputs[5].focus(); onComplete(pasted); }
+    });
+  });
+}
+
+function clearOtpRow(rowId){
+  const row = document.getElementById(rowId);
+  if(!row) return;
+  row.querySelectorAll('.otp-digit').forEach(inp=>{
+    inp.value=''; inp.classList.remove('otp-filled','otp-error');
+  });
+}
+
+function shakeOtpRow(rowId, errElId, msg){
+  const row = document.getElementById(rowId);
+  if(!row) return;
+  row.querySelectorAll('.otp-digit').forEach(inp=>inp.classList.add('otp-error'));
+  const errEl = document.getElementById(errElId);
+  if(errEl){ errEl.textContent=msg; errEl.classList.add('show'); }
+  setTimeout(()=>{
+    row.querySelectorAll('.otp-digit').forEach(inp=>{ inp.classList.remove('otp-error'); inp.value=''; inp.classList.remove('otp-filled'); });
+    row.querySelector('.otp-digit').focus();
+  }, 1200);
+}
+
+/* ── TOTP helpers ── */
+function generateTotpSecret(){
+  // 20-byte random base32 secret
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let secret = '';
+  const arr = new Uint8Array(20);
+  crypto.getRandomValues(arr);
+  arr.forEach(b=>{ secret += chars[b % 32]; });
+  return secret;
+}
+
+function getTotpUri(secret, username){
+  return `otpauth://totp/AssetVault:${encodeURIComponent(username)}?secret=${secret}&issuer=AssetVault&algorithm=SHA1&digits=6&period=30`;
+}
+
+function verifyTotpCode(secret, code){
+  try{
+    const totp = new OTPAuth.TOTP({
+      issuer: 'AssetVault',
+      label: 'AssetVault',
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30,
+      secret: OTPAuth.Secret.fromBase32(secret)
+    });
+    // Allow ±1 window (30s tolerance)
+    const delta = totp.validate({ token: code, window: 1 });
+    return delta !== null;
+  }catch(e){
+    console.error('TOTP verify error:', e);
+    return false;
+  }
+}
+
+/* ── MFA SETUP ── */
+async function openMfaSetup(user){
+  _mfaPendingUser = user;
+  _mfaSetupSecret = generateTotpSecret();
+
+  // Clear previous QR + inputs
+  clearOtpRow('mfaSetupOtpRow');
+  document.getElementById('mfaSetupErr').classList.remove('show');
+  document.getElementById('mfaSecretDisplay').textContent = _mfaSetupSecret.match(/.{1,4}/g).join(' ');
+
+  // Generate QR code
+  const qrContainer = document.getElementById('mfaQrCode');
+  qrContainer.innerHTML = '';
+  const uri = getTotpUri(_mfaSetupSecret, user.username);
+  try{
+    new QRCode(qrContainer, {
+      text: uri, width: 180, height: 180,
+      colorDark: '#1e2035', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }catch(e){
+    qrContainer.innerHTML = `<div style="font-size:11px;color:var(--text3);padding:10px;text-align:center;">QR generation failed.<br>Use manual key below.</div>`;
+  }
+
+  document.getElementById('mfaSetupOverlay').classList.add('open');
+  // Focus first digit after short delay
+  setTimeout(()=>{
+    const first = document.querySelector('#mfaSetupOtpRow .otp-digit');
+    if(first) first.focus();
+  }, 300);
+}
+
+async function verifyMfaSetup(){
+  const code = [...document.querySelectorAll('#mfaSetupOtpRow .otp-digit')].map(i=>i.value).join('');
+  if(code.length < 6){ shakeOtpRow('mfaSetupOtpRow','mfaSetupErr','Please enter the full 6-digit code.'); return; }
+
+  if(!verifyTotpCode(_mfaSetupSecret, code)){
+    shakeOtpRow('mfaSetupOtpRow','mfaSetupErr','Incorrect code. Check your authenticator app and try again.');
+    return;
+  }
+
+  // Save secret to user record
+  const users = getUsers();
+  const i = users.findIndex(u=>u.username===_mfaPendingUser.username);
+  if(i>-1){
+    users[i].totpSecret = _mfaSetupSecret;
+    users[i].mfaEnabled = true;
+    await saveUsers(users);
+    currentUser = users[i];
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  }
+
+  document.getElementById('mfaSetupOverlay').classList.remove('open');
+  addAuditEntryFS('edit','MFA setup completed','');
+  showToast('✅ MFA enabled! You are now logged in.');
+  showApp();
+}
+
+/* ── MFA VERIFY (every login) ── */
+function openMfaVerify(user){
+  _mfaPendingUser = user;
+  clearOtpRow('mfaVerifyOtpRow');
+  document.getElementById('mfaVerifyErr').classList.remove('show');
+  document.getElementById('mfaVerifyUsername').textContent =
+    'Signed in as ' + (user.displayName||user.username);
+  document.getElementById('mfaVerifyOverlay').classList.add('open');
+  setTimeout(()=>{
+    const first = document.querySelector('#mfaVerifyOtpRow .otp-digit');
+    if(first) first.focus();
+  }, 300);
+}
+
+function cancelMfaVerify(){
+  document.getElementById('mfaVerifyOverlay').classList.remove('open');
+  _mfaPendingUser = null;
+  // Clear session so they have to re-enter password
+  sessionStorage.removeItem(SESSION_KEY);
+  currentUser = null;
+}
+
+async function submitMfaVerify(){
+  const code = [...document.querySelectorAll('#mfaVerifyOtpRow .otp-digit')].map(i=>i.value).join('');
+  if(code.length < 6){ shakeOtpRow('mfaVerifyOtpRow','mfaVerifyErr','Please enter the full 6-digit code.'); return; }
+
+  if(!verifyTotpCode(_mfaPendingUser.totpSecret, code)){
+    shakeOtpRow('mfaVerifyOtpRow','mfaVerifyErr','Incorrect code. Try again — codes refresh every 30 seconds.');
+    return;
+  }
+
+  document.getElementById('mfaVerifyOverlay').classList.remove('open');
+  addAuditEntryFS('login','Signed in (MFA verified)','');
+  showApp();
+}
+
+/* ── Superadmin: reset MFA for a user ── */
+async function resetUserMfa(username){
+  if(!confirm(`Reset MFA for @${username}? They will need to set up their authenticator again on next login.`)) return;
+  const users = getUsers();
+  const i = users.findIndex(u=>u.username===username);
+  if(i>-1){
+    delete users[i].totpSecret;
+    users[i].mfaEnabled = false;
+    await saveUsers(users);
+    addAuditEntryFS('edit',`Reset MFA for @${username}`,'');
+    showToast(`MFA reset for @${username}. They will set up again on next login.`);
+    renderUsersGrid();
+  }
+}
+
 // ── Expose functions to global scope (required for inline onclick in module scripts) ──
 window.toggleTheme=toggleTheme;
 window.switchView=switchView;
@@ -3154,6 +3497,10 @@ window.toggleCol=toggleCol;
 window.restoreDefaultCols=restoreDefaultCols;
 window.openOwnershipModal=openOwnershipModal;
 window.openAuditDiff=openAuditDiff;
+window.verifyMfaSetup=verifyMfaSetup;
+window.submitMfaVerify=submitMfaVerify;
+window.cancelMfaVerify=cancelMfaVerify;
+window.resetUserMfa=resetUserMfa;
 
 loadTheme();
 (async()=>{
@@ -3163,6 +3510,9 @@ loadTheme();
   // Wire force-change button inside module after DOM is ready
   const btnFC = document.getElementById('btnForceChange');
   if(btnFC) btnFC.addEventListener('click', submitForceChange);
+  // Wire OTP digit inputs
+  wireOtpRow('mfaSetupOtpRow', ()=>{});   // auto-advance only, submit via button
+  wireOtpRow('mfaVerifyOtpRow', ()=>{ submitMfaVerify(); });
 })();
 </script>
 
@@ -3319,6 +3669,70 @@ loadTheme();
 <div id="loadingOverlay">
   <div class="spinner"></div>
   <div class="loading-text" id="loadingText">Loading…</div>
+</div>
+
+
+<!-- ══ MFA SETUP OVERLAY ══ -->
+<div class="mfa-overlay" id="mfaSetupOverlay">
+  <div class="mfa-card">
+    <div class="mfa-hero">
+      <div class="mfa-hero-title">🔐 Set Up Two-Factor Authentication</div>
+      <div class="mfa-hero-sub">Required for all accounts — takes 30 seconds</div>
+    </div>
+    <div class="mfa-body">
+      <div class="mfa-steps">
+        <div class="mfa-step"><div class="mfa-step-num">1</div><span>Download <strong>Google Authenticator</strong> or <strong>Microsoft Authenticator</strong> on your phone.</span></div>
+        <div class="mfa-step"><div class="mfa-step-num">2</div><span>Tap <strong>Add account → Scan QR code</strong> and scan the code below.</span></div>
+        <div class="mfa-step"><div class="mfa-step-num">3</div><span>Enter the <strong>6-digit code</strong> shown in the app to confirm setup.</span></div>
+      </div>
+      <div id="mfaQrCode"></div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:6px;">Can't scan? Enter this key manually:</div>
+      <div class="mfa-secret-box" id="mfaSecretDisplay" title="Click to copy"></div>
+      <div class="otp-hint">Enter the 6-digit code from your authenticator app to confirm:</div>
+      <div class="otp-row" id="mfaSetupOtpRow">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+      </div>
+      <div class="mfa-err" id="mfaSetupErr"></div>
+    </div>
+    <div class="mfa-footer">
+      <button class="btn btn-primary" style="width:100%" id="btnMfaSetupVerify" onclick="verifyMfaSetup()">
+        ✓ Confirm &amp; Enable MFA
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MFA VERIFY OVERLAY (every login) ══ -->
+<div class="mfa-overlay" id="mfaVerifyOverlay">
+  <div class="mfa-card">
+    <div class="mfa-hero">
+      <div class="mfa-hero-title">🔑 Two-Factor Authentication</div>
+      <div class="mfa-hero-sub" id="mfaVerifyUsername"></div>
+    </div>
+    <div class="mfa-body">
+      <p style="font-size:14px;color:var(--text2);text-align:center;line-height:1.6;">
+        Open your authenticator app and enter the<br><strong>6-digit code</strong> for AssetVault.
+      </p>
+      <div class="otp-row" id="mfaVerifyOtpRow">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+        <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]">
+      </div>
+      <div class="mfa-err" id="mfaVerifyErr"></div>
+    </div>
+    <div class="mfa-footer">
+      <button class="btn" onclick="cancelMfaVerify()">← Back</button>
+      <button class="btn btn-primary" id="btnMfaVerify" onclick="submitMfaVerify()">Verify</button>
+    </div>
+  </div>
 </div>
 
 </body>
