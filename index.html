@@ -3,70 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v16</title>
+<title>AssetVault — Laptop Inventory v17</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 /* ── THEMES ── */
 [data-theme="light"] {
-  --bg-from: #dce8f5;
-  --bg-to:   #e8d5f0;
-  --bg-mid:  #d0e8e0;
-  --glass-bg:       rgba(255,255,255,0.55);
-  --glass-bg-hover: rgba(255,255,255,0.70);
-  --glass-bg-deep:  rgba(255,255,255,0.80);
-  --glass-border:   rgba(255,255,255,0.80);
-  --glass-border2:  rgba(255,255,255,0.50);
-  --glass-shadow:   0 8px 32px rgba(80,100,160,0.13), 0 1.5px 0 rgba(255,255,255,0.7) inset;
-  --glass-shadow-sm:0 4px 16px rgba(80,100,160,0.10);
-  --surface-tint:   rgba(255,255,255,0.35);
-  --text:    #111218;
-  --text2:   #44475a;
-  --text3:   #8b90a8;
+  --bg-from: #fdf6f0;
+  --bg-to:   #f5f0fc;
+  --bg-mid:  #eef7f0;
+  --glass-bg:       rgba(255,255,255,0.60);
+  --glass-bg-hover: rgba(255,255,255,0.78);
+  --glass-bg-deep:  rgba(255,255,255,0.88);
+  --glass-border:   rgba(255,255,255,0.85);
+  --glass-border2:  rgba(220,210,240,0.45);
+  --glass-shadow:   0 8px 32px rgba(160,120,200,0.10), 0 1.5px 0 rgba(255,255,255,0.8) inset;
+  --glass-shadow-sm:0 4px 16px rgba(160,120,200,0.08);
+  --surface-tint:   rgba(255,255,255,0.40);
+  --text:    #2d2438;
+  --text2:   #5a4e6e;
+  --text3:   #a097b8;
   --text-on-accent: #fff;
-  --accent:  #3a7bd5;
-  --accent2: #6c5ce7;
-  --accent-glow: rgba(58,123,213,0.25);
-  --green:   #00a86b;
-  --green-bg:rgba(0,168,107,0.12);
-  --blue:    #2563eb;
-  --blue-bg: rgba(37,99,235,0.12);
-  --amber:   #d97706;
-  --amber-bg:rgba(217,119,6,0.12);
-  --red:     #dc2626;
-  --red-bg:  rgba(220,38,38,0.12);
+  --accent:  #9b6dcc;
+  --accent2: #e07fa0;
+  --accent-glow: rgba(155,109,204,0.22);
+  --green:   #3db48c;
+  --green-bg:rgba(61,180,140,0.13);
+  --blue:    #5b8fe8;
+  --blue-bg: rgba(91,143,232,0.13);
+  --amber:   #d4874a;
+  --amber-bg:rgba(212,135,74,0.13);
+  --red:     #d95a6a;
+  --red-bg:  rgba(217,90,106,0.12);
   --radius:  14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
 }
 [data-theme="dark"] {
-  --bg-from: #0f0f1a;
-  --bg-to:   #1a0f2e;
-  --bg-mid:  #0f1a1a;
-  --glass-bg:       rgba(255,255,255,0.07);
-  --glass-bg-hover: rgba(255,255,255,0.12);
-  --glass-bg-deep:  rgba(255,255,255,0.10);
-  --glass-border:   rgba(255,255,255,0.14);
-  --glass-border2:  rgba(255,255,255,0.08);
-  --glass-shadow:   0 8px 32px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.08) inset;
-  --glass-shadow-sm:0 4px 16px rgba(0,0,0,0.35);
+  --bg-from: #1a1424;
+  --bg-to:   #201428;
+  --bg-mid:  #141e1e;
+  --glass-bg:       rgba(255,255,255,0.06);
+  --glass-bg-hover: rgba(255,255,255,0.11);
+  --glass-bg-deep:  rgba(255,255,255,0.09);
+  --glass-border:   rgba(255,255,255,0.12);
+  --glass-border2:  rgba(255,255,255,0.07);
+  --glass-shadow:   0 8px 32px rgba(0,0,0,0.50), 0 1px 0 rgba(255,255,255,0.07) inset;
+  --glass-shadow-sm:0 4px 16px rgba(0,0,0,0.38);
   --surface-tint:   rgba(255,255,255,0.04);
-  --text:    #f0f0fa;
-  --text2:   #a8abb8;
-  --text3:   #5c5f72;
+  --text:    #f0eaf8;
+  --text2:   #b8add0;
+  --text3:   #6a6080;
   --text-on-accent: #fff;
-  --accent:  #5b9cf6;
-  --accent2: #a78bfa;
-  --accent-glow: rgba(91,156,246,0.30);
-  --green:   #34d399;
-  --green-bg:rgba(52,211,153,0.12);
-  --blue:    #60a5fa;
-  --blue-bg: rgba(96,165,250,0.12);
-  --amber:   #fbbf24;
-  --amber-bg:rgba(251,191,36,0.12);
-  --red:     #f87171;
-  --red-bg:  rgba(248,113,113,0.12);
+  --accent:  #c49be0;
+  --accent2: #f0a0bc;
+  --accent-glow: rgba(196,155,224,0.28);
+  --green:   #5fd4a8;
+  --green-bg:rgba(95,212,168,0.13);
+  --blue:    #7db0f5;
+  --blue-bg: rgba(125,176,245,0.13);
+  --amber:   #f0b070;
+  --amber-bg:rgba(240,176,112,0.13);
+  --red:     #f08090;
+  --red-bg:  rgba(240,128,144,0.13);
   --radius:  14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
@@ -107,7 +107,7 @@ body {
   min-height: 100vh; display: flex; align-items: center;
   justify-content: center; padding: 24px;
   position: relative; overflow: hidden;
-  background: linear-gradient(135deg, #0f1a35 0%, #1a0f35 50%, #0f2535 100%);
+  background: linear-gradient(135deg, #2d1f40 0%, #3d1f35 50%, #1f2d40 100%);
 }
 .login-bg-canvas {
   position: absolute; inset: 0; z-index: 0;
@@ -529,12 +529,14 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 /* MODAL */
 .overlay {
   display: none; position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,0.25);
-  backdrop-filter: blur(8px);
+  background: rgba(30,20,50,0.30);
+  backdrop-filter: blur(10px);
   align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; transition: opacity 0.22s ease;
 }
-[data-theme="dark"] .overlay { background: rgba(0,0,0,0.55); }
-.overlay.open { display: flex; }
+[data-theme="dark"] .overlay { background: rgba(0,0,0,0.60); }
+.overlay.open { display: flex; animation: overlayIn 0.22s ease forwards; }
+@keyframes overlayIn { from{opacity:0} to{opacity:1} }
 
 .modal {
   background: var(--glass-bg-deep);
@@ -544,6 +546,17 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
   border-radius: var(--radius-xl);
   box-shadow: var(--glass-shadow), 0 0 0 0.5px var(--glass-border2) inset;
   width: 100%; max-width: 660px; max-height: 90vh; overflow-y: auto;
+  transform: translateY(24px) scale(0.97);
+  animation: modalIn 0.28s cubic-bezier(.34,1.3,.64,1) forwards;
+}
+@keyframes modalIn {
+  from { transform: translateY(28px) scale(0.96); opacity: 0; }
+  to   { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+.overlay:not(.open) .modal { animation: modalOut 0.18s ease forwards; }
+@keyframes modalOut {
+  from { transform: translateY(0) scale(1); opacity: 1; }
+  to   { transform: translateY(16px) scale(0.97); opacity: 0; }
 }
 .modal-header {
   padding: 22px 26px 18px;
@@ -557,7 +570,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; color: var(--text3); transition: all 0.15s;
 }
-.modal-close:hover { background: var(--red-bg); color: var(--red); border-color: rgba(220,38,38,0.25); }
+.modal-close:hover { background: var(--red-bg); color: var(--red); border-color: rgba(217,90,106,0.25); }
 .modal-body { padding: 22px 26px; }
 .modal-footer {
   padding: 18px 26px; border-top: 1px solid var(--glass-border2);
@@ -951,6 +964,19 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 .online-empty { font-size: 13px; color: var(--text3); padding: 12px 0; font-style: italic; }
 
 
+/* ── ACCOUNTABILITY COUNTER ── */
+.acct-counter-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr));
+  gap: 8px; margin-top: 14px;
+}
+.acct-counter-card {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.acct-counter-label { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+.acct-counter-num { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
 /* ── BRAND BREAKDOWN ── */
 .brand-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -1037,46 +1063,41 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 .history-detail { flex: 1; }
 .history-owner { font-size: 13px; font-weight: 600; color: var(--text); }
 .history-meta { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
-/* ── v16: READ-ONLY vs EDITABLE field distinction ── */
-.fg input[readonly], .fg select[disabled] {
-  background: var(--surface-tint);
-  border: 1px dashed var(--glass-border);
-  color: var(--text2);
-  cursor: default;
+/* ── v17: OWNER PILL in table ── */
+.owner-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, rgba(155,109,204,0.13), rgba(224,127,160,0.10));
+  border: 1px solid rgba(155,109,204,0.30);
+  border-radius: 999px; padding: 4px 12px 4px 5px;
+  cursor: pointer; transition: all 0.18s; white-space: nowrap;
+  max-width: 190px;
 }
-.fg input:not([readonly]), .fg select:not([disabled]) {
-  background: var(--glass-bg-deep);
-  border: 1.5px solid var(--glass-border);
-  color: var(--text);
+.owner-pill:hover {
+  background: linear-gradient(135deg, rgba(155,109,204,0.22), rgba(224,127,160,0.18));
+  border-color: rgba(155,109,204,0.55);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(155,109,204,0.18);
 }
-.fg input:not([readonly]):focus, .fg select:not([disabled]):focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
+.owner-pill-avatar {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 800; color: #fff;
 }
-.field-readonly-label {
-  font-size: 10px; font-weight: 600; color: var(--text3);
-  text-transform: uppercase; letter-spacing: 0.5px;
-  background: var(--surface-tint); border-radius: 6px;
-  padding: 2px 7px; margin-left: 6px;
+.owner-pill-name {
+  font-size: 12px; font-weight: 700; color: var(--accent);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.owner-pill-empty { font-size: 12px; color: var(--text3); font-style: italic; }
 
-/* ── v16: Owner cell in table ── */
-.owner-cell {
-  cursor: pointer; color: var(--accent);
-  font-weight: 700; white-space: nowrap;
-  display: flex; align-items: center; gap: 5px;
-}
-.owner-cell:hover { text-decoration: underline; }
-.owner-cell svg { flex-shrink: 0; opacity: 0.6; }
-
-/* ── v16: Column visibility toggle ── */
+/* ── v17: Column toggle ── */
 .col-toggle-bar {
   display: flex; gap: 6px; flex-wrap: wrap;
   margin-bottom: 10px; align-items: center;
 }
 .col-toggle-label {
   font-size: 11px; font-weight: 600; color: var(--text3);
-  text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-right: 2px;
 }
 .col-toggle-btn {
   font-size: 11px; font-weight: 600; padding: 4px 11px;
@@ -1084,34 +1105,35 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
   background: var(--glass-bg); color: var(--text2);
   transition: all 0.15s; user-select: none;
 }
+.col-toggle-btn:hover { background: var(--glass-bg-hover); }
 .col-toggle-btn.hidden-col {
-  background: transparent; color: var(--text3);
-  border-style: dashed; text-decoration: line-through;
+  background: transparent; color: var(--text3); border-style: dashed;
 }
+.col-toggle-restore {
+  font-size: 11px; font-weight: 700; padding: 4px 14px;
+  border-radius: 20px; cursor: pointer; border: none; margin-left: 4px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; box-shadow: 0 2px 8px var(--accent-glow);
+  transition: opacity 0.15s;
+}
+.col-toggle-restore:hover { opacity: 0.85; }
 .col-hidden { display: none !important; }
 
-/* ── v16: Accountability badge ── */
-.b-signed     { background: rgba(0,168,107,0.13); color: var(--green); }
-.b-unsigned   { background: rgba(220,38,38,0.12); color: var(--red); }
-.b-fordepl    { background: rgba(37,99,235,0.12); color: var(--blue); }
-.b-manualsign { background: rgba(217,119,6,0.12); color: var(--amber); }
-.b-depsite    { background: rgba(139,92,246,0.12); color: #7c3aed; }
+/* ── v17: Accountability badges ── */
+.b-signed     { background: rgba(61,180,140,0.15);  color: var(--green); }
+.b-unsigned   { background: rgba(217,90,106,0.13);  color: var(--red); }
+.b-fordepl    { background: rgba(91,143,232,0.13);  color: var(--blue); }
+.b-manualsign { background: rgba(212,135,74,0.14);  color: var(--amber); }
+.b-depsite    { background: rgba(155,109,204,0.14); color: var(--accent); }
 
-/* ── v16: Audit detail clickable ── */
-.audit-detail-link {
-  cursor: pointer; color: var(--accent);
-  text-decoration: underline dotted;
-  font-weight: 600;
-}
+/* ── v17: Audit clickable detail ── */
+.audit-detail-link { cursor: pointer; color: var(--accent); text-decoration: underline dotted; font-weight: 600; }
 .audit-detail-link:hover { color: var(--accent2); }
 
-/* ── v16: Audit diff modal ── */
-.audit-diff-grid {
-  display: flex; flex-direction: column; gap: 8px; margin-top: 4px;
-}
+/* ── v17: Audit diff ── */
+.audit-diff-grid { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 .audit-diff-row {
-  display: grid; grid-template-columns: 130px 1fr 1fr;
-  gap: 10px; align-items: start;
+  display: grid; grid-template-columns: 130px 1fr 1fr; gap: 10px; align-items: start;
   padding: 8px 12px; border-radius: var(--radius);
   background: var(--surface-tint); border: 1px solid var(--glass-border2);
 }
@@ -1120,25 +1142,70 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 .audit-diff-new { font-size: 12px; color: var(--green); font-weight: 600; word-break: break-word; }
 .audit-diff-same { font-size: 12px; color: var(--text3); word-break: break-word; }
 
-/* ── v16: Presence last-seen ── */
-.online-last-seen { font-size: 11px; color: var(--text3); flex: 1; text-align: right; }
+/* ── v17: Who's Online — pulse LEFT of name ── */
+.online-list { display: flex; flex-direction: column; gap: 6px; }
+.online-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: var(--glass-bg); border: 1px solid var(--glass-border2);
+  border-radius: var(--radius); transition: background 0.12s;
+}
+.online-pulse {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+  box-shadow: 0 0 0 2px rgba(61,180,140,0.25); flex-shrink: 0;
+  animation: pulse 2s infinite; order: -1;
+}
+.online-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.online-name { font-size: 13px; font-weight: 600; color: var(--text); flex:1; }
+.online-last-seen { font-size: 11px; color: var(--text3); }
+.online-empty { font-size: 13px; color: var(--text3); padding: 12px 0; font-style: italic; }
 
-/* ── v16: Ownership modal ── */
+/* ── v17: Ownership modal ── */
 .owner-modal-hero {
   display: flex; flex-direction: column; align-items: center;
-  padding: 24px 20px 18px; gap: 8px;
+  padding: 28px 20px 20px; gap: 8px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   margin: -22px -26px 20px;
 }
 .owner-modal-avatar {
-  width: 56px; height: 56px; border-radius: 50%;
-  background: rgba(255,255,255,0.22); border: 2px solid rgba(255,255,255,0.4);
+  width: 60px; height: 60px; border-radius: 50%;
+  background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.45);
   display: flex; align-items: center; justify-content: center;
   font-size: 22px; font-weight: 800; color: #fff;
 }
-.owner-modal-name { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
-.owner-modal-sub  { font-size: 12px; color: rgba(255,255,255,0.72); }
+.owner-modal-name { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.4px; }
+.owner-modal-sub  { font-size: 12px; color: rgba(255,255,255,0.75); }
+
+/* ── v17: Asset detail two-panel ── */
+.asset-modal-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.asset-modal-panel {
+  background: var(--surface-tint); border: 1px solid var(--glass-border2);
+  border-radius: var(--radius-lg); padding: 16px 18px;
+}
+.asset-panel-title {
+  font-size: 10px; font-weight: 800; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--glass-border2);
+}
+.asset-panel-row { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
+.asset-panel-row:last-child { margin-bottom: 0; }
+.asset-panel-label { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+.asset-panel-value { font-size: 13px; font-weight: 500; color: var(--text); word-break: break-word; }
+.asset-panel-value.mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+/* ── v17: READ-ONLY vs EDITABLE ── */
+.fg input:not([readonly]), .fg select:not([disabled]) {
+  background: var(--glass-bg-deep); border: 1.5px solid var(--glass-border); color: var(--text);
+}
+.fg input:not([readonly]):focus, .fg select:not([disabled]):focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+}
 </style>
 </head>
 <body>
@@ -1179,7 +1246,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.16</div>
+  <div class="login-version">v0.17</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -1296,11 +1363,14 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
           <div class="dash-section-title" style="margin-top:24px;">By Brand</div>
           <div class="brand-grid" id="dashBrandGrid"></div>
 
-          <div class="dash-section-title" style="margin-top:24px;">Status by Site</div>
+          <div class="dash-section-title" style="margin-top:24px;">All Assets per Site</div>
           <div class="site-status-table-wrap" id="dashSiteStatusTable"></div>
 
           <div class="dash-section-title" style="margin-top:24px;">By Site Location</div>
           <div class="site-grid" id="dashSiteGrid"></div>
+
+          <div class="dash-section-title" style="margin-top:24px;">Accountability Status</div>
+          <div class="acct-counter-grid" id="dashAcctGrid"></div>
         </div>
         <div>
           <div class="dash-section-title">Asset Trend (Last 6 Months)</div>
@@ -1359,6 +1429,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
         <button class="col-toggle-btn" data-col="accountabilityStatus" onclick="toggleCol('accountabilityStatus')">Accountability</button>
         <button class="col-toggle-btn" data-col="dateAdded" onclick="toggleCol('dateAdded')">Date Added</button>
         <button class="col-toggle-btn" data-col="dateModified" onclick="toggleCol('dateModified')">Date Modified</button>
+        <button class="col-toggle-restore" onclick="restoreDefaultCols()">↺ Restore Default View</button>
       </div>
 
       <div class="count-bar"><span id="recordCount">0 records</span></div>
@@ -1618,7 +1689,7 @@ const SEEDED_USERS = [
 function can(action){
   const r = currentUser?.role;
   if(r==='superadmin') return true;
-  if(r==='admin')      return ['add','edit','import','export'].includes(action); // no delete
+  if(r==='admin')      return ['add','edit','export'].includes(action); // superadmin-only: import, delete
 
   if(r==='member')     return ['export'].includes(action);
   return false;
@@ -1867,16 +1938,39 @@ function updateSiteFilter(){
   sel.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option${s===cur?' selected':''}>${s}</option>`).join('');
   if(cur) sel.value=cur;
 }
-/* ── v16: Column visibility state ── */
+/* ── v17: Column visibility state ── */
+const DEFAULT_HIDDEN = new Set(['processor','ram','os']);
 const hiddenCols = new Set(['processor','ram','os']);
+
 function toggleCol(col){
   if(hiddenCols.has(col)) hiddenCols.delete(col); else hiddenCols.add(col);
   const btn = document.querySelector(`.col-toggle-btn[data-col="${col}"]`);
   if(btn) btn.classList.toggle('hidden-col', hiddenCols.has(col));
-  // Show/hide all cells with that data-col in table
   document.querySelectorAll(`[data-col="${col}"]`).forEach(el=>{
     el.classList.toggle('col-hidden', hiddenCols.has(col));
   });
+}
+
+function restoreDefaultCols(){
+  // Show all currently hidden cols that aren't in default
+  [...hiddenCols].forEach(col=>{
+    if(!DEFAULT_HIDDEN.has(col)){
+      hiddenCols.delete(col);
+      const btn = document.querySelector(`.col-toggle-btn[data-col="${col}"]`);
+      if(btn) btn.classList.remove('hidden-col');
+      document.querySelectorAll(`[data-col="${col}"]`).forEach(el=>el.classList.remove('col-hidden'));
+    }
+  });
+  // Hide default-hidden cols
+  DEFAULT_HIDDEN.forEach(col=>{
+    if(!hiddenCols.has(col)){
+      hiddenCols.add(col);
+      const btn = document.querySelector(`.col-toggle-btn[data-col="${col}"]`);
+      if(btn) btn.classList.add('hidden-col');
+      document.querySelectorAll(`[data-col="${col}"]`).forEach(el=>el.classList.add('col-hidden'));
+    }
+  });
+  showToast('Column view restored to default.');
 }
 
 function acctBadge(s){
@@ -1903,30 +1997,37 @@ function renderTable(){
       <p>${records.length===0?'No laptops yet — click Add Laptop to get started.':'No records match your search.'}</p>
     </div></td></tr>`;return;
   }
-  tbody.innerHTML=f.map(r=>`<tr>
-    <td>
-      <div class="owner-cell" onclick="openOwnershipModal('${r.id}')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        ${r.currentOwner||'<span style="color:var(--text3);font-weight:400">No owner</span>'}
-      </div>
-    </td>
-    <td data-col="brand">${r.brand||'—'}</td>
-    <td data-col="model">${r.model||'—'}</td>
-    <td data-col="serialNumber" class="mono">${r.serialNumber||'—'}</td>
-    <td data-col="assetTag" class="mono">${r.assetTag||'—'}</td>
-    <td data-col="po" class="mono">${r.po||'—'}</td>
-    <td data-col="processor" class="${hiddenCols.has('processor')?'col-hidden':''}">${r.processor||'—'}</td>
-    <td data-col="ram" class="${hiddenCols.has('ram')?'col-hidden':''}">${r.ram||'—'}</td>
-    <td data-col="os" class="${hiddenCols.has('os')?'col-hidden':''}">${r.os||'—'}</td>
-    <td data-col="siteLocation">${r.siteLocation||'—'}</td>
-    <td data-col="assetStatus">${badge(r.assetStatus)}</td>
-    <td data-col="accountabilityStatus">${acctBadge(r.accountabilityStatus)}</td>
-    <td data-col="dateAdded" class="date-cell">${fmtDate(r.dateAdded)}</td>
-    <td data-col="dateModified" class="date-cell">${fmtDate(r.dateModified)}</td>
-    <td><div class="row-actions">
-      ${can('edit')?`<button class="btn btn-sm" onclick="openViewModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Record</button>`:'<button class="btn btn-sm" onclick="openViewModal(\''+r.id+'\')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> View</button>'}
-    </div></td>
-  </tr>`).join('');
+  tbody.innerHTML=f.map(r=>{
+    const ownerInit=(r.currentOwner||'?').trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const ownerPill=r.currentOwner
+      ?`<div class="owner-pill" onclick="openOwnershipModal('${r.id}')">
+          <div class="owner-pill-avatar">${ownerInit}</div>
+          <span class="owner-pill-name">${r.currentOwner}</span>
+        </div>`
+      :`<div class="owner-pill" onclick="openOwnershipModal('${r.id}')">
+          <div class="owner-pill-avatar" style="background:var(--glass-border)">—</div>
+          <span class="owner-pill-empty">No owner</span>
+        </div>`;
+    return`<tr>
+      <td>${ownerPill}</td>
+      <td data-col="brand">${r.brand||'—'}</td>
+      <td data-col="model">${r.model||'—'}</td>
+      <td data-col="serialNumber" class="mono">${r.serialNumber||'—'}</td>
+      <td data-col="assetTag" class="mono">${r.assetTag||'—'}</td>
+      <td data-col="po" class="mono">${r.po||'—'}</td>
+      <td data-col="processor" class="${hiddenCols.has('processor')?'col-hidden':''}">${r.processor||'—'}</td>
+      <td data-col="ram" class="${hiddenCols.has('ram')?'col-hidden':''}">${r.ram||'—'}</td>
+      <td data-col="os" class="${hiddenCols.has('os')?'col-hidden':''}">${r.os||'—'}</td>
+      <td data-col="siteLocation">${r.siteLocation||'—'}</td>
+      <td data-col="assetStatus">${badge(r.assetStatus)}</td>
+      <td data-col="accountabilityStatus">${acctBadge(r.accountabilityStatus)}</td>
+      <td data-col="dateAdded" class="date-cell">${fmtDate(r.dateAdded)}</td>
+      <td data-col="dateModified" class="date-cell">${fmtDate(r.dateModified)}</td>
+      <td><div class="row-actions">
+        ${can('edit')?`<button class="btn btn-sm" onclick="openViewModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Record</button>`:`<button class="btn btn-sm" onclick="openViewModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> View</button>`}
+      </div></td>
+    </tr>`;
+  }).join('');
 }
 function render(){renderStats();updateSiteFilter();renderTable();renderChips();}
 function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderTable();renderDashboard();}
@@ -2021,6 +2122,19 @@ function renderDashboard(){
         <div class="site-sub">${count===1?'asset':'assets'}</div>
       </div>`).join('')
     :`<p style="color:var(--text3);font-size:13px;">No site data yet.</p>`;
+
+  // ── Accountability Status counters ──
+  const acctStatuses=['Signed','Unsigned','For Deployment','Manual Signed','Deployed Onsite'];
+  const acctColors={'Signed':'var(--green)','Unsigned':'var(--red)','For Deployment':'var(--blue)','Manual Signed':'var(--amber)','Deployed Onsite':'var(--accent)'};
+  const acctCount={};
+  acctStatuses.forEach(s=>acctCount[s]=0);
+  records.forEach(r=>{if(r.accountabilityStatus&&acctCount[r.accountabilityStatus]!==undefined)acctCount[r.accountabilityStatus]++;});
+  const acctEl=document.getElementById('dashAcctGrid');
+  if(acctEl) acctEl.innerHTML=acctStatuses.map(s=>`
+    <div class="acct-counter-card">
+      <div class="acct-counter-label">${s}</div>
+      <div class="acct-counter-num" style="color:${acctColors[s]}">${acctCount[s]}</div>
+    </div>`).join('');
 
   // ── Asset Trend (last 6 months added) ──
   const trendEl=document.getElementById('dashTrendCard');
@@ -2643,38 +2757,58 @@ const _origRenderTable = renderTable;
 
 /* ── VIEW RECORD MODAL ── */
 let viewId = null;
+function panelRow(label, value, mono=false){
+  return `<div class="asset-panel-row">
+    <div class="asset-panel-label">${label}</div>
+    <div class="asset-panel-value${mono?' mono':''}">${value||'—'}</div>
+  </div>`;
+}
 function openViewModal(id){
   const r = records.find(x=>x.id===id); if(!r) return;
   viewId = id;
-  document.getElementById('viewModalTitle').textContent = (r.brand||'') + ' ' + (r.model||'');
-  document.getElementById('viewModalSub').textContent = (r.assetTag?'Tag: '+r.assetTag+' · ':'') + (r.serialNumber?'S/N: '+r.serialNumber:'');
-  // Show edit/delete btns based on permissions
-  document.getElementById('viewEditBtn').style.display = can('edit')?'':'none';
-  document.getElementById('viewDeleteBtn').style.display = can('delete')?'':'none';
+  const ownerInit=(r.currentOwner||'?').trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('viewEditBtn').style.display = can('edit')?'inline-flex':'none';
+  document.getElementById('viewDeleteBtn').style.display = can('delete')?'inline-flex':'none';
+  // Update modal header
+  document.getElementById('viewModalTitle').textContent = r.currentOwner||'No Owner';
+  document.getElementById('viewModalSub').textContent = `${r.brand||''} ${r.model||''} · ${r.assetTag||r.serialNumber||'No tag'}`;
   const hist = r.ownerHistory||[];
   document.getElementById('viewModalBody').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;margin-bottom:18px;">
-      ${viewField('Current Owner', r.currentOwner)}
-      ${viewField('Status', badge(r.assetStatus))}
-      ${viewField('Brand', r.brand)}
-      ${viewField('Model', r.model)}
-      ${viewField('Serial Number', r.serialNumber, true)}
-      ${viewField('Asset Tag', r.assetTag, true)}
-      ${viewField('PO #', r.po, true)}
-      ${viewField('Processor', r.processor)}
-      ${viewField('RAM', r.ram)}
-      ${viewField('OS', r.os)}
-      ${viewField('Site Location', r.siteLocation)}
-      ${viewField('Accountability', acctBadge(r.accountabilityStatus))}
-      ${viewField('Modified By', r.modifiedBy)}
+    <div class="asset-modal-panels">
+      <div class="asset-modal-panel">
+        <div class="asset-panel-title">🖥️ Device Details</div>
+        ${panelRow('Brand', r.brand)}
+        ${panelRow('Model', r.model)}
+        ${panelRow('Serial Number', r.serialNumber, true)}
+        ${panelRow('Asset Tag', r.assetTag, true)}
+        ${panelRow('PO #', r.po, true)}
+        ${panelRow('Processor', r.processor)}
+        ${panelRow('RAM', r.ram)}
+        ${panelRow('OS', r.os)}
+        ${panelRow('Site Location', r.siteLocation)}
+      </div>
+      <div class="asset-modal-panel">
+        <div class="asset-panel-title">📋 Status & Accountability</div>
+        <div class="asset-panel-row">
+          <div class="asset-panel-label">Asset Status</div>
+          <div class="asset-panel-value">${badge(r.assetStatus)}</div>
+        </div>
+        <div class="asset-panel-row">
+          <div class="asset-panel-label">Accountability</div>
+          <div class="asset-panel-value">${acctBadge(r.accountabilityStatus)}</div>
+        </div>
+        ${panelRow('Modified By', r.modifiedBy)}
+        ${panelRow('Date Added', fmtDate(r.dateAdded))}
+        ${panelRow('Last Modified', fmtDate(r.dateModified)||'Never')}
+      </div>
     </div>
-    ${r.assetStatus==='Repair'&&r.repairRemarks?`<div style="background:var(--amber-bg);border:1px solid rgba(217,119,6,0.25);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;"><div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">🔧 Repair Remarks</div><div style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;">${r.repairRemarks}</div></div>`:''}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;background:var(--surface-tint);border-radius:var(--radius);padding:12px 14px;margin-bottom:${hist.length?'16px':'0'};">
-      ${viewField('Date Added', fmtDate(r.dateAdded))}
-      ${viewField('Last Modified', fmtDate(r.dateModified)||'Never')}
-    </div>
+    ${r.assetStatus==='Repair'&&r.repairRemarks?`
+    <div style="background:var(--amber-bg);border:1px solid rgba(212,135,74,0.28);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;">
+      <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">🔧 Repair Remarks</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;">${r.repairRemarks}</div>
+    </div>`:''}
     ${hist.length?`<div class="history-section">
-      <div class="history-title">👤 Previous Owners</div>
+      <div class="history-title">👤 Previous Owners (${hist.length})</div>
       ${[...hist].reverse().map(h=>`<div class="history-item"><span class="history-icon">👤</span><div class="history-detail"><div class="history-owner">${h.owner||'(unknown)'}</div><div class="history-meta">Until ${fmtDate(h.to)} · Changed by ${h.changedBy||'—'}</div></div></div>`).join('')}
     </div>`:''}
   `;
@@ -2987,6 +3121,7 @@ window.addAuditEntryFS=addAuditEntryFS;
 window.exportAuditLog=exportAuditLog;
 window.onStatusChange=onStatusChange;
 window.toggleCol=toggleCol;
+window.restoreDefaultCols=restoreDefaultCols;
 window.openOwnershipModal=openOwnershipModal;
 window.openAuditDiff=openAuditDiff;
 
