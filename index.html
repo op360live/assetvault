@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v18</title>
+<title>AssetVault — Laptop Inventory v19</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -723,34 +723,50 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 
 /* ── USERS PAGE ── */
 .users-toolbar {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px; flex-wrap: wrap; gap: 12px;
 }
-.users-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
-}
-.user-card {
+/* ── Users: clean table list ── */
+.users-list {
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
   box-shadow: var(--glass-shadow-sm);
-  transition: transform 0.18s, box-shadow 0.18s;
 }
-.user-card:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow); }
-.user-card.disabled-user { opacity: 0.55; }
-.user-card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-.user-card-avatar {
-  width: 44px; height: 44px; border-radius: 50%;
+.users-list-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 0;
+  padding: 10px 20px;
+  background: var(--surface-tint);
+  border-bottom: 1px solid var(--glass-border2);
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.7px;
+}
+.user-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  align-items: center; gap: 0;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--glass-border2);
+  transition: background 0.12s;
+}
+.user-row:last-child { border-bottom: none; }
+.user-row:hover { background: var(--surface-tint); }
+.user-row.disabled-user { opacity: 0.5; }
+.user-row-identity { display: flex; align-items: center; gap: 12px; }
+.user-row-avatar {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   display: flex; align-items: center; justify-content: center;
-  font-size: 15px; font-weight: 700; color: #fff; flex-shrink: 0;
+  font-size: 13px; font-weight: 800; color: #fff;
 }
-.user-card-name { font-size: 15px; font-weight: 700; color: var(--text); }
-.user-card-username { font-size: 12px; color: var(--text3); margin-top: 1px; }
+.user-row-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.user-row-username { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.user-row-cell { font-size: 12px; color: var(--text2); }
+.user-row-actions { display: flex; gap: 6px; justify-content: flex-end; }
 .user-role-badge {
   display: inline-block; padding: 3px 10px; border-radius: 20px;
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
@@ -758,9 +774,9 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 .urb-superadmin { background: linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; }
 .urb-admin   { background: var(--amber-bg); color: var(--amber); }
 .urb-member  { background: var(--green-bg);  color: var(--green); }
-.user-card-meta { font-size: 12px; color: var(--text3); margin-top: 8px; display:flex; gap:10px; flex-wrap:wrap; }
 .user-status-dot { display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px; }
-.user-card-actions { display: flex; gap: 6px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--glass-border2); }
+/* keep old .user-card etc for compat but hide */
+.users-grid { display: none; }
 
 /* ── PROFILE MODAL ── */
 .profile-avatar-row {
@@ -897,6 +913,75 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+
+
+/* ── GLOBAL SEARCH BAR ── */
+.global-search-bar {
+  padding: 10px 28px;
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--glass-border2);
+  display: flex; align-items: center; gap: 10px;
+}
+.global-search-wrap {
+  position: relative; flex: 1; max-width: 600px; margin: 0 auto;
+}
+.global-search-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text3); pointer-events: none; display: flex;
+}
+.global-search-input {
+  width: 100%;
+  background: var(--glass-bg-hover);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 40px;
+  padding: 9px 16px 9px 42px;
+  color: var(--text); font-size: 13px; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.global-search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: var(--glass-bg-deep);
+}
+.global-search-input::placeholder { color: var(--text3); }
+.global-search-results {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+  background: var(--glass-bg-deep);
+  backdrop-filter: blur(30px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  z-index: 300; max-height: 380px; overflow-y: auto;
+  display: none;
+}
+.global-search-results.open { display: block; }
+.gsr-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 16px; cursor: pointer;
+  border-bottom: 1px solid var(--glass-border2);
+  transition: background 0.12s;
+}
+.gsr-item:last-child { border-bottom: none; }
+.gsr-item:hover { background: var(--surface-tint); }
+.gsr-icon {
+  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+  background: var(--glass-bg-hover);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.gsr-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.gsr-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.gsr-badge { margin-left: auto; flex-shrink: 0; }
+.gsr-empty { padding: 24px 16px; text-align: center; color: var(--text3); font-size: 13px; }
+.gsr-count {
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  padding: 8px 16px; border-bottom: 1px solid var(--glass-border2);
+  background: var(--surface-tint);
+}
+mark.gsr-highlight {
+  background: var(--accent-glow); color: var(--accent);
+  border-radius: 3px; padding: 0 2px; font-weight: 700;
+}
 
 /* ── NAV TABS ── */
 .nav-tabs {
@@ -1361,7 +1446,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.18</div>
+  <div class="login-version">v0.19</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -1462,6 +1547,23 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
       </div>
     </div>
   </header>
+
+  <!-- GLOBAL SEARCH BAR -->
+  <div class="global-search-bar" id="globalSearchBar">
+    <div class="global-search-wrap">
+      <span class="global-search-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </span>
+      <input type="text" class="global-search-input" id="globalSearchInput"
+        placeholder="Search assets, owners, serial numbers…"
+        oninput="onGlobalSearch(this.value)"
+        onkeydown="onGlobalSearchKey(event)"
+        autocomplete="off">
+      <div class="global-search-results" id="globalSearchResults"></div>
+    </div>
+  </div>
 
   <main class="main">
 
@@ -1788,10 +1890,8 @@ const DEFAULT_PW   = 'ae33a34216f00d844796e3ab70b2aaedd30e8544b7e8f8fd105a03d7f7
 // Add your office/VPN public IPs below. Leave empty [] to disable the check.
 // To find your office IP, visit: https://whatismyip.com from the office network.
 const ALLOWED_IPS = [
-   //'112.200.xx.xx',  // DMD office
+  // '112.200.xx.xx',  // DMD office
   // '180.191.xx.xx',  // EB2 office
-   //'139.135.xx.xx', // HOME
- // '139.135.222.13', // HOME
 ];
 
 async function getPublicIP(){
@@ -1966,10 +2066,17 @@ async function doLogin(){
     openMfaSetup(user);
     return;
   }
+  // Check if MFA was already verified within 24h for this user
+  if(isMfaSessionValid(user.username)){
+    addAuditEntryFS('login','Signed in (MFA session active)','');
+    showApp();
+    return;
+  }
   // MFA set up — show verify screen
   openMfaVerify(user);
 }
 async function doLogout(){
+  if(currentUser) clearMfaSession(currentUser.username);
   await stopPresence();
   sessionStorage.removeItem(SESSION_KEY);currentUser=null;
   document.getElementById('appScreen').style.display='none';
@@ -2657,46 +2764,68 @@ function roleLabel(r){
 
 function renderUsersGrid(){
   const users = getUsers();
-  const grid = document.getElementById('usersGrid');
-  if(!grid) return;
-  grid.innerHTML = users.map(u=>{
-    const isSuperadmin = u.role==='superadmin';
-    const name = u.displayName||u.username;
-    const init = name.slice(0,2).toUpperCase();
-    const statusDot = u.active===false?'background:var(--red)':'background:var(--green)';
-    const statusLbl = u.active===false?'Disabled':'Active';
-    const canEdit = !isSuperadmin; // admins cannot edit superadmins
-    return `<div class="user-card${u.active===false?' disabled-user':''}">
-      <div class="user-card-header">
-        <div class="user-card-avatar">${init}</div>
-        <div style="flex:1">
-          <div class="user-card-name">${name}</div>
-          <div class="user-card-username">@${u.username}</div>
-        </div>
-        <span class="user-role-badge ${roleBadgeClass(u.role)}">${roleLabel(u.role)}</span>
+  // render into a list container (we repurpose usersGrid or create users-list)
+  let container = document.getElementById('usersListContainer');
+  if(!container){
+    const grid = document.getElementById('usersGrid');
+    if(!grid) return;
+    // Replace usersGrid with a proper list
+    const parent = grid.parentElement;
+    container = document.createElement('div');
+    container.id = 'usersListContainer';
+    parent.insertBefore(container, grid);
+  }
+  container.innerHTML = `
+    <div class="users-list">
+      <div class="users-list-header">
+        <div>User</div>
+        <div>Role</div>
+        <div>Status</div>
+        <div>MFA</div>
+        <div>Actions</div>
       </div>
-      <div class="user-card-meta">
-        <span><span class="user-status-dot" style="${statusDot}"></span>${statusLbl}</span>
-        ${u.mustChangePassword?'<span style="color:var(--amber)">⚠ Temp password</span>':''}
-        ${u.mfaEnabled?'<span class="mfa-badge mfa-badge-on">🔐 MFA On</span>':'<span class="mfa-badge mfa-badge-off">⚠ MFA Off</span>'}
-      </div>
-      ${canEdit?`<div class="user-card-actions">
-        <button class="btn btn-sm" style="flex:1" onclick="openEditUserModal('${u.username}')">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Edit
-        </button>
-        <button class="btn btn-sm" style="flex:1;color:var(--amber)" onclick="resetUserPassword('${u.username}')">
-          🔑 Reset PW
-        </button>
-        <button class="btn btn-sm" style="flex:1;color:var(--purple)" onclick="resetUserMfa('${u.username}')" title="Reset authenticator app for this user">
-          📱 Reset MFA
-        </button>
-        <button class="btn btn-sm btn-danger" onclick="toggleUserActive('${u.username}',${u.active!==false})">
-          ${u.active===false?'Enable':'Disable'}
-        </button>
-      </div>`:'<div style="height:8px"></div>'}
+      ${users.map(u=>{
+        const isSuperadmin = u.role==='superadmin';
+        const name = u.displayName||u.username;
+        const init = name.slice(0,2).toUpperCase();
+        const isActive = u.active!==false;
+        const canEdit = !isSuperadmin;
+        return `<div class="user-row${!isActive?' disabled-user':''}">
+          <div class="user-row-identity">
+            <div class="user-row-avatar">${init}</div>
+            <div>
+              <div class="user-row-name">${name}</div>
+              <div class="user-row-username">@${u.username}</div>
+            </div>
+          </div>
+          <div class="user-row-cell">
+            <span class="user-role-badge ${roleBadgeClass(u.role)}">${roleLabel(u.role)}</span>
+          </div>
+          <div class="user-row-cell">
+            <span><span class="user-status-dot" style="${isActive?'background:var(--green)':'background:var(--red)'}"></span>${isActive?'Active':'Disabled'}</span>
+            ${u.mustChangePassword?'<br><span style="color:var(--amber);font-size:10px;font-weight:600;">⚠ Temp PW</span>':''}
+          </div>
+          <div class="user-row-cell">
+            ${u.mfaEnabled
+              ?'<span class="mfa-badge mfa-badge-on">🔐 On</span>'
+              :'<span class="mfa-badge mfa-badge-off">Off</span>'}
+          </div>
+          <div class="user-row-actions">
+            ${canEdit?`
+              <button class="btn btn-sm" onclick="openEditUserModal('${u.username}')" title="Edit user">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+              </button>
+              <button class="btn btn-sm" style="color:var(--amber)" onclick="resetUserPassword('${u.username}')" title="Reset password">🔑</button>
+              <button class="btn btn-sm" style="color:var(--purple)" onclick="resetUserMfa('${u.username}')" title="Reset MFA">📱</button>
+              <button class="btn btn-sm ${isActive?'btn-danger':''}" onclick="toggleUserActive('${u.username}',${isActive})" title="${isActive?'Disable':'Enable'} account">
+                ${isActive?'Disable':'Enable'}
+              </button>`
+            :'<span style="font-size:11px;color:var(--text3);">Protected</span>'}
+          </div>
+        </div>`;
+      }).join('')}
     </div>`;
-  }).join('');
 }
 
 function openAddUserModal(){
@@ -3244,6 +3373,36 @@ function openAuditDiff(entryId){
    Secrets stored in Firestore users collection
 ══════════════════════════════════════════════════ */
 
+
+/* ── MFA SESSION — 24h grace period ── */
+const MFA_SESSION_KEY = 'laptopAssets_mfaSession';
+const MFA_SESSION_TTL = 24 * 60 * 60 * 1000; // 24 hours in ms
+
+function stampMfaSession(username){
+  try{
+    const sessions = JSON.parse(localStorage.getItem(MFA_SESSION_KEY)||'{}');
+    sessions[username] = Date.now();
+    localStorage.setItem(MFA_SESSION_KEY, JSON.stringify(sessions));
+  }catch(e){}
+}
+
+function isMfaSessionValid(username){
+  try{
+    const sessions = JSON.parse(localStorage.getItem(MFA_SESSION_KEY)||'{}');
+    const ts = sessions[username];
+    if(!ts) return false;
+    return (Date.now() - ts) < MFA_SESSION_TTL;
+  }catch(e){ return false; }
+}
+
+function clearMfaSession(username){
+  try{
+    const sessions = JSON.parse(localStorage.getItem(MFA_SESSION_KEY)||'{}');
+    delete sessions[username];
+    localStorage.setItem(MFA_SESSION_KEY, JSON.stringify(sessions));
+  }catch(e){}
+}
+
 let _mfaPendingUser = null;   // user object waiting for MFA verify
 let _mfaSetupSecret = null;   // secret generated during setup
 
@@ -3390,6 +3549,7 @@ async function verifyMfaSetup(){
   }
 
   document.getElementById('mfaSetupOverlay').classList.remove('open');
+  stampMfaSession(users[i>-1?i:0]?.username || currentUser.username);
   addAuditEntryFS('edit','MFA setup completed','');
   showToast('✅ MFA enabled! You are now logged in.');
   showApp();
@@ -3427,6 +3587,7 @@ async function submitMfaVerify(){
   }
 
   document.getElementById('mfaVerifyOverlay').classList.remove('open');
+  stampMfaSession(_mfaPendingUser.username);
   addAuditEntryFS('login','Signed in (MFA verified)','');
   showApp();
 }
@@ -3445,6 +3606,107 @@ async function resetUserMfa(username){
     renderUsersGrid();
   }
 }
+
+
+/* ══════════════════════════════
+   GLOBAL SEARCH
+══════════════════════════════ */
+let _gsTimer = null;
+
+function onGlobalSearch(query){
+  clearTimeout(_gsTimer);
+  const results = document.getElementById('globalSearchResults');
+  if(!query.trim()){ results.classList.remove('open'); return; }
+  _gsTimer = setTimeout(()=>{ renderGlobalResults(query.trim()); }, 200);
+}
+
+function onGlobalSearchKey(e){
+  if(e.key === 'Escape'){
+    document.getElementById('globalSearchInput').value = '';
+    document.getElementById('globalSearchResults').classList.remove('open');
+  }
+  if(e.key === 'Enter'){
+    const q = document.getElementById('globalSearchInput').value.trim();
+    if(q){
+      // Jump to inventory with search applied
+      activeFilters.search = q;
+      document.getElementById('globalSearchResults').classList.remove('open');
+      document.getElementById('globalSearchInput').value = '';
+      switchView('inv');
+      const inv = document.getElementById('searchInput');
+      if(inv){ inv.value = q; }
+      renderChips(); renderTable();
+    }
+  }
+}
+
+function renderGlobalResults(query){
+  const results = document.getElementById('globalSearchResults');
+  const q = query.toLowerCase();
+  const statusIcons = {Deployed:'✅',Spare:'📦',Repair:'🔧','End of Life':'🗃️','For Return':'↩️'};
+
+  const hits = records.filter(r=>
+    [r.brand,r.model,r.serialNumber,r.assetTag,r.currentOwner,r.siteLocation,r.po,r.os]
+    .some(v=>(v||'').toLowerCase().includes(q))
+  ).slice(0, 10);
+
+  if(!hits.length){
+    results.innerHTML = '<div class="gsr-empty">No assets match "' + escapeHtml(query) + '"</div>';
+    results.classList.add('open');
+    return;
+  }
+
+  const hl = (str)=>{
+    if(!str) return '—';
+    const idx = str.toLowerCase().indexOf(q);
+    if(idx < 0) return escapeHtml(str);
+    return escapeHtml(str.slice(0,idx)) + '<mark class="gsr-highlight">' + escapeHtml(str.slice(idx,idx+q.length)) + '</mark>' + escapeHtml(str.slice(idx+q.length));
+  };
+
+  results.innerHTML =
+    `<div class="gsr-count">${hits.length} result${hits.length!==1?'s':''} for "${escapeHtml(query)}"</div>` +
+    hits.map(r=>`
+      <div class="gsr-item" onclick="selectGlobalResult('${r.id}')">
+        <div class="gsr-icon">${statusIcons[r.assetStatus]||'💻'}</div>
+        <div>
+          <div class="gsr-title">${hl(r.brand||'')} ${hl(r.model||'')}</div>
+          <div class="gsr-sub">${hl(r.currentOwner||'No owner')} · ${hl(r.serialNumber||'')}${r.assetTag?' · '+hl(r.assetTag):''}</div>
+        </div>
+        <div class="gsr-badge">${badge(r.assetStatus)}</div>
+      </div>`).join('') +
+    (records.length > 10 ? `<div class="gsr-count" style="cursor:pointer;color:var(--accent)" onclick="goToFullSearch('${escapeHtml(query)}')">Press Enter to see all results →</div>` : '');
+
+  results.classList.add('open');
+}
+
+function selectGlobalResult(id){
+  document.getElementById('globalSearchInput').value = '';
+  document.getElementById('globalSearchResults').classList.remove('open');
+  switchView('inv');
+  openViewModal(id);
+}
+
+function goToFullSearch(q){
+  document.getElementById('globalSearchInput').value = '';
+  document.getElementById('globalSearchResults').classList.remove('open');
+  activeFilters.search = q;
+  switchView('inv');
+  const inv = document.getElementById('searchInput');
+  if(inv){ inv.value = q; }
+  renderChips(); renderTable();
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Close results when clicking outside
+document.addEventListener('click', e=>{
+  const bar = document.getElementById('globalSearchBar');
+  if(bar && !bar.contains(e.target)){
+    document.getElementById('globalSearchResults')?.classList.remove('open');
+  }
+});
 
 // ── Expose functions to global scope (required for inline onclick in module scripts) ──
 window.toggleTheme=toggleTheme;
@@ -3500,6 +3762,10 @@ window.openAuditDiff=openAuditDiff;
 window.verifyMfaSetup=verifyMfaSetup;
 window.submitMfaVerify=submitMfaVerify;
 window.cancelMfaVerify=cancelMfaVerify;
+window.onGlobalSearch=onGlobalSearch;
+window.onGlobalSearchKey=onGlobalSearchKey;
+window.selectGlobalResult=selectGlobalResult;
+window.goToFullSearch=goToFullSearch;
 window.resetUserMfa=resetUserMfa;
 
 loadTheme();
