@@ -2,8 +2,16 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self' https:;
+  script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.gstatic.com;
+  connect-src 'self' https://firestore.googleapis.com https://firebase.googleapis.com https://identitytoolkit.googleapis.com https://api.ipify.org https://*.firebaseio.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  img-src 'self' data: blob:;
+">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v19</title>
+<title>AssetVault — Laptop Inventory v20</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -192,6 +200,18 @@ body {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 .field-input::placeholder { color: var(--text3); }
+
+
+/* ── Keep me logged in ── */
+.keep-login-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text2); cursor: pointer;
+  user-select: none;
+}
+.keep-login-row input[type="checkbox"] {
+  width: 16px; height: 16px; border-radius: 4px;
+  accent-color: var(--accent); cursor: pointer;
+}
 
 .btn-signin {
   width: 100%; padding: 13px;
@@ -1446,7 +1466,7 @@ mark.gsr-highlight {
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.19</div>
+  <div class="login-version">v0.20</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -1472,6 +1492,10 @@ mark.gsr-highlight {
         <input type="password" class="field-input" id="loginPass" placeholder="Enter password" autocomplete="current-password">
       </div>
       <div class="login-error" id="loginError">Incorrect username or password.</div>
+      <label class="keep-login-row">
+        <input type="checkbox" id="keepMeLoggedIn">
+        Keep me logged in for 24 hours
+      </label>
       <button class="btn-signin" onclick="doLogin()">Sign In</button>
     </div>
     <div class="login-footer">
@@ -1772,7 +1796,7 @@ mark.gsr-highlight {
         </div>
         <div class="fg"><label>Site Location <span style="color:var(--red)">*</span></label>
           <select id="f_siteLocation" required><option value="">Select Site</option>
-            <option>DMD</option><option>EB2</option><option>EB3</option><option>SDP</option>
+            <option>DMD</option><option>EB2</option><option>EB3</option><option>SDP</option><option>Offsite</option>
           </select>
         </div>
         <div class="fg"><label>Asset Status <span style="color:var(--red)">*</span></label>
@@ -1781,8 +1805,9 @@ mark.gsr-highlight {
             <option>End of Life</option><option>For Return</option>
           </select>
         </div>
-        <div class="fg"><label>Accountability Status <span style="color:var(--red)">*</span></label>
-          <select id="f_accountabilityStatus" required><option value="">Select Accountability</option>
+        <div class="fg" id="accountabilityRow">
+          <label>Accountability Status <span style="color:var(--red)" id="acctRequired">*</span></label>
+          <select id="f_accountabilityStatus"><option value="">Select Accountability</option>
             <option>Signed</option><option>Unsigned</option><option>For Deployment</option>
             <option>Manual Signed</option><option>Deployed Onsite</option>
           </select>
@@ -1884,6 +1909,7 @@ const USERS_COL   = "users";
 const STORAGE_KEY  = 'laptopAssets_v1';
 const THEME_KEY    = 'laptopAssets_theme';
 const SESSION_KEY  = 'laptopAssets_session';
+const KEEP_KEY     = 'laptopAssets_keepLogin'; // "keep me logged in" flag
 const DEFAULT_PW   = 'ae33a34216f00d844796e3ab70b2aaedd30e8544b7e8f8fd105a03d7f7a7dbb5'; // SHA-256 of Welcome@360!
 
 // ── IP ALLOWLIST ──
@@ -1896,12 +1922,16 @@ const ALLOWED_IPS = [
 
 async function getPublicIP(){
   try{
-    const r = await fetch('https://api.ipify.org?format=json');
+    const r = await fetch('https://api.ipify.org?format=json', {
+      method: 'GET',
+      mode: 'cors',
+      cache: 'no-store'
+    });
     const d = await r.json();
     return d.ip;
   }catch(e){
     console.warn('IP check skipped — could not reach IP lookup service.');
-    return null; // if fetch fails, allow login to proceed so nobody gets locked out
+    return null;
   }
 }
 
@@ -2054,6 +2084,12 @@ async function doLogin(){
   if(!user.active&&user.active!==undefined){err.textContent='This account has been disabled.';err.classList.add('show');return;}
   err.classList.remove('show');
   currentUser={...user};
+  const keepLogin = document.getElementById('keepMeLoggedIn')?.checked;
+  if(keepLogin){
+    localStorage.setItem(KEEP_KEY, JSON.stringify({user:{...user}, ts: Date.now()}));
+  } else {
+    localStorage.removeItem(KEEP_KEY);
+  }
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
   loadAudit();
   // ── MFA gate ──
@@ -2077,6 +2113,7 @@ async function doLogin(){
 }
 async function doLogout(){
   if(currentUser) clearMfaSession(currentUser.username);
+  localStorage.removeItem(KEEP_KEY);
   await stopPresence();
   sessionStorage.removeItem(SESSION_KEY);currentUser=null;
   document.getElementById('appScreen').style.display='none';
@@ -2084,14 +2121,31 @@ async function doLogout(){
   document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';
 }
 function checkSession(){
+  // 1. Check active sessionStorage session
   try{
     const s=JSON.parse(sessionStorage.getItem(SESSION_KEY));
     if(s&&s.username){
-      // Reload fresh user data from store in case it was updated
       const users=getUsers();
       const fresh=users.find(u=>u.username===s.username);
       currentUser=fresh||s;
       return true;
+    }
+  }catch{}
+  // 2. Check "keep me logged in" localStorage (24h window)
+  try{
+    const kept=JSON.parse(localStorage.getItem(KEEP_KEY));
+    if(kept&&kept.user&&kept.ts){
+      const age = Date.now()-kept.ts;
+      if(age < 24*60*60*1000){
+        const users=getUsers();
+        const fresh=users.find(u=>u.username===kept.user.username);
+        currentUser=fresh||kept.user;
+        // Restore into sessionStorage for this tab
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+        return true;
+      } else {
+        localStorage.removeItem(KEEP_KEY); // expired
+      }
     }
   }catch{}
   return false;
@@ -2471,6 +2525,8 @@ function openAddModal(){
   FIELDS.forEach(f=>{const el=document.getElementById('f_'+f.key);if(el)el.value='';});
   const ta=document.getElementById('f_repairRemarks');if(ta)ta.value='';
   document.getElementById('repairRemarksRow').style.display='none';
+  // Reset accountability row to visible
+  onStatusChange('');
   document.getElementById('formOverlay').classList.add('open');
 }
 function openEditModal(id){
@@ -2483,7 +2539,7 @@ function openEditModal(id){
   });
   // Handle repairRemarks textarea separately
   const ta=document.getElementById('f_repairRemarks');if(ta)ta.value=rec.repairRemarks||'';
-  document.getElementById('repairRemarksRow').style.display=rec.assetStatus==='Repair'?'block':'none';
+  onStatusChange(rec.assetStatus||'');
   document.getElementById('dateStrip').style.display='flex';
   document.getElementById('ds_added').textContent=fmtDate(rec.dateAdded);
   document.getElementById('ds_modified').textContent=rec.dateModified?fmtDate(rec.dateModified):'Never modified';
@@ -2510,6 +2566,14 @@ function openEditModal(id){
 function closeFormModal(){document.getElementById('formOverlay').classList.remove('open');}
 function onStatusChange(val){
   document.getElementById('repairRemarksRow').style.display=val==='Repair'?'block':'none';
+  // Hide accountability for statuses where it doesn't apply
+  const hideAcct = ['Repair','Spare','End of Life'].includes(val);
+  const acctRow = document.getElementById('accountabilityRow');
+  const acctSel = document.getElementById('f_accountabilityStatus');
+  const acctReq = document.getElementById('acctRequired');
+  if(acctRow){ acctRow.style.display = hideAcct ? 'none' : ''; }
+  if(acctSel){ acctSel.required = !hideAcct; if(hideAcct) acctSel.value=''; }
+  if(acctReq){ acctReq.style.display = hideAcct ? 'none' : ''; }
 }
 async function saveRecord(){
   const rec={};
@@ -2523,6 +2587,7 @@ async function saveRecord(){
     : '';
 
   // ── Required field validation ──
+  const noAcctStatuses = ['Repair','Spare','End of Life'];
   const required=[
     {key:'currentOwner',label:'Current Owner'},
     {key:'brand',label:'Brand'},
@@ -2530,7 +2595,7 @@ async function saveRecord(){
     {key:'serialNumber',label:'Serial Number'},
     {key:'siteLocation',label:'Site Location'},
     {key:'assetStatus',label:'Asset Status'},
-    {key:'accountabilityStatus',label:'Accountability Status'},
+    ...(noAcctStatuses.includes(rec.assetStatus)?[]:[{key:'accountabilityStatus',label:'Accountability Status'}]),
   ];
   const missing=required.filter(f=>!rec[f.key]);
   if(missing.length){
