@@ -5,14 +5,14 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%239b6dcc'/%3E%3Crect x='5' y='7' width='22' height='14' rx='2' stroke='white' stroke-width='2' fill='none'/%3E%3Cpath d='M11 21v1a2 2 0 002 2h6a2 2 0 002-2v-1' stroke='white' stroke-width='2' fill='none'/%3E%3Cline x1='2' y1='21' x2='30' y2='21' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self' https:;
-  script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.gstatic.com;
-  connect-src 'self' https://firestore.googleapis.com https://firebase.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://accounts.google.com https://api.ipify.org https://*.firebaseio.com;
+  script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.gstatic.com https://accounts.google.com;
+  connect-src 'self' https://firestore.googleapis.com https://firebase.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://accounts.google.com https://oauth2.googleapis.com https://api.ipify.org https://*.firebaseio.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
   img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com;
 ">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v24</title>
+<title>AssetVault — Laptop Inventory v26</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1745,7 +1745,7 @@ mark.gsr-highlight {
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.24</div>
+  <div class="login-version">v0.26</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -2011,7 +2011,7 @@ mark.gsr-highlight {
         <table>
           <thead>
             <tr>
-              <th onclick="sortBy('currentOwner')">Current Owner</th>
+              <th onclick="sortBy('currentOwner')">Owner</th>
               <th data-col="brand" onclick="sortBy('brand')">Brand</th>
               <th data-col="model" onclick="sortBy('model')">Model</th>
               <th data-col="serialNumber" onclick="sortBy('serialNumber')">Serial No.</th>
@@ -2098,7 +2098,7 @@ mark.gsr-highlight {
         <div class="ds-item"><span class="ds-label">Modified By</span><span class="ds-value" id="ds_modifiedBy">—</span></div>
       </div>
       <div class="form-grid">
-        <div class="fg full"><label>Current Owner <span style="color:var(--red)">*</span></label><input type="text" id="f_currentOwner" placeholder="e.g. Juan Dela Cruz" required></div>
+        <div class="fg full"><label>Owner <span style="color:var(--red)">*</span></label><input type="text" id="f_currentOwner" placeholder="e.g. Juan Dela Cruz" required></div>
         <div class="fg"><label>Brand <span style="color:var(--red)">*</span></label>
           <select id="f_brand" required><option value="">Select Brand</option>
             <option>Acer</option><option>Apple</option><option>Asus</option>
@@ -2144,9 +2144,9 @@ mark.gsr-highlight {
             <option>Manual Signed</option><option>Deployed Onsite</option>
           </select>
         </div>
-        <div class="fg full" id="repairRemarksRow" style="display:none;">
-          <label>Repair Remarks / Notes <span style="color:var(--amber);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;">● Repair</span></label>
-          <textarea id="f_repairRemarks" placeholder="Describe the issue, repair details, or notes…" rows="3" style="background:var(--surface-tint);border:1px solid var(--amber);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-size:13px;outline:none;width:100%;resize:vertical;font-family:inherit;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.boxShadow='0 0 0 3px rgba(217,119,6,0.2)'" onblur="this.style.boxShadow=''"></textarea>
+        <div class="fg full" id="repairRemarksRow">
+          <label>Remarks / Notes</label>
+          <textarea id="f_repairRemarks" placeholder="Describe any notes, issues or remarks…" rows="3" style="background:var(--surface-tint);border:1px solid var(--glass-border);border-radius:var(--radius);padding:10px 14px;color:var(--text);font-size:13px;outline:none;width:100%;resize:vertical;font-family:inherit;transition:border-color 0.2s,box-shadow 0.2s;" onfocus="this.style.boxShadow='0 0 0 3px var(--accent-glow)'" onblur="this.style.boxShadow=''"></textarea>
         </div>
       </div>
       <div class="history-section" id="ownerHistorySection" style="display:none;">
@@ -2216,13 +2216,15 @@ mark.gsr-highlight {
   <span id="toastMsg"></span>
 </div>
 
+<!-- Google Identity Services (GIS) for Google sign-in -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- TOTP library removed in v24 — MFA disabled -->
 
 <script type="module">
 // ── FIREBASE ──
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut as firebaseSignOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signOut as firebaseSignOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDL8FLt7q_febvA116cXYaRNSO3uhiUINA",
@@ -2235,7 +2237,7 @@ const firebaseConfig = {
 const _app = initializeApp(firebaseConfig);
 const db = getFirestore(_app);
 const auth = getAuth(_app);
-const googleProvider = new GoogleAuthProvider();
+// Note: googleProvider removed — v26 uses GIS token flow instead of Firebase Auth for Google sign-in
 const LAPTOPS_COL = "laptops";
 const USERS_COL   = "users";
 
@@ -2447,32 +2449,48 @@ async function doLogin(){
 /* ── GOOGLE SIGN-IN PATH ── */
 let _googlePendingEmail = null; // holds Google email during account linking
 
+// ── Google Sign-In via Google Identity Services (GIS) ──
+// Decodes the returned JWT locally — no Firebase Auth call needed.
+// This avoids auth/internal-error entirely (no authorized-domain check).
+function _decodeJwtEmail(token){
+  try{
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+    return payload.email || null;
+  }catch(e){ return null; }
+}
+
+// GIS client_id = OAuth 2.0 Web Client ID from Firebase project
+// You can find this in Firebase console → Authentication → Sign-in method → Google → Web SDK configuration
+const GIS_CLIENT_ID = '89473530750-94v8o281qo6dgkadvk2q34q6jdcusc1u.apps.googleusercontent.com';
+
 async function doGoogleLogin(){
   hideLoginErr();
   if(!await checkIPAllowed()) return;
-  try{
-    showLoading('Redirecting to Google…');
-    // Store any typed username so we can pre-fill after redirect
-    const typedUser = document.getElementById('loginUser').value.trim();
-    if(typedUser) sessionStorage.setItem('_pendingGoogleUser', typedUser);
-    await signInWithRedirect(auth, googleProvider);
-    // Page will reload — execution continues in handleGoogleRedirect() on next load
-  }catch(e){
-    hideLoading();
-    showLoginErr('Google sign-in failed: '+(e.message||e.code));
+  if(!window.google || !window.google.accounts || !window.google.accounts.id){
+    showLoginErr('Google sign-in library not loaded yet. Please wait a moment and try again.');
+    return;
   }
-}
-
-// Called on page load to check if we're returning from a Google redirect
-async function handleGoogleRedirect(){
+  showLoading('Waiting for Google…');
   try{
-    const result = await getRedirectResult(auth);
-    if(!result) return; // No redirect in progress
+    const idToken = await new Promise((resolve, reject)=>{
+      window.google.accounts.id.initialize({
+        client_id: GIS_CLIENT_ID,
+        callback: (response)=>{ resolve(response.credential); },
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        ux_mode: 'popup'
+      });
+      window.google.accounts.id.prompt(notification=>{
+        if(notification.isNotDisplayed()){
+          reject(new Error('⚠️ Google sign-in could not display. Make sure the OAuth Client ID is configured in Firebase console, and this file is opened from an authorized origin (not file://).'));
+        } else if(notification.isSkippedMoment()){
+          reject(new Error('cancelled'));
+        }
+      });
+    });
+    const googleEmail = _decodeJwtEmail(idToken);
+    if(!googleEmail){ hideLoading(); showLoginErr('Could not read email from Google token.'); return; }
     hideLoading();
-    const googleEmail = result.user.email;
-    // Sign out of Firebase Auth immediately — we only use it for identity
-    await firebaseSignOut(auth);
-
     await loadUsersFromFirestore();
     const users = getUsers();
     const user = users.find(x=>x.googleEmail && x.googleEmail.toLowerCase()===googleEmail.toLowerCase());
@@ -2480,28 +2498,26 @@ async function handleGoogleRedirect(){
       if(!user.active&&user.active!==undefined){ showLoginErr('This account has been disabled.'); return; }
       await _finalizeLogin(user, 'google');
     } else {
-      // First time — show account linking step
       _googlePendingEmail = googleEmail;
       document.getElementById('loginStep1').style.display = 'none';
       document.getElementById('loginStep3').classList.add('open');
-      // Pre-fill username if they had typed one before redirect
-      const saved = sessionStorage.getItem('_pendingGoogleUser');
-      sessionStorage.removeItem('_pendingGoogleUser');
-      document.getElementById('googleLinkUser').value = saved||'';
+      const savedUser = document.getElementById('loginUser').value.trim();
+      document.getElementById('googleLinkUser').value = savedUser||'';
       document.getElementById('googleLinkInfo').innerHTML =
-        `<strong>Google account verified:</strong> ${googleEmail}<br>
-         Enter your AssetVault username below to link your account.`;
+        `<strong>Google account verified:</strong> ${googleEmail}<br>Enter your AssetVault username below to link your account.`;
       hideLoginErr('loginError3');
       setTimeout(()=>document.getElementById('googleLinkUser').focus(), 100);
     }
   }catch(e){
     hideLoading();
-    // Ignore cancelled redirects
-    if(e.code !== 'auth/redirect-cancelled-by-user'){
-      showLoginErr('Google sign-in failed: '+(e.message||e.code));
+    if(e.message !== 'cancelled'){
+      showLoginErr(e.message || 'Google sign-in failed. Please try again.');
     }
   }
 }
+
+// No redirect handling needed — GIS popup flow is fully self-contained
+async function handleGoogleRedirect(){ /* no-op */ }
 
 async function linkGoogleAccount(){
   const username = document.getElementById('googleLinkUser').value.trim().toLowerCase();
@@ -2736,11 +2752,11 @@ function renderTable(){
   tbody.innerHTML=f.map(r=>{
     const ownerInit=(r.currentOwner||'?').trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const ownerPill=r.currentOwner
-      ?`<div class="owner-pill" onclick="openOwnershipModal('${r.id}')">
+      ?`<div class="owner-pill" onclick="openViewModal('${r.id}')">
           <div class="owner-pill-avatar">${ownerInit}</div>
           <span class="owner-pill-name">${r.currentOwner}</span>
         </div>`
-      :`<div class="owner-pill" onclick="openOwnershipModal('${r.id}')">
+      :`<div class="owner-pill" onclick="openViewModal('${r.id}')">
           <div class="owner-pill-avatar" style="background:var(--glass-border)">—</div>
           <span class="owner-pill-empty">No owner</span>
         </div>`;
@@ -2940,8 +2956,7 @@ function openAddModal(){
   document.getElementById('ownerHistorySection').style.display='none';
   FIELDS.forEach(f=>{const el=document.getElementById('f_'+f.key);if(el)el.value='';});
   const ta=document.getElementById('f_repairRemarks');if(ta)ta.value='';
-  document.getElementById('repairRemarksRow').style.display='none';
-  // Reset accountability row to visible
+  // Reset accountability + remarks visibility
   onStatusChange('');
   document.getElementById('formOverlay').classList.add('open');
 }
@@ -2981,7 +2996,7 @@ function openEditModal(id){
 }
 function closeFormModal(){document.getElementById('formOverlay').classList.remove('open');}
 function onStatusChange(val){
-  document.getElementById('repairRemarksRow').style.display=val==='Repair'?'block':'none';
+  document.getElementById('repairRemarksRow').style.display='block';
   // Hide accountability for statuses where it doesn't apply
   const hideAcct = ['Repair','Spare','End of Life'].includes(val);
   const acctRow = document.getElementById('accountabilityRow');
@@ -2998,9 +3013,7 @@ async function saveRecord(){
     const el=document.getElementById('f_'+f.key);
     rec[f.key]=(el?.value||'').trim();
   });
-  rec.repairRemarks = rec.assetStatus==='Repair'
-    ? (document.getElementById('f_repairRemarks')?.value||'').trim()
-    : '';
+  rec.repairRemarks = (document.getElementById('f_repairRemarks')?.value||'').trim();
 
   // ── Required field validation ──
   const noAcctStatuses = ['Repair','Spare','End of Life'];
@@ -3615,9 +3628,9 @@ function openViewModal(id){
         ${panelRow('Last Modified', fmtDate(r.dateModified)||'Never')}
       </div>
     </div>
-    ${r.assetStatus==='Repair'&&r.repairRemarks?`
-    <div style="background:var(--amber-bg);border:1px solid rgba(212,135,74,0.28);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;">
-      <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">🔧 Repair Remarks</div>
+    ${r.repairRemarks?`
+    <div style="background:var(--surface-tint);border:1px solid var(--glass-border2);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;">
+      <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;">📝 Remarks / Notes</div>
       <div style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;">${r.repairRemarks}</div>
     </div>`:''}
     ${hist.length?`<div class="history-section">
