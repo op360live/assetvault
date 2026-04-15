@@ -6,13 +6,13 @@
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self' https:;
   script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.gstatic.com https://accounts.google.com;
-  connect-src 'self' https://firestore.googleapis.com https://firebase.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://accounts.google.com https://oauth2.googleapis.com https://api.ipify.org https://*.firebaseio.com;
+  connect-src 'self' https://firestore.googleapis.com https://firebase.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://accounts.google.com https://oauth2.googleapis.com https://www.googleapis.com https://api.ipify.org https://*.firebaseio.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
   img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com;
 ">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v26</title>
+<title>AssetVault — Laptop Inventory v27</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1745,7 +1745,7 @@ mark.gsr-highlight {
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.26</div>
+  <div class="login-version">v0.27</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -2237,7 +2237,7 @@ const firebaseConfig = {
 const _app = initializeApp(firebaseConfig);
 const db = getFirestore(_app);
 const auth = getAuth(_app);
-// Note: googleProvider removed — v26 uses GIS token flow instead of Firebase Auth for Google sign-in
+// Note: googleProvider removed — v27 uses GIS OAuth2 token client instead of Firebase Auth for Google sign-in
 const LAPTOPS_COL = "laptops";
 const USERS_COL   = "users";
 
@@ -2377,18 +2377,18 @@ function getUsers(){
 
 async function saveUsers(users){
   _usersCache = users;
+  // Always keep localStorage in sync so password changes survive Firestore outages
+  try{ localStorage.setItem('laptopAssets_users', JSON.stringify(users)); }catch(e){}
   if(_useFirestoreUsers){
     try{
       const batch = writeBatch(db);
       users.forEach(u => batch.set(doc(db, USERS_COL, u.username), u));
       await batch.commit();
-      return;
     }catch(e){
       console.warn('Firestore saveUsers failed, falling back to localStorage:', e.message);
       _useFirestoreUsers = false;
     }
   }
-  localStorage.setItem('laptopAssets_users', JSON.stringify(users));
 }
 
 async function hashPassword(pw){
@@ -2466,30 +2466,35 @@ const GIS_CLIENT_ID = '89473530750-94v8o281qo6dgkadvk2q34q6jdcusc1u.apps.googleu
 async function doGoogleLogin(){
   hideLoginErr();
   if(!await checkIPAllowed()) return;
-  if(!window.google || !window.google.accounts || !window.google.accounts.id){
+  if(!window.google || !window.google.accounts || !window.google.accounts.oauth2){
     showLoginErr('Google sign-in library not loaded yet. Please wait a moment and try again.');
     return;
   }
   showLoading('Waiting for Google…');
   try{
-    const idToken = await new Promise((resolve, reject)=>{
-      window.google.accounts.id.initialize({
+    const accessToken = await new Promise((resolve, reject)=>{
+      const tokenClient = window.google.accounts.oauth2.initTokenClient({
         client_id: GIS_CLIENT_ID,
-        callback: (response)=>{ resolve(response.credential); },
-        auto_select: false,
-        cancel_on_tap_outside: true,
-        ux_mode: 'popup'
-      });
-      window.google.accounts.id.prompt(notification=>{
-        if(notification.isNotDisplayed()){
-          reject(new Error('⚠️ Google sign-in could not display. Make sure the OAuth Client ID is configured in Firebase console, and this file is opened from an authorized origin (not file://).'));
-        } else if(notification.isSkippedMoment()){
-          reject(new Error('cancelled'));
+        scope: 'email profile',
+        callback: (resp)=>{
+          if(resp.error){ reject(new Error(resp.error_description || resp.error)); return; }
+          resolve(resp.access_token);
+        },
+        error_callback: (err)=>{
+          if(err.type === 'popup_closed'){ reject(new Error('cancelled')); return; }
+          reject(new Error(err.message || 'Google sign-in popup was closed.'));
         }
       });
+      tokenClient.requestAccessToken({ prompt: 'select_account' });
     });
-    const googleEmail = _decodeJwtEmail(idToken);
-    if(!googleEmail){ hideLoading(); showLoginErr('Could not read email from Google token.'); return; }
+    // Exchange access token for user email via Google's userinfo endpoint
+    const infoResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    });
+    if(!infoResp.ok) throw new Error('Failed to retrieve Google account info. Check your network connection.');
+    const info = await infoResp.json();
+    const googleEmail = info.email;
+    if(!googleEmail){ hideLoading(); showLoginErr('Could not read email from Google account.'); return; }
     hideLoading();
     await loadUsersFromFirestore();
     const users = getUsers();
@@ -2511,7 +2516,15 @@ async function doGoogleLogin(){
   }catch(e){
     hideLoading();
     if(e.message !== 'cancelled'){
-      showLoginErr(e.message || 'Google sign-in failed. Please try again.');
+      let msg = e.message || 'Google sign-in failed. Please try again.';
+      // Guide the user if the error is caused by an unregistered origin
+      if(/popup|origin|disallowed|400|redirect_uri/i.test(msg)){
+        msg = 'Google sign-in failed — this file must be served via HTTP, not opened as a local file. '
+            + 'Run: <code>python3 -m http.server 8080</code> then open '
+            + '<a href="http://localhost:8080" target="_blank">http://localhost:8080</a>. '
+            + 'Also add <strong>http://localhost:8080</strong> to your Google Cloud OAuth authorized JavaScript origins.';
+      }
+      showLoginErr(msg);
     }
   }
 }
