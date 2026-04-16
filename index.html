@@ -12,7 +12,7 @@
   img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com;
 ">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v26</title>
+<title>AssetVault — Laptop Inventory v27</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1765,7 +1765,7 @@ mark.gsr-highlight {
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.26</div>
+  <div class="login-version">v0.27</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -1858,6 +1858,10 @@ mark.gsr-highlight {
       <button class="btn" id="btnImport" onclick="openImportModal()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
         <span>Import</span>
+      </button>
+      <button class="btn" onclick="findAndShowDuplicates()" title="Scan for duplicate serial numbers">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="11" y1="8" x2="11" y2="14"/></svg>
+        <span class="btn-export-text">Find Dupes</span>
       </button>
       <button class="btn" onclick="exportCSV()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
@@ -2098,7 +2102,11 @@ mark.gsr-highlight {
           </select>
         </div>
         <div class="fg"><label>Model <span style="color:var(--red)">*</span></label><input type="text" id="f_model" placeholder="e.g. Latitude 5530" required></div>
-        <div class="fg"><label>Serial Number <span style="color:var(--red)">*</span></label><input type="text" id="f_serialNumber" placeholder="e.g. ABC123XYZ" required></div>
+        <div class="fg">
+          <label>Serial Number <span style="color:var(--red)">*</span></label>
+          <input type="text" id="f_serialNumber" placeholder="e.g. ABC123XYZ" required oninput="checkSerialDuplicate(this.value)">
+          <div id="serialDupeWarn" style="display:none;margin-top:5px;font-size:12px;color:var(--amber);background:var(--amber-bg);border-radius:8px;padding:6px 10px;line-height:1.5;"></div>
+        </div>
         <div class="fg"><label>Asset Tag</label><input type="text" id="f_assetTag" placeholder="e.g. -LT-0001"></div>
         <div class="fg"><label>PO #</label><input type="text" id="f_po" placeholder="e.g. PO-2024-001"></div>
         <div class="fg"><label>Processor</label>
@@ -2171,6 +2179,25 @@ mark.gsr-highlight {
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         Delete
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- DUPLICATES MODAL -->
+<div class="overlay" id="dupesOverlay">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <div>
+        <span class="modal-title">🔍 Duplicate Serial Numbers</span>
+        <div id="dupesModalCount" style="font-size:12px;color:var(--text3);margin-top:3px;font-weight:500;"></div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('dupesOverlay').classList.remove('open')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="dupesModalBody" style="max-height:62vh;overflow-y:auto;"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('dupesOverlay').classList.remove('open')">Close</button>
     </div>
   </div>
 </div>
@@ -2888,7 +2915,14 @@ function openEditModal(id){
   }
   document.getElementById('formOverlay').classList.add('open');
 }
-function closeFormModal(){document.getElementById('formOverlay').classList.remove('open');}
+function closeFormModal(){
+  document.getElementById('formOverlay').classList.remove('open');
+  // Clear dupe warning state
+  const w=document.getElementById('serialDupeWarn');
+  const i=document.getElementById('f_serialNumber');
+  if(w) w.style.display='none';
+  if(i){ i.style.borderColor=''; i.style.boxShadow=''; }
+}
 function onStatusChange(val){
   document.getElementById('repairRemarksRow').style.display='block';
   // Hide accountability for statuses where it doesn't apply
@@ -2933,6 +2967,18 @@ async function saveRecord(){
     return;
   }
   required.forEach(f=>{const el=document.getElementById('f_'+f.key);if(el){el.style.borderColor='';el.style.boxShadow='';}});
+
+  // ── Duplicate serial number check ──
+  const serialVal = (rec.serialNumber||'').trim().toLowerCase();
+  if(serialVal){
+    const dupe = records.find(r => r.id !== editId && (r.serialNumber||'').trim().toLowerCase() === serialVal);
+    if(dupe){
+      showToast(`Duplicate serial number — already exists as ${dupe.brand||''} ${dupe.model||''} (${dupe.assetTag||dupe.serialNumber||'no tag'}).`, true);
+      const el = document.getElementById('f_serialNumber');
+      if(el){ el.style.borderColor='var(--red)'; el.style.boxShadow='0 0 0 3px rgba(220,38,38,0.15)'; el.focus(); }
+      return;
+    }
+  }
 
   const now=nowISO();
   let finalRec, beforeSnap=null;
@@ -2989,6 +3035,70 @@ async function confirmDelete(){
 /* IMPORT/EXPORT */
 function openImportModal(){document.getElementById('importOverlay').classList.add('open');}
 function closeImportModal(){document.getElementById('importOverlay').classList.remove('open');}
+
+/* ── DUPLICATE DETECTION ── */
+function checkSerialDuplicate(val){
+  const warn = document.getElementById('serialDupeWarn');
+  const input = document.getElementById('f_serialNumber');
+  if(!warn) return;
+  const v = (val||'').trim().toLowerCase();
+  if(!v){ warn.style.display='none'; input.style.borderColor=''; input.style.boxShadow=''; return; }
+  const dupe = records.find(r => r.id !== editId && (r.serialNumber||'').trim().toLowerCase() === v);
+  if(dupe){
+    warn.style.display='block';
+    warn.innerHTML = `⚠️ Already exists — <strong>${dupe.brand||''} ${dupe.model||''}</strong>${dupe.currentOwner?' · '+dupe.currentOwner:''} <span style="opacity:.7;font-size:11px;">(${dupe.assetTag||dupe.serialNumber})</span>`;
+    input.style.borderColor='var(--amber)';
+    input.style.boxShadow='0 0 0 3px rgba(212,135,74,0.18)';
+  } else {
+    warn.style.display='none';
+    input.style.borderColor='';
+    input.style.boxShadow='';
+  }
+}
+
+function findAndShowDuplicates(){
+  // Group by normalised serial number
+  const groups={};
+  records.forEach(r=>{
+    const key=(r.serialNumber||'').trim().toLowerCase();
+    if(!key) return;
+    if(!groups[key]) groups[key]=[];
+    groups[key].push(r);
+  });
+  const dupes=Object.values(groups).filter(g=>g.length>1);
+
+  const el=document.getElementById('dupesModalBody');
+  const countEl=document.getElementById('dupesModalCount');
+  if(dupes.length===0){
+    countEl.textContent='No duplicates found';
+    countEl.style.color='var(--green)';
+    el.innerHTML=`<div style="text-align:center;padding:32px 0;color:var(--text3);font-size:14px;">✅ All serial numbers are unique. No duplicates detected.</div>`;
+  } else {
+    const totalRecs=dupes.reduce((s,g)=>s+g.length,0);
+    countEl.textContent=`${dupes.length} duplicate serial${dupes.length>1?'s':''} · ${totalRecs} affected records`;
+    countEl.style.color='var(--red)';
+    el.innerHTML=dupes.map(group=>{
+      const serial=group[0].serialNumber||'—';
+      return`<div style="margin-bottom:18px;border:1px solid var(--glass-border2);border-radius:var(--radius);overflow:hidden;">
+        <div style="padding:9px 14px;background:var(--red-bg);font-size:12px;font-weight:700;color:var(--red);letter-spacing:0.3px;">
+          🔴 Serial: <span style="font-family:monospace">${serial}</span> — ${group.length} records
+        </div>
+        ${group.map(r=>`
+        <div style="padding:10px 14px;border-top:1px solid var(--glass-border2);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;color:var(--text);">${r.brand||'—'} ${r.model||''}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">
+              Tag: ${r.assetTag||'—'} · Owner: ${r.currentOwner||'None'} · Site: ${r.siteLocation||'—'}
+            </div>
+          </div>
+          <span class="badge ${({Deployed:'b-deployed',Spare:'b-spare',Repair:'b-repair',Docked:'b-docked','End of Life':'b-retired','For Return':'b-return'}[r.assetStatus]||'b-retired')}" style="font-size:11px;flex-shrink:0">${r.assetStatus||'—'}</span>
+          ${can('edit')?`<button class="btn btn-sm" onclick="document.getElementById('dupesOverlay').classList.remove('open');openEditModal('${r.id}')" style="flex-shrink:0">Edit</button>`:''}
+        </div>`).join('')}
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('dupesOverlay').classList.add('open');
+}
 function handleImport(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
@@ -3894,6 +4004,8 @@ window.confirmDelete=confirmDelete;
 window.openImportModal=openImportModal;
 window.closeImportModal=closeImportModal;
 window.handleImport=handleImport;
+window.findAndShowDuplicates=findAndShowDuplicates;
+window.checkSerialDuplicate=checkSerialDuplicate;
 window.exportCSV=exportCSV;
 window.exportJSON=exportJSON;
 window.sortBy=sortBy;
