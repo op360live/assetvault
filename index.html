@@ -12,7 +12,7 @@
   img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com;
 ">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v27</title>
+<title>AssetVault — Laptop Inventory v28</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -119,6 +119,8 @@ body {
   position: relative; overflow: hidden;
   background: linear-gradient(135deg, #2d1f40 0%, #3d1f35 50%, #1f2d40 100%);
 }
+/* Hide login & app during splash; JS will reveal the correct one */
+#loginScreen.splash-hidden { display: none !important; }
 .login-bg-canvas {
   position: absolute; inset: 0; z-index: 0;
   pointer-events: none; overflow: hidden;
@@ -750,6 +752,32 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { color: #fff; font-size: 14px; font-weight: 500; opacity: 0.85; }
 
+/* ── SPLASH SCREEN ── */
+#splashScreen {
+  position: fixed; inset: 0; z-index: 10000;
+  background: linear-gradient(135deg, #2d1f40 0%, #3d1f35 50%, #1f2d40 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px; transition: opacity 0.4s ease;
+}
+#splashScreen.fade-out { opacity: 0; pointer-events: none; }
+.splash-logo {
+  width: 64px; height: 64px; border-radius: 18px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 4px;
+}
+.splash-title { font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+.splash-sub   { font-size: 14px; color: rgba(255,255,255,0.55); margin-top: -12px; }
+.splash-spinner {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.15);
+  border-top-color: rgba(255,255,255,0.85);
+  animation: spin 0.8s linear infinite;
+  margin-top: 8px;
+}
+.splash-msg { font-size: 13px; color: rgba(255,255,255,0.45); font-weight: 500; }
+
 
 /* ── AUDIT VIEW ── */
 .audit-toolbar {
@@ -1158,6 +1186,41 @@ mark.gsr-highlight {
 .dbc-docked .dbc-num { color: #3a6abf; }
 .dbc-retired .dbc-num { color: var(--text3); }
 .dbc-lost .dbc-num { color: var(--red); }
+
+/* ── SPEC BREAKDOWN CARDS ── */
+.spec-section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  box-shadow: var(--glass-shadow-sm);
+  margin-bottom: 0;
+}
+.spec-section-title {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.spec-section-title .spec-status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+.spec-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+.spec-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--glass-bg2, rgba(255,255,255,0.05));
+  border: 1px solid var(--glass-border);
+  border-radius: 10px; padding: 8px 14px;
+  cursor: pointer; transition: background 0.18s, border-color 0.18s, transform 0.12s;
+  min-width: 110px;
+}
+.spec-pill:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); transform: translateY(-1px); }
+.spec-pill:active { transform: translateY(0); }
+.spec-pill-label { font-size: 12px; color: var(--text2); font-weight: 600; flex: 1; line-height: 1.3; }
+.spec-pill-count { font-size: 15px; font-weight: 800; color: var(--accent); min-width: 24px; text-align: right; }
+.spec-pill.sp-deployed { border-left: 3px solid var(--green); }
+.spec-pill.sp-spare     { border-left: 3px solid var(--blue); }
+.spec-section-empty { font-size: 13px; color: var(--text3); font-style: italic; }
 
 /* bar chart */
 .dash-bar-section { margin-top: 28px; }
@@ -1765,7 +1828,7 @@ mark.gsr-highlight {
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.27</div>
+  <div class="login-version">v0.28</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -1871,6 +1934,10 @@ mark.gsr-highlight {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         <span class="btn-add-text">Add Laptop</span>
       </button>
+      <button class="btn" id="btnRefresh" onclick="refreshData()" title="Refresh data from database">
+        <svg id="refreshIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <span class="btn-export-text">Refresh</span>
+      </button>
       <!-- Account dropdown -->
       <div class="acct-wrap" id="acctWrap">
         <div class="acct-btn" onclick="toggleAcctMenu()">
@@ -1922,6 +1989,24 @@ mark.gsr-highlight {
     <div class="view active" id="dashView">
       <div class="dash-section-title">Asset Overview</div>
       <div class="dash-big-grid" id="dashBigGrid"></div>
+
+      <!-- Spec breakdown rows (Deployed + Spare) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+        <div class="spec-section">
+          <div class="spec-section-title">
+            <div class="spec-status-dot" style="background:var(--green);"></div>
+            Deployed — by Processor &amp; RAM
+          </div>
+          <div class="spec-pills" id="dashDeployedSpecs"><span class="spec-section-empty">No data.</span></div>
+        </div>
+        <div class="spec-section">
+          <div class="spec-section-title">
+            <div class="spec-status-dot" style="background:var(--blue);"></div>
+            Spare — by Processor &amp; RAM
+          </div>
+          <div class="spec-pills" id="dashSpareSpecs"><span class="spec-section-empty">No data.</span></div>
+        </div>
+      </div>
 
       <div class="dash-two-col">
         <div>
@@ -2652,8 +2737,9 @@ function acctBadge(s){
 function renderTable(){
   const sf=activeFilters.status||document.getElementById('statusFilter').value||'';
   const lf=activeFilters.site||document.getElementById('siteFilter').value||'';
-  const q=(activeFilters.search||document.getElementById('searchInput').value||'').toLowerCase().trim();
+  const q=(activeSpecFilter?'':(activeFilters.search||document.getElementById('searchInput').value||'')).toLowerCase().trim();
   let f=records.filter(r=>(!sf||r.assetStatus===sf)&&(!lf||r.siteLocation===lf)&&
+    (!activeSpecFilter||(r.processor===(activeSpecFilter.processor||'')&&r.ram===(activeSpecFilter.ram||'')))&&
     (!q||[...FIELDS.map(x=>r[x.key]||''),fmtDate(r.dateAdded),fmtDate(r.dateModified)].some(v=>String(v).toLowerCase().includes(q))));
   f.sort((a,b)=>{
     let av=a[sortCol]||'',bv=b[sortCol]||'';
@@ -2727,6 +2813,35 @@ function renderDashboard(){
       <div class="dbc-num">${card.num}</div>
       <div class="dbc-lbl">${card.lbl}</div>
     </div>`).join('');
+
+  // ── Spec breakdown (Deployed + Spare) ──
+  function buildSpecMap(status){
+    const map={};
+    records.filter(r=>r.assetStatus===status).forEach(r=>{
+      const key=[r.processor,r.ram].filter(Boolean).join(' / ')||'Unknown';
+      if(!map[key]) map[key]={count:0,processor:r.processor||'',ram:r.ram||''};
+      map[key].count++;
+    });
+    return Object.entries(map).sort((a,b)=>b[1].count-a[1].count);
+  }
+  const deployedEl=document.getElementById('dashDeployedSpecs');
+  const spareEl=document.getElementById('dashSpareSpecs');
+  const deployedEntries=buildSpecMap('Deployed');
+  const spareEntries=buildSpecMap('Spare');
+  if(deployedEl) deployedEl.innerHTML=deployedEntries.length
+    ?deployedEntries.map(([k,v])=>`
+      <div class="spec-pill sp-deployed" onclick="specCardClick('Deployed','${esc(v.processor)}','${esc(v.ram)}')" title="Show ${k} deployed assets">
+        <div class="spec-pill-label">${k}</div>
+        <div class="spec-pill-count">${v.count}</div>
+      </div>`).join('')
+    :`<span class="spec-section-empty">No deployed assets.</span>`;
+  if(spareEl) spareEl.innerHTML=spareEntries.length
+    ?spareEntries.map(([k,v])=>`
+      <div class="spec-pill sp-spare" onclick="specCardClick('Spare','${esc(v.processor)}','${esc(v.ram)}')" title="Show ${k} spare assets">
+        <div class="spec-pill-label">${k}</div>
+        <div class="spec-pill-count">${v.count}</div>
+      </div>`).join('')
+    :`<span class="spec-section-empty">No spare assets.</span>`;
 
   // ── Brand breakdown ──
   const brandIcons={'Apple':'🍎','Lenovo':'🖥️','Dell':'💻','HP':'🖨️','Asus':'⚡','Acer':'🔷','Microsoft':'🪟','MSI':'🎮'};
@@ -2866,7 +2981,41 @@ function dashCardClick(status){
   sf.value=status||'';
   activeStatusFilter=status||null;
   activeFilters.status=status||'';
+  activeSpecFilter=null;
   renderChips();renderStats();renderTable();
+}
+
+/* Escape string for use in inline HTML attribute value (single or double quote safe) */
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+/* ── SPEC CARD CLICK — filter inventory by status + processor/RAM combo ── */
+let activeSpecFilter=null;
+function specCardClick(status, processor, ram){
+  switchView('inv');
+  const sf=document.getElementById('statusFilter');
+  sf.value=status;
+  activeStatusFilter=status;
+  activeFilters.status=status;
+  activeSpecFilter={processor, ram};
+  // Put a hint in the search box so the chip shows, but actual filtering uses activeSpecFilter
+  const specLabel=[processor,ram].filter(Boolean).join(' / ');
+  activeFilters.search=specLabel;
+  const si=document.getElementById('searchInput');
+  if(si) si.value=specLabel;
+  renderChips();renderStats();renderTable();
+}
+
+/* ── REFRESH DATA ── */
+async function refreshData(){
+  const icon=document.getElementById('refreshIcon');
+  if(icon) icon.style.animation='spin 0.6s linear infinite';
+  showLoading('Refreshing…');
+  await load();
+  render();
+  renderDashboard();
+  hideLoading();
+  if(icon) icon.style.animation='';
+  showToast('Data refreshed.');
 }
 
 /* CRUD */
@@ -3519,11 +3668,13 @@ document.addEventListener('click', e=>{
 
 function onSearchInput(){
   activeFilters.search = document.getElementById('searchInput').value.trim();
+  activeSpecFilter=null;
   renderChips(); renderTable();
 }
 function onStatusFilter(){
   activeFilters.status = document.getElementById('statusFilter').value;
   activeStatusFilter = activeFilters.status || null;
+  activeSpecFilter=null;
   renderChips(); renderStats(); renderTable();
 }
 function onSiteFilter(){
@@ -3534,12 +3685,13 @@ function removeFilter(type){
   activeFilters[type]='';
   if(type==='status'){document.getElementById('statusFilter').value='';activeStatusFilter=null;}
   if(type==='site')  document.getElementById('siteFilter').value='';
-  if(type==='search'){document.getElementById('searchInput').value='';}
+  if(type==='search'){document.getElementById('searchInput').value='';activeSpecFilter=null;}
   renderChips(); renderStats(); renderTable();
 }
 function clearAllFilters(){
   activeFilters.status='';activeFilters.site='';activeFilters.search='';
   activeStatusFilter=null;
+  activeSpecFilter=null;
   document.getElementById('statusFilter').value='';
   document.getElementById('siteFilter').value='';
   document.getElementById('searchInput').value='';
@@ -4045,15 +4197,24 @@ window.onGlobalSearch=onGlobalSearch;
 window.onGlobalSearchKey=onGlobalSearchKey;
 window.selectGlobalResult=selectGlobalResult;
 window.goToFullSearch=goToFullSearch;
+window.refreshData=refreshData;
+window.specCardClick=specCardClick;
 
 loadTheme();
+// Hide both screens while splash is showing
+document.getElementById('loginScreen').classList.add('splash-hidden');
+document.getElementById('appScreen').style.display='none';
 (async()=>{
   await loadUsersFromFirestore();
-  if(checkSession()) showApp();
-  else {
-    document.getElementById('loginScreen').style.display='flex';
-
+  if(checkSession()) {
+    await showApp();
+  } else {
+    document.getElementById('loginScreen').classList.remove('splash-hidden');
   }
+  // Fade out splash
+  const splash = document.getElementById('splashScreen');
+  splash.classList.add('fade-out');
+  setTimeout(()=>{ splash.style.display='none'; }, 420);
   // Wire force-change button inside module after DOM is ready
   const btnFC = document.getElementById('btnForceChange');
   if(btnFC) btnFC.addEventListener('click', submitForceChange);
@@ -4220,6 +4381,16 @@ loadTheme();
   <div class="loading-text" id="loadingText">Loading…</div>
 </div>
 
+<!-- SPLASH SCREEN -->
+<div id="splashScreen">
+  <div class="splash-logo">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+  </div>
+  <div class="splash-title">Asset<span style="font-weight:300;opacity:0.75;">Vault</span></div>
+  <div class="splash-sub">Laptop Asset Inventory</div>
+  <div class="splash-spinner"></div>
+  <div class="splash-msg">Please wait…</div>
+</div>
 
 
 </body>
