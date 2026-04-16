@@ -12,7 +12,7 @@
   img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com;
 ">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v25r</title>
+<title>AssetVault — Laptop Inventory v26</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -206,7 +206,7 @@ body {
 
 
 /* ── v22 Login — GitHub style ── */
-.login-step { display: flex; flex-direction: column; gap: 0; }
+.login-step { display: flex; flex-direction: column; gap: 14px; }
 .login-divider {
   display: flex; align-items: center; gap: 10px;
   font-size: 11px; font-weight: 600; color: var(--text3);
@@ -492,6 +492,7 @@ body {
 .sv-deployed { color: var(--green); }
 .sv-spare { color: var(--blue); }
 .sv-repair { color: var(--amber); }
+.sv-docked { color: #3a6abf; }
 .sv-retired { color: var(--text3); }
 .sv-lost { color: var(--red); }
 
@@ -602,6 +603,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 .b-spare    { background: var(--blue-bg);  color: var(--blue);  }
 .b-retired  { background: rgba(128,128,128,0.12); color: var(--text3); }
 .b-repair   { background: var(--amber-bg); color: var(--amber); }
+.b-docked   { background: rgba(91,143,232,0.15); color: #3a6abf; }
 
 /* Repair remarks tooltip */
 .badge-wrap { position: relative; display: inline-block; }
@@ -1153,6 +1155,7 @@ mark.gsr-highlight {
 .dbc-deployed .dbc-num { color: var(--green); }
 .dbc-spare .dbc-num { color: var(--blue); }
 .dbc-repair .dbc-num { color: var(--amber); }
+.dbc-docked .dbc-num { color: #3a6abf; }
 .dbc-retired .dbc-num { color: var(--text3); }
 .dbc-lost .dbc-num { color: var(--red); }
 
@@ -1762,7 +1765,7 @@ mark.gsr-highlight {
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.25r</div>
+  <div class="login-version">v0.26</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -1961,7 +1964,7 @@ mark.gsr-highlight {
         </div>
         <select class="filter-select" id="statusFilter" onchange="onStatusFilter()">
           <option value="">All Status</option>
-          <option>Deployed</option><option>Spare</option><option>Repair</option>
+          <option>Deployed</option><option>Spare</option><option>Repair</option><option>Docked</option>
           <option>End of Life</option><option>For Return</option>
         </select>
         <select class="filter-select" id="siteFilter" onchange="onSiteFilter()">
@@ -2121,7 +2124,7 @@ mark.gsr-highlight {
         </div>
         <div class="fg"><label>Asset Status <span style="color:var(--red)">*</span></label>
           <select id="f_assetStatus" onchange="onStatusChange(this.value)" required><option value="">Select Status</option>
-            <option>Deployed</option><option>Spare</option><option>Repair</option>
+            <option>Deployed</option><option>Spare</option><option>Repair</option><option>Docked</option>
             <option>End of Life</option><option>For Return</option>
           </select>
         </div>
@@ -2546,7 +2549,7 @@ function statCardClick(status){
 
 /* RENDER */
 function badge(s, remarks){
-  const m={Deployed:'b-deployed',Spare:'b-spare',Repair:'b-repair','End of Life':'b-retired','For Return':'b-return'};
+  const m={Deployed:'b-deployed',Spare:'b-spare',Repair:'b-repair',Docked:'b-docked','End of Life':'b-retired','For Return':'b-return'};
   const span=`<span class="badge ${m[s]||'b-retired'}">${s||'—'}</span>`;
   if(s==='Repair' && remarks && remarks.trim()){
     const safe=remarks.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -2555,7 +2558,7 @@ function badge(s, remarks){
   return span;
 }
 function renderStats(){
-  const c={total:records.length,Deployed:0,Spare:0,Repair:0,'End of Life':0,'For Return':0};
+  const c={total:records.length,Deployed:0,Spare:0,Repair:0,Docked:0,'End of Life':0,'For Return':0};
   records.forEach(r=>{if(c[r.assetStatus]!==undefined)c[r.assetStatus]++;});
   const mkCard=(lbl,val,cls,status,title)=>{
     const isActive=activeStatusFilter===status;
@@ -2569,6 +2572,7 @@ function renderStats(){
     mkCard('Deployed',c.Deployed,'sv-deployed','Deployed')+
     mkCard('Spare',c.Spare,'sv-spare','Spare')+
     mkCard('Repair',c.Repair,'sv-repair','Repair')+
+    mkCard('Docked',c.Docked,'sv-docked','Docked')+
     mkCard('End of Life',c['End of Life'],'sv-retired','End of Life')+
     mkCard('For Return',c['For Return'],'sv-lost','For Return');
 }
@@ -2675,7 +2679,7 @@ function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderTab
 
 /* ── DASHBOARD RENDER ── */
 function renderDashboard(){
-  const c={total:records.length,Deployed:0,Spare:0,Repair:0,'End of Life':0,'For Return':0};
+  const c={total:records.length,Deployed:0,Spare:0,Repair:0,Docked:0,'End of Life':0,'For Return':0};
   records.forEach(r=>{if(c[r.assetStatus]!==undefined)c[r.assetStatus]++;});
   renderDashboardExtras();
   loadPresence();
@@ -2686,6 +2690,7 @@ function renderDashboard(){
     {cls:'dbc-deployed',icon:'✅',num:c.Deployed,lbl:'Deployed',status:'Deployed'},
     {cls:'dbc-spare',icon:'📦',num:c.Spare,lbl:'Spare',status:'Spare'},
     {cls:'dbc-repair',icon:'🔧',num:c.Repair,lbl:'Repair',status:'Repair'},
+    {cls:'dbc-docked',icon:'🔌',num:c.Docked,lbl:'Docked',status:'Docked'},
     {cls:'dbc-retired',icon:'🗃️',num:c['End of Life'],lbl:'End of Life',status:'End of Life'},
     {cls:'dbc-lost',icon:'↩️',num:c['For Return'],lbl:'For Return',status:'For Return'},
   ];
@@ -2715,7 +2720,7 @@ function renderDashboard(){
 
   // ── Status by Site table ──
   const allSites=[...new Set(records.map(r=>r.siteLocation).filter(Boolean))].sort();
-  const statuses=['Deployed','Spare','Repair','End of Life','For Return'];
+  const statuses=['Deployed','Spare','Repair','Docked','End of Life','For Return'];
   const siteStatus={};
   records.forEach(r=>{
     if(!r.siteLocation) return;
@@ -2809,7 +2814,7 @@ function renderDashboard(){
     const tb=b.dateModified||b.dateAdded||'';
     return tb.localeCompare(ta);
   }).slice(0,10);
-  const dotColor={Deployed:'var(--green)',Spare:'var(--blue)',Repair:'var(--amber)','End of Life':'var(--text3)','For Return':'#8b5aa8'};
+  const dotColor={Deployed:'var(--green)',Spare:'var(--blue)',Repair:'var(--amber)',Docked:'#3a6abf','End of Life':'var(--text3)','For Return':'#8b5aa8'};
   document.getElementById('dashActivity').innerHTML=recent.length
     ?recent.map(r=>{
       const isNew=!r.dateModified;
@@ -2822,7 +2827,7 @@ function renderDashboard(){
           <div class="act-sub">${isNew?'Added':'Updated'} · ${r.currentOwner||'No owner'}${by}</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <span class="badge ${({Deployed:'b-deployed',Spare:'b-spare',Repair:'b-repair','End of Life':'b-retired','For Return':'b-return'}[r.assetStatus]||'b-retired')}" style="font-size:10px;padding:2px 8px;">${r.assetStatus||'—'}</span>
+          <span class="badge ${({Deployed:'b-deployed',Spare:'b-spare',Repair:'b-repair',Docked:'b-docked','End of Life':'b-retired','For Return':'b-return'}[r.assetStatus]||'b-retired')}" style="font-size:10px;padding:2px 8px;">${r.assetStatus||'—'}</span>
           <div class="act-time">${fmtDate(dt)}</div>
         </div>
       </div>`;}).join('')
@@ -2905,7 +2910,7 @@ async function saveRecord(){
   rec.repairRemarks = (document.getElementById('f_repairRemarks')?.value||'').trim();
 
   // ── Required field validation ──
-  const noAcctStatuses = ['Repair','Spare','End of Life'];
+  const noAcctStatuses = ['Repair','Spare','End of Life','Docked'];
   const required=[
     {key:'currentOwner',label:'Current Owner'},
     {key:'brand',label:'Brand'},
@@ -3805,7 +3810,7 @@ function onGlobalSearchKey(e){
 function renderGlobalResults(query){
   const results = document.getElementById('globalSearchResults');
   const q = query.toLowerCase();
-  const statusIcons = {Deployed:'✅',Spare:'📦',Repair:'🔧','End of Life':'🗃️','For Return':'↩️'};
+  const statusIcons = {Deployed:'✅',Spare:'📦',Repair:'🔧',Docked:'🔌','End of Life':'🗃️','For Return':'↩️'};
 
   const hits = records.filter(r=>
     [r.brand,r.model,r.serialNumber,r.assetTag,r.currentOwner,r.siteLocation,r.po,r.os]
@@ -4020,8 +4025,6 @@ loadTheme();
         </div>
         <div id="profileError" style="display:none;color:var(--red);font-size:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;"></div>
       </div>
-    </div>
-
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="document.getElementById('profileOverlay').classList.remove('open')">Cancel</button>
