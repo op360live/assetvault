@@ -12,7 +12,7 @@
   img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com;
 ">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v28</title>
+<title>AssetVault — Laptop Inventory v1.0</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,13 +30,13 @@
   --glass-shadow:   0 8px 32px rgba(160,120,200,0.10), 0 1.5px 0 rgba(255,255,255,0.8) inset;
   --glass-shadow-sm:0 4px 16px rgba(160,120,200,0.08);
   --surface-tint:   rgba(255,255,255,0.40);
-  --text:    #2d2438;
-  --text2:   #5a4e6e;
-  --text3:   #a097b8;
+  --text:    #1a1d23;
+  --text2:   #4b5563;
+  --text3:   #9ca3af;
   --text-on-accent: #fff;
   --accent:  #9b6dcc;
   --accent2: #e07fa0;
-  --accent-glow: rgba(155,109,204,0.22);
+  --accent-glow: rgba(155,109,204,0.18);
   --green:   #3db48c;
   --green-bg:rgba(61,180,140,0.13);
   --blue:    #5b8fe8;
@@ -48,6 +48,15 @@
   --radius:  14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
+  /* sidebar/layout */
+  --page-bg: #f0f2f5;
+  --sidebar-bg: #ffffff;
+  --topbar-bg: #ffffff;
+  --sidebar-border: #e8eaed;
+  --search-bg: #f3f4f6;
+  --sb-hover: rgba(0,0,0,0.045);
+  --card-bg: #ffffff;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
 }
 [data-theme="dark"] {
   --bg-from: #1a1424;
@@ -79,20 +88,26 @@
   --radius:  14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
+  /* sidebar/layout */
+  --page-bg: #110d1e;
+  --sidebar-bg: rgba(20,16,34,0.98);
+  --topbar-bg: rgba(20,16,34,0.95);
+  --sidebar-border: rgba(255,255,255,0.1);
+  --search-bg: rgba(255,255,255,0.06);
+  --sb-hover: rgba(255,255,255,0.07);
+  --card-bg: rgba(255,255,255,0.06);
+  --card-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
   font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-  background: var(--bg-from);
-  background-image: radial-gradient(ellipse at 20% 20%, var(--bg-mid) 0%, transparent 60%),
-                    radial-gradient(ellipse at 80% 80%, var(--bg-to) 0%, transparent 60%),
-                    radial-gradient(ellipse at 60% 10%, var(--accent-glow) 0%, transparent 50%);
+  background: var(--page-bg, #f0f2f5);
   min-height: 100vh;
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
-  transition: background 0.4s;
+  transition: background 0.3s;
 }
 
 /* ── GLASS MIXIN ── */
@@ -111,7 +126,369 @@ body {
   box-shadow: var(--glass-shadow-sm);
 }
 
+/* ══════════════════════════════
+   SIDEBAR LAYOUT (v1.0)
+══════════════════════════════ */
+#appScreen {
+  display: none;
+}
+#appScreen.active {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
 
+/* SIDEBAR */
+#sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--sidebar-bg, #ffffff);
+  border-right: 1px solid var(--sidebar-border, #e8eaed);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 50;
+  transition: width 0.22s cubic-bezier(.4,0,.2,1), background 0.3s, border-color 0.3s;
+}
+/* Collapsed state */
+#sidebar.collapsed {
+  width: 60px;
+}
+[data-theme="dark"] #sidebar {
+  background: rgba(20,16,34,0.98);
+  border-right-color: var(--glass-border);
+}
+.sb-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 18px 18px;
+  border-bottom: 1px solid var(--sidebar-border, #f0f2f5);
+  flex-shrink: 0;
+}
+[data-theme="dark"] .sb-brand { border-bottom-color: var(--glass-border2); }
+/* Collapse toggle button */
+.sb-collapse-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  border: 1px solid var(--sidebar-border, #e8eaed);
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text3);
+  transition: background 0.15s, color 0.15s, transform 0.22s cubic-bezier(.4,0,.2,1);
+  padding: 0;
+}
+.sb-collapse-btn:hover { background: var(--sb-hover); color: var(--text); }
+#sidebar.collapsed .sb-collapse-btn svg { transform: rotate(180deg); }
+/* Hide text/label elements when collapsed */
+#sidebar.collapsed .sb-brand-name,
+#sidebar.collapsed .sb-section-label,
+#sidebar.collapsed .sb-item-label,
+#sidebar.collapsed .sb-theme-row > .pill-track,
+#sidebar.collapsed .sb-theme-row > .icon-sun,
+#sidebar.collapsed .sb-theme-row > .icon-moon,
+#sidebar.collapsed .sb-theme-row > .pill-label,
+#sidebar.collapsed .sb-online-label,
+#sidebar.collapsed .sb-online-list,
+#sidebar.collapsed .sb-divider {
+  display: none;
+}
+/* Icon-only items when collapsed */
+#sidebar.collapsed .sb-item {
+  justify-content: center;
+  padding: 11px 0;
+  width: 60px;
+  border-radius: 0;
+}
+#sidebar.collapsed .sb-item-icon {
+  opacity: 0.75;
+  width: 20px; height: 20px;
+}
+#sidebar.collapsed .sb-item.active .sb-item-icon {
+  opacity: 1;
+}
+#sidebar.collapsed .sb-logo {
+  margin: 0 auto;
+}
+#sidebar.collapsed .sb-brand {
+  padding: 16px 0;
+  justify-content: center;
+  gap: 0;
+}
+#sidebar.collapsed .sb-collapse-btn {
+  position: absolute;
+  right: -13px;
+  top: 20px;
+  background: var(--sidebar-bg, #fff);
+  border: 1px solid var(--sidebar-border, #e8eaed);
+  border-radius: 50%;
+  width: 26px; height: 26px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.14);
+  z-index: 60;
+}
+[data-theme="dark"] #sidebar.collapsed .sb-collapse-btn {
+  background: rgba(30,22,50,0.98);
+  border-color: var(--glass-border);
+}
+#sidebar.collapsed .sb-footer {
+  padding: 10px 0;
+  align-items: center;
+}
+#sidebar.collapsed .sb-theme-row {
+  padding: 10px 0;
+  justify-content: center;
+  width: 60px;
+  border-radius: 0;
+}
+#sidebar.collapsed .sb-nav {
+  padding: 8px 0;
+}
+/* Tooltip on hover for icon-only items (collapsed) */
+#sidebar.collapsed .sb-item {
+  position: relative;
+}
+#sidebar.collapsed .sb-item:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: 66px;
+  top: 50%; transform: translateY(-50%);
+  background: var(--card-bg, #fff);
+  color: var(--text);
+  font-size: 12px; font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+  border: 1px solid var(--sidebar-border, #e8eaed);
+  z-index: 100;
+  pointer-events: none;
+}
+[data-theme="dark"] #sidebar.collapsed .sb-item:hover::after {
+  background: rgba(30,22,52,0.98);
+  border-color: var(--glass-border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.sb-logo {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 10px var(--accent-glow);
+  flex-shrink: 0;
+}
+.sb-brand-name {
+  font-size: 17px; font-weight: 700;
+  color: var(--text); letter-spacing: -0.4px;
+}
+.sb-brand-accent {
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.sb-nav {
+  flex: 1;
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-y: auto;
+}
+.sb-section-label {
+  font-size: 10px; font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  padding: 10px 8px 5px;
+}
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  color: var(--text2);
+  transition: background 0.15s, color 0.15s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sb-item:hover {
+  background: var(--sb-hover, rgba(0,0,0,0.05));
+  color: var(--text);
+}
+[data-theme="dark"] .sb-item:hover { background: var(--glass-bg); }
+.sb-item.active {
+  background: var(--accent-glow);
+  color: var(--accent);
+  font-weight: 700;
+}
+.sb-item-icon {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.7;
+}
+.sb-item.active .sb-item-icon { opacity: 1; }
+.sb-divider {
+  height: 1px;
+  background: var(--sidebar-border, #f0f2f5);
+  margin: 6px 4px;
+}
+[data-theme="dark"] .sb-divider { background: var(--glass-border2); }
+.sb-footer {
+  padding: 10px 12px 14px;
+  border-top: 1px solid var(--sidebar-border, #f0f2f5);
+  flex-shrink: 0;
+}
+[data-theme="dark"] .sb-footer { border-top-color: var(--glass-border2); }
+.sb-theme-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px; cursor: pointer;
+  user-select: none; transition: background 0.15s;
+  font-size: 12px; font-weight: 600; color: var(--text2);
+}
+.sb-theme-row:hover { background: var(--sb-hover, rgba(0,0,0,0.05)); }
+
+/* MAIN AREA */
+#mainArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--page-bg, #f0f2f5);
+  transition: background 0.3s;
+}
+
+/* TOP BAR — sticky */
+#topBar {
+  height: 64px;
+  background: var(--topbar-bg, #ffffff);
+  border-bottom: 1px solid var(--sidebar-border, #e8eaed);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  flex-shrink: 0;
+  gap: 16px;
+  transition: background 0.3s, border-color 0.3s;
+}
+[data-theme="dark"] #topBar {
+  background: rgba(20,16,34,0.97);
+  border-bottom-color: var(--glass-border);
+  box-shadow: 0 1px 0 var(--glass-border2);
+}
+
+/* Sidebar online users section */
+.sb-online-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 0 6px;
+}
+.sb-online-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  border-radius: 10px;
+}
+.sb-online-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.sb-online-info { flex: 1; min-width: 0; }
+.sb-online-name {
+  font-size: 12px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sb-online-role { font-size: 10px; color: var(--text3); }
+.sb-online-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(61,180,140,0.25);
+  animation: pulse-dot 2s ease infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(61,180,140,0.25); }
+  50%       { box-shadow: 0 0 0 5px rgba(61,180,140,0.08); }
+}
+.sb-online-empty {
+  font-size: 11px; color: var(--text3); padding: 4px 12px;
+  font-style: italic;
+}
+.topbar-left { flex: 1; min-width: 0; }
+.topbar-title {
+  font-size: 20px; font-weight: 700;
+  color: var(--text); letter-spacing: -0.4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin: 0; padding: 0;
+}
+.topbar-right {
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+
+/* TOP BAR SEARCH — replaces old .global-search-bar overlay */
+.topbar-search-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--search-bg, #f3f4f6);
+  border: 1px solid var(--sidebar-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 9px 14px;
+  min-width: 240px; max-width: 320px;
+  position: relative;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.topbar-search-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: var(--glass-bg-deep);
+}
+[data-theme="dark"] .topbar-search-wrap { background: var(--glass-bg); }
+.topbar-search-input {
+  border: none; background: transparent; outline: none;
+  font-size: 13px; color: var(--text); width: 100%; font-family: inherit;
+}
+.topbar-search-input::placeholder { color: var(--text3); }
+/* Override old global-search-bar styles when used inline */
+#globalSearchBar {
+  position: static !important;
+  top: auto !important; left: auto !important;
+  width: auto !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+#globalSearchBar .global-search-results {
+  position: absolute;
+  top: calc(100% + 6px); left: 0; right: 0;
+  background: var(--glass-bg-deep);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  z-index: 300;
+  max-height: 360px; overflow-y: auto;
+  display: none;
+}
 /* ── LOGIN BACKGROUND ── */
 #loginScreen {
   min-height: 100vh; display: flex; align-items: center;
@@ -327,46 +704,14 @@ body {
 /* ════════════════════════════════
    APP SCREEN
 ════════════════════════════════ */
-#appScreen { display: none; }
+/* #appScreen flex is set in the sidebar layout section above */
 
-/* HEADER */
-.header {
-  position: sticky; top: 0; z-index: 100;
-  background: var(--glass-bg);
-  backdrop-filter: blur(30px) saturate(200%);
-  -webkit-backdrop-filter: blur(30px) saturate(200%);
-  border-bottom: 1px solid var(--glass-border);
-  box-shadow: 0 1px 0 var(--glass-border2), 0 4px 24px rgba(0,0,0,0.06);
-  padding: 0 28px; height: 64px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.header-brand { display: flex; align-items: center; gap: 12px; }
-.brand-icon {
-  width: 34px; height: 34px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 10px var(--accent-glow);
-}
-.header-title {
-  font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px;
-}
-.header-title span {
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.header-actions { display: flex; gap: 8px; align-items: center; }
-
-/* USER CHIP */
-.user-chip {
-  display: flex; align-items: center; gap: 9px;
-  padding: 6px 14px 6px 6px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 40px;
-  backdrop-filter: blur(16px);
-}
+/* HEADER — hidden in v1.0 sidebar layout */
+.header { display: none !important; }
+/* (old header styles kept for reference but header is hidden) */
+.header-brand, .brand-icon, .header-title, .header-actions { display: none; }
 .avatar {
-  width: 28px; height: 28px; border-radius: 50%;
+  width: 32px; height: 32px; border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
@@ -465,7 +810,63 @@ body {
 .btn-sm { padding: 5px 11px; font-size: 12px; border-radius: 10px; }
 
 /* MAIN */
-.main { padding: 24px 28px; max-width: 1800px; margin: 0 auto; }
+.main { padding: 24px; max-width: none; }
+
+/* ── Light mode overrides: clean white cards instead of glass ── */
+[data-theme="light"] .stat-card,
+[data-theme="light"] .table-wrap,
+[data-theme="light"] .dash-big-card,
+[data-theme="light"] .bar-chart-wrap,
+[data-theme="light"] .spec-section,
+[data-theme="light"] .spec-card,
+[data-theme="light"] .dash-extra-card,
+[data-theme="light"] .brand-card,
+[data-theme="light"] .site-card,
+[data-theme="light"] .acct-counter-card,
+[data-theme="light"] .trend-card,
+[data-theme="light"] .presence-card {
+  background: var(--card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-color: var(--sidebar-border) !important;
+  box-shadow: var(--card-shadow) !important;
+}
+[data-theme="light"] .table-wrap {
+  border-radius: var(--radius-lg) !important;
+}
+[data-theme="light"] thead th {
+  background: #f9fafb !important;
+}
+[data-theme="light"] .search-input,
+[data-theme="light"] .filter-select {
+  background: #f9fafb !important;
+  backdrop-filter: none !important;
+  border-color: #e5e7eb !important;
+}
+[data-theme="light"] .search-input:focus,
+[data-theme="light"] .filter-select:focus { border-color: var(--accent) !important; }
+[data-theme="light"] .btn {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  border-color: #e5e7eb !important;
+}
+[data-theme="light"] .btn:hover { background: #f9fafb !important; }
+[data-theme="light"] .btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2)) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+[data-theme="light"] .acct-btn {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  border-color: #e5e7eb !important;
+}
+[data-theme="light"] .acct-dropdown {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.12) !important;
+}
 
 /* STATS */
 .stats-grid {
@@ -1042,11 +1443,9 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 
 
 /* ── GLOBAL SEARCH BAR ── */
+/* .global-search-bar is now inline in the topbar — old overlay styles removed */
 .global-search-bar {
-  padding: 10px 28px;
-  background: var(--glass-bg);
-  border-bottom: 1px solid var(--glass-border2);
-  display: flex; align-items: center; gap: 10px;
+  /* overridden by #globalSearchBar rule in sidebar layout CSS */
 }
 .global-search-wrap {
   position: relative; flex: 1; max-width: 600px; margin: 0 auto;
@@ -1057,18 +1456,10 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 }
 .global-search-input {
   width: 100%;
-  background: var(--glass-bg-hover);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: 40px;
-  padding: 9px 16px 9px 42px;
-  color: var(--text); font-size: 13px; outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-}
-.global-search-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-  background: var(--glass-bg-deep);
+  background: transparent;
+  border: none; outline: none;
+  color: var(--text); font-size: 13px;
+  font-family: inherit;
 }
 .global-search-input::placeholder { color: var(--text3); }
 .global-search-results {
@@ -1172,8 +1563,21 @@ mark.gsr-highlight {
 .dash-big-card:hover { transform: translateY(-3px); box-shadow: var(--glass-shadow); }
 .dash-big-card.active-filter { border-color: var(--accent); box-shadow: var(--glass-shadow), 0 0 0 2px var(--accent-glow); }
 .dbc-icon {
-  font-size: 28px; margin-bottom: 14px; display: block;
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+  background: var(--dbc-icon-bg, rgba(255,255,255,0.08));
+  color: var(--dbc-icon-color, var(--text2));
+  flex-shrink: 0;
 }
+.dbc-total   { --dbc-icon-bg: rgba(148,163,184,0.15); --dbc-icon-color: var(--text2); }
+.dbc-deployed{ --dbc-icon-bg: rgba(52,211,153,0.15);  --dbc-icon-color: var(--green); }
+.dbc-spare   { --dbc-icon-bg: rgba(96,165,250,0.15);  --dbc-icon-color: var(--blue); }
+.dbc-repair  { --dbc-icon-bg: rgba(251,191,36,0.15);  --dbc-icon-color: var(--amber); }
+.dbc-docked  { --dbc-icon-bg: rgba(99,102,241,0.15);  --dbc-icon-color: #818cf8; }
+.dbc-retired { --dbc-icon-bg: rgba(148,163,184,0.12); --dbc-icon-color: var(--text3); }
+.dbc-lost    { --dbc-icon-bg: rgba(248,113,113,0.15); --dbc-icon-color: var(--red); }
 .dbc-num {
   font-size: 42px; font-weight: 800; line-height: 1;
   font-variant-numeric: tabular-nums; margin-bottom: 6px;
@@ -1221,6 +1625,24 @@ mark.gsr-highlight {
 .spec-pill.sp-deployed { border-left: 3px solid var(--green); }
 .spec-pill.sp-spare     { border-left: 3px solid var(--blue); }
 .spec-section-empty { font-size: 13px; color: var(--text3); font-style: italic; }
+.spec-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.spec-card {
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg); padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  cursor: pointer; transition: background 0.18s, border-color 0.18s, transform 0.15s;
+}
+[data-theme="dark"] .spec-card {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.35);
+}
+.spec-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+.spec-card:active { transform: translateY(0); }
+.spec-card.sp-deployed { border-top: 3px solid var(--green); }
+.spec-card.sp-spare    { border-top: 3px solid var(--blue); }
+.spec-card-label { font-size: 12px; color: var(--text2); font-weight: 600; line-height: 1.4; margin-bottom: 10px; }
+.spec-card-count { font-size: 26px; font-weight: 800; color: var(--accent); }
 
 /* bar chart */
 .dash-bar-section { margin-top: 28px; }
@@ -1297,7 +1719,15 @@ mark.gsr-highlight {
   padding: 16px 18px;
   box-shadow: var(--glass-shadow-sm);
 }
-.dec-icon { font-size: 20px; margin-bottom: 8px; }
+.dec-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--glass-bg2, rgba(255,255,255,0.06));
+  color: var(--text3);
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
 .dec-num { font-size: 26px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
 .dec-lbl { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 4px; }
 
@@ -1349,32 +1779,94 @@ mark.gsr-highlight {
   border-radius: var(--radius); padding: 12px 14px;
   display: flex; align-items: center; gap: 10px;
 }
-.brand-icon { font-size: 18px; flex-shrink: 0; }
+.brand-icon {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--glass-bg2, rgba(255,255,255,0.06));
+  color: var(--text2);
+  flex-shrink: 0;
+}
+.sst-th-icon {
+  display: inline-flex; align-items: center; vertical-align: middle;
+  margin-right: 4px;
+}
 .brand-info { flex: 1; min-width: 0; }
 .brand-name { font-size: 12px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .brand-count { font-size: 20px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
 
-/* ── SITE STATUS TABLE ── */
+/* ── SITE STATUS BAR CHART (vertical) ── */
 .site-status-table-wrap {
-  overflow-x: auto; margin-top: 14px; border-radius: var(--radius-lg);
+  margin-top: 8px; border-radius: var(--radius-lg);
   background: var(--glass-bg); border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow-sm);
+  padding: 20px 24px;
 }
-.site-status-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 340px; }
-.site-status-table th {
-  background: var(--surface-tint); padding: 9px 14px;
-  text-align: left; font-size: 10px; font-weight: 700; color: var(--text3);
-  text-transform: uppercase; letter-spacing: 0.7px;
-  border-bottom: 1px solid var(--glass-border);
+.site-bar-chart { display: flex; flex-direction: column; gap: 16px; }
+.site-bar-legend {
+  display: flex; flex-wrap: wrap; gap: 6px 18px;
 }
-.site-status-table td {
-  padding: 9px 14px; border-bottom: 1px solid var(--glass-border2);
-  color: var(--text); vertical-align: middle;
+.site-bar-legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; color: var(--text3);
 }
-.site-status-table tr:last-child td { border-bottom: none; }
-.site-status-table tr:hover td { background: var(--surface-tint); }
-.sst-num { font-weight: 700; font-variant-numeric: tabular-nums; }
-.sst-zero { color: var(--text3); font-weight: 400; }
+.site-bar-legend-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.site-bar-columns {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 200px;
+  padding-bottom: 0;
+}
+.site-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+  min-width: 0;
+}
+.site-bar-total {
+  font-size: 12px; font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.site-bar-track {
+  width: 100%;
+  flex: 1;
+  background: var(--glass-border, rgba(255,255,255,0.06));
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: relative;
+}
+.site-bar-fill {
+  width: 100%;
+  display: flex;
+  flex-direction: column-reverse;
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+  transition: height 0.5s cubic-bezier(.4,0,.2,1);
+}
+.site-bar-seg {
+  width: 100%;
+  min-height: 2px;
+  cursor: default;
+}
+.site-bar-label {
+  font-size: 11px; font-weight: 600; color: var(--text2);
+  text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  width: 100%;
+  padding: 0 2px;
+}
 
 /* ── TREND CARD ── */
 .trend-card {
@@ -1577,37 +2069,24 @@ mark.gsr-highlight {
 /* ── Tablet (≤ 768px) ── */
 @media (max-width: 768px) {
 
-  /* Header: stack brand + actions, hide text labels */
-  .header {
-    height: auto;
-    padding: 10px 16px;
-    flex-wrap: wrap;
-    gap: 8px;
+  /* Sidebar: collapse to icon-only on small screens */
+  #sidebar {
+    width: 56px;
+    overflow: hidden;
   }
-  .header-brand { flex: 1; }
-  .nav-tabs {
-    order: 3;
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    justify-content: stretch;
-  }
-  .nav-tabs::-webkit-scrollbar { display: none; }
-  .nav-tab {
-    flex: 1; text-align: center;
-    padding: 7px 12px;
-    font-size: 12px;
-    white-space: nowrap;
-  }
-  .header-actions { gap: 6px; }
+  .sb-brand { padding: 16px 10px; justify-content: center; }
+  .sb-brand-name { display: none; }
+  .sb-item { padding: 12px; justify-content: center; }
+  .sb-item > span:last-child { display: none; }
+  .sb-section-label { display: none; }
+  .sb-footer { padding: 8px; }
+  .sb-theme-row > span:not(.pill-track):not(.icon-sun):not(.icon-moon) { display: none; }
 
-  /* Hide text labels on buttons in header, keep icons */
-  #btnImport span, .btn-export-text { display: none; }
-  .btn svg { margin: 0; }
-
-  /* Global search bar */
-  .global-search-bar { padding: 8px 14px; }
+  /* Top bar */
+  #topBar { padding: 0 14px; gap: 8px; }
+  .topbar-search-wrap { min-width: 140px; }
+  .topbar-title { font-size: 16px; }
+  .btn-add-text { display: none; }
 
   /* Main padding */
   .main { padding: 16px 14px; }
@@ -1828,7 +2307,7 @@ mark.gsr-highlight {
       </g>
     </svg>
   </div>
-  <div class="login-version">v0.28</div>
+  <div class="login-version">v1.0</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -1895,129 +2374,154 @@ mark.gsr-highlight {
      APP SCREEN
 ════════════════════════════════ -->
 <div id="appScreen">
-  <header class="header">
-    <div class="header-brand">
-      <div class="brand-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <aside id="sidebar">
+    <!-- Brand + collapse toggle -->
+    <div class="sb-brand">
+      <div class="sb-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="4" width="20" height="13" rx="2"/>
           <line x1="0" y1="20" x2="24" y2="20"/>
         </svg>
       </div>
-      <span class="header-title">Asset<span>Vault</span></span>
+      <span class="sb-brand-name">Asset<span class="sb-brand-accent">Vault</span></span>
+      <button class="sb-collapse-btn" id="btnSidebarCollapse" onclick="toggleSidebar()" title="Collapse sidebar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
     </div>
-    <div class="nav-tabs">
-      <button class="nav-tab active" id="tabDash" onclick="switchView('dash')">📊 Dashboard</button>
-      <button class="nav-tab" id="tabInv" onclick="switchView('inv')">💻 Inventory</button>
-      <button class="nav-tab" id="tabAudit" onclick="switchView('audit')">🔍 Audit</button>
-      <button class="nav-tab" id="tabUsers" onclick="switchView('users')" style="display:none">👥 Users</button>
-    </div>
-    <div class="header-actions">
-      <div class="theme-pill" onclick="toggleTheme()">
+
+    <!-- Nav -->
+    <nav class="sb-nav">
+      <div class="sb-section-label">Menu</div>
+      <button class="sb-item active" id="tabDash" onclick="switchView('dash')" title="Dashboard">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="3" y="16" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/></svg>
+        <span class="sb-item-label">Dashboard</span>
+      </button>
+      <button class="sb-item" id="tabInv" onclick="switchView('inv')" title="Inventory">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>
+        <span class="sb-item-label">Inventory</span>
+      </button>
+      <button class="sb-item" id="tabCat" onclick="switchView('cat')" title="Category">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <span class="sb-item-label">Category</span>
+      </button>
+      <button class="sb-item" id="tabAudit" onclick="switchView('audit')" title="Audit Log">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span class="sb-item-label">Audit Log</span>
+      </button>
+      <button class="sb-item" id="tabUsers" onclick="switchView('users')" style="display:none" title="Users">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="sb-item-label">Users</span>
+      </button>
+
+      <div class="sb-divider"></div>
+      <div class="sb-section-label">Tools</div>
+
+      <button class="sb-item" id="btnImport" onclick="openImportModal()" title="Import CSV">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+        <span class="sb-item-label">Import CSV</span>
+      </button>
+      <button class="sb-item" onclick="findAndShowDuplicates()" title="Find Duplicates">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="11" y1="8" x2="11" y2="14"/></svg>
+        <span class="sb-item-label">Find Dupes</span>
+      </button>
+      <button class="sb-item" onclick="exportCSV()" title="Export CSV">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
+        <span class="sb-item-label">Export CSV</span>
+      </button>
+      <button class="sb-item" id="btnRefresh" onclick="refreshData()" title="Refresh Data">
+        <svg id="refreshIcon" class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <span class="sb-item-label">Refresh</span>
+      </button>
+
+      <div class="sb-divider"></div>
+      <div class="sb-section-label sb-online-label">Online Users</div>
+      <div id="sidebarOnlineList" class="sb-online-list">
+        <div class="sb-online-empty">Loading…</div>
+      </div>
+    </nav>
+
+    <!-- Footer: theme -->
+    <div class="sb-footer">
+      <div class="sb-theme-row" onclick="toggleTheme()">
         <span class="icon-sun">☀️</span>
         <span class="icon-moon">🌙</span>
         <div class="pill-track"><div class="pill-knob"></div></div>
         <span class="pill-label" id="themeLabel">Light</span>
       </div>
-      <button class="btn" id="btnImport" onclick="openImportModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
-        <span>Import</span>
-      </button>
-      <button class="btn" onclick="findAndShowDuplicates()" title="Scan for duplicate serial numbers">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/><line x1="11" y1="8" x2="11" y2="14"/></svg>
-        <span class="btn-export-text">Find Dupes</span>
-      </button>
-      <button class="btn" onclick="exportCSV()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
-        <span class="btn-export-text">Export CSV</span>
-      </button>
-      <button class="btn btn-primary" id="btnAddLaptop" onclick="openAddModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span class="btn-add-text">Add Laptop</span>
-      </button>
-      <button class="btn" id="btnRefresh" onclick="refreshData()" title="Refresh data from database">
-        <svg id="refreshIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        <span class="btn-export-text">Refresh</span>
-      </button>
-      <!-- Account dropdown -->
-      <div class="acct-wrap" id="acctWrap">
-        <div class="acct-btn" onclick="toggleAcctMenu()">
-          <div class="avatar" id="userAvatar">--</div>
-          <div>
-            <div class="chip-name" id="userNameDisplay">—</div>
-            <div class="chip-role" id="userRoleDisplay">—</div>
-          </div>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-left:2px;opacity:0.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </aside>
+
+  <!-- ══════════ MAIN AREA ══════════ -->
+  <div id="mainArea">
+
+    <!-- TOP BAR (sticky) -->
+    <div id="topBar">
+      <div class="topbar-left">
+        <h1 class="topbar-title" id="topBarTitle">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <!-- Inline global search -->
+        <div class="topbar-search-wrap" id="globalSearchBar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0;color:#9ca3af">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" class="topbar-search-input" id="globalSearchInput"
+            placeholder="Search anything…"
+            oninput="onGlobalSearch(this.value)"
+            onkeydown="onGlobalSearchKey(event)"
+            autocomplete="off">
+          <div class="global-search-results" id="globalSearchResults"></div>
         </div>
-        <div class="acct-dropdown" id="acctDropdown">
-          <div class="acct-dd-header">
-            <div class="acct-dd-name" id="acctDdName">—</div>
-            <div class="acct-dd-role" id="acctDdRole">—</div>
+        <!-- Add Laptop -->
+        <button class="btn btn-primary" id="btnAddLaptop" onclick="openAddModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span class="btn-add-text">Add Laptop</span>
+        </button>
+        <!-- Account dropdown -->
+        <div class="acct-wrap" id="acctWrap">
+          <div class="acct-btn" onclick="toggleAcctMenu()">
+            <div class="avatar" id="userAvatar">--</div>
+            <div>
+              <div class="chip-name" id="userNameDisplay">—</div>
+              <div class="chip-role" id="userRoleDisplay">—</div>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-left:2px;opacity:0.5"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
-          <div class="acct-dd-item" onclick="openProfileModal();closeAcctMenu()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-            My Profile
-          </div>
-          <div class="acct-dd-item danger" onclick="doLogout()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Sign Out
+          <div class="acct-dropdown" id="acctDropdown">
+            <div class="acct-dd-header">
+              <div class="acct-dd-name" id="acctDdName">—</div>
+              <div class="acct-dd-role" id="acctDdRole">—</div>
+            </div>
+            <div class="acct-dd-item" onclick="openProfileModal();closeAcctMenu()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              My Profile
+            </div>
+            <div class="acct-dd-item danger" onclick="doLogout()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sign Out
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </header>
 
-  <!-- GLOBAL SEARCH BAR -->
-  <div class="global-search-bar" id="globalSearchBar">
-    <div class="global-search-wrap">
-      <span class="global-search-icon">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-      </span>
-      <input type="text" class="global-search-input" id="globalSearchInput"
-        placeholder="Search assets, owners, serial numbers…"
-        oninput="onGlobalSearch(this.value)"
-        onkeydown="onGlobalSearchKey(event)"
-        autocomplete="off">
-      <div class="global-search-results" id="globalSearchResults"></div>
-    </div>
-  </div>
-
-  <main class="main">
+    <main class="main">
 
     <!-- ══════════ DASHBOARD VIEW ══════════ -->
     <div class="view active" id="dashView">
       <div class="dash-section-title">Asset Overview</div>
       <div class="dash-big-grid" id="dashBigGrid"></div>
 
-      <!-- Spec breakdown rows (Deployed + Spare) -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
-        <div class="spec-section">
-          <div class="spec-section-title">
-            <div class="spec-status-dot" style="background:var(--green);"></div>
-            Deployed — by Processor &amp; RAM
-          </div>
-          <div class="spec-pills" id="dashDeployedSpecs"><span class="spec-section-empty">No data.</span></div>
-        </div>
-        <div class="spec-section">
-          <div class="spec-section-title">
-            <div class="spec-status-dot" style="background:var(--blue);"></div>
-            Spare — by Processor &amp; RAM
-          </div>
-          <div class="spec-pills" id="dashSpareSpecs"><span class="spec-section-empty">No data.</span></div>
-        </div>
-      </div>
+      <!-- All Assets per Site — full width, directly under overview -->
+      <div class="dash-section-title" style="margin-top:24px;">All Assets per Site</div>
+      <div class="site-status-table-wrap" id="dashSiteStatusTable"></div>
 
-      <div class="dash-two-col">
+      <div class="dash-two-col" style="margin-top:28px;">
         <div>
           <div class="dash-section-title">Additional Statistics</div>
           <div class="dash-extra-grid" id="dashExtraGrid"></div>
-
-          <div class="dash-section-title" style="margin-top:24px;">By Brand</div>
-          <div class="brand-grid" id="dashBrandGrid"></div>
-
-          <div class="dash-section-title" style="margin-top:24px;">All Assets per Site</div>
-          <div class="site-status-table-wrap" id="dashSiteStatusTable"></div>
 
           <div class="dash-section-title" style="margin-top:24px;">By Site Location</div>
           <div class="site-grid" id="dashSiteGrid"></div>
@@ -2026,14 +2530,8 @@ mark.gsr-highlight {
           <div class="acct-counter-grid" id="dashAcctGrid"></div>
         </div>
         <div>
-          <div class="dash-section-title">Asset Trend (Last 6 Months)</div>
-          <div class="trend-card" id="dashTrendCard"></div>
-
-          <div class="dash-section-title" style="margin-top:24px;">Who's Online</div>
-          <div class="online-list" id="dashOnlineList"></div>
-
-          <div class="dash-section-title" style="margin-top:24px;">Recent Asset Activity</div>
-          <div class="activity-list" id="dashActivity"></div>
+          <div class="dash-section-title">Recent Modified Asset</div>
+          <div class="activity-list" id="dashRecentModified"></div>
         </div>
       </div>
     </div>
@@ -2114,6 +2612,29 @@ mark.gsr-highlight {
     </div>
 
 
+    <!-- ══════════ CATEGORY VIEW ══════════ -->
+    <div class="view" id="catView">
+      <div class="dash-section-title">Brand Overview</div>
+      <div class="brand-grid" id="catBrandGrid"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px;">
+        <div class="spec-section">
+          <div class="spec-section-title">
+            <div class="spec-status-dot" style="background:var(--green);"></div>
+            Deployed — by Processor &amp; RAM
+          </div>
+          <div class="spec-card-grid" id="catDeployedSpecs"><span class="spec-section-empty">No data.</span></div>
+        </div>
+        <div class="spec-section">
+          <div class="spec-section-title">
+            <div class="spec-status-dot" style="background:var(--blue);"></div>
+            Spare — by Processor &amp; RAM
+          </div>
+          <div class="spec-card-grid" id="catSpareSpecs"><span class="spec-section-empty">No data.</span></div>
+        </div>
+      </div>
+    </div>
+
     <!-- ══════════ AUDIT VIEW ══════════ -->
     <div class="view" id="auditView">
       <div class="audit-toolbar">
@@ -2158,7 +2679,8 @@ mark.gsr-highlight {
     </div>
 
   </main>
-</div>
+  </div><!-- /mainArea -->
+</div><!-- /appScreen -->
 
 <!-- FORM MODAL -->
 <div class="overlay" id="formOverlay">
@@ -2203,7 +2725,16 @@ mark.gsr-highlight {
             <option>Ryzen 3</option><option>Ryzen 5</option>
           </select>
         </div>
-        <div class="fg"><label>RAM</label><input type="text" id="f_ram" placeholder="e.g. 16GB DDR4"></div>
+        <div class="fg"><label>RAM</label><select id="f_ram" class="filter-select" style="width:100%;">
+          <option value="">— Select RAM —</option>
+          <option value="4GB">4GB</option>
+          <option value="8GB">8GB</option>
+          <option value="12GB">12GB</option>
+          <option value="16GB">16GB</option>
+          <option value="20GB">20GB</option>
+          <option value="32GB">32GB</option>
+          <option value="64GB">64GB</option>
+        </select></div>
         <div class="fg"><label>Operating System</label>
           <select id="f_os"><option value="">Select OS</option>
             <option>ChromeOS</option><option>Linux</option><option>macOS</option>
@@ -2429,15 +2960,33 @@ function loadTheme(){
   if(l) l.textContent=s==='dark'?'Dark':'Light';
 }
 
+/* SIDEBAR COLLAPSE */
+const SB_COLLAPSED_KEY='assetvault_sb_collapsed';
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const isCollapsed=sb.classList.toggle('collapsed');
+  localStorage.setItem(SB_COLLAPSED_KEY, isCollapsed?'1':'0');
+}
+window.toggleSidebar = toggleSidebar;
+function loadSidebarState(){
+  if(localStorage.getItem(SB_COLLAPSED_KEY)==='1'){
+    document.getElementById('sidebar').classList.add('collapsed');
+  }
+}
+
 /* VIEW SWITCHING */
 function switchView(v){
-  ['dash','inv','audit','users'].forEach(id=>{
+  const viewTitles={dash:'Dashboard',inv:'Inventory',cat:'Category',audit:'Audit Log',users:'Users'};
+  ['dash','inv','cat','audit','users'].forEach(id=>{
     const view=document.getElementById(id+'View');
     const tab=document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1));
     if(view) view.classList.toggle('active',v===id);
     if(tab) tab.classList.toggle('active',v===id);
   });
+  const titleEl=document.getElementById('topBarTitle');
+  if(titleEl) titleEl.textContent=viewTitles[v]||'AssetVault';
   if(v==='dash') renderDashboard();
+  if(v==='cat') renderCategory();
   if(v==='audit'){ auditPage=1; renderAudit().catch(()=>{}); }
   if(v==='users') renderUsersGrid();
 }
@@ -2562,7 +3111,8 @@ async function doLogout(){
   try{ await firebaseSignOut(auth); }catch(e){}
   await stopPresence();
   sessionStorage.removeItem(SESSION_KEY);currentUser=null;
-  document.getElementById('appScreen').style.display='none';
+  const as=document.getElementById('appScreen');
+  as.classList.remove('active'); as.style.display='';
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('loginUser').value='';
   if(document.getElementById('loginPass')) document.getElementById('loginPass').value='';
@@ -2582,7 +3132,9 @@ function checkSession(){
 }
 async function showApp(){
   document.getElementById('loginScreen').style.display='none';
-  document.getElementById('appScreen').style.display='block';
+  const appEl=document.getElementById('appScreen');
+  appEl.style.display='';
+  appEl.classList.add('active');
   const name=currentUser.displayName||currentUser.username;
   const init=name.slice(0,2).toUpperCase();
   document.getElementById('userAvatar').textContent=init;
@@ -2600,6 +3152,9 @@ async function showApp(){
   const importBtn=document.getElementById('btnImport');
   if(importBtn) importBtn.style.display=can('import')?'':'none';
   loadAudit();await loadAuditFromFirestore();startPresenceHeartbeat();await load();render();renderDashboard();
+  loadPresence();
+  // Refresh online list in sidebar every 60 seconds
+  setInterval(loadPresence, 60000);
 }
 document.getElementById('loginUser').addEventListener('keydown',e=>{ if(e.key==='Enter') openPasswordStep(); });
 // Users are loaded from localStorage automatically
@@ -2797,62 +3352,44 @@ function renderDashboard(){
   renderDashboardExtras();
   loadPresence();
 
-  // Big cards
+  // Big cards — minimal SVG icons
+  const svgTotal=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>`;
+  const svgDeployed=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const svgSpare=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>`;
+  const svgRepair=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`;
+  const svgDocked=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18" stroke-width="3"/></svg>`;
+  const svgRetired=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>`;
+  const svgReturn=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>`;
   const bigCards=[
-    {cls:'dbc-total',icon:'🖥️',num:c.total,lbl:'Total Assets',status:''},
-    {cls:'dbc-deployed',icon:'✅',num:c.Deployed,lbl:'Deployed',status:'Deployed'},
-    {cls:'dbc-spare',icon:'📦',num:c.Spare,lbl:'Spare',status:'Spare'},
-    {cls:'dbc-repair',icon:'🔧',num:c.Repair,lbl:'Repair',status:'Repair'},
-    {cls:'dbc-docked',icon:'🔌',num:c.Docked,lbl:'Docked',status:'Docked'},
-    {cls:'dbc-retired',icon:'🗃️',num:c['End of Life'],lbl:'End of Life',status:'End of Life'},
-    {cls:'dbc-lost',icon:'↩️',num:c['For Return'],lbl:'For Return',status:'For Return'},
+    {cls:'dbc-total',   icon:svgTotal,   num:c.total,             lbl:'Total Assets', status:''},
+    {cls:'dbc-deployed',icon:svgDeployed,num:c.Deployed,           lbl:'Deployed',     status:'Deployed'},
+    {cls:'dbc-spare',   icon:svgSpare,   num:c.Spare,             lbl:'Spare',        status:'Spare'},
+    {cls:'dbc-repair',  icon:svgRepair,  num:c.Repair,            lbl:'Repair',       status:'Repair'},
+    {cls:'dbc-docked',  icon:svgDocked,  num:c.Docked,            lbl:'Docked',       status:'Docked'},
+    {cls:'dbc-retired', icon:svgRetired, num:c['End of Life'],     lbl:'End of Life',  status:'End of Life'},
+    {cls:'dbc-lost',    icon:svgReturn,  num:c['For Return'],      lbl:'For Return',   status:'For Return'},
   ];
   document.getElementById('dashBigGrid').innerHTML=bigCards.map(card=>`
     <div class="dash-big-card ${card.cls}" onclick="dashCardClick('${card.status}')" title="Click to filter inventory">
-      <span class="dbc-icon">${card.icon}</span>
+      <div class="dbc-icon">${card.icon}</div>
       <div class="dbc-num">${card.num}</div>
       <div class="dbc-lbl">${card.lbl}</div>
     </div>`).join('');
 
-  // ── Spec breakdown (Deployed + Spare) ──
-  function buildSpecMap(status){
-    const map={};
-    records.filter(r=>r.assetStatus===status).forEach(r=>{
-      const key=[r.processor,r.ram].filter(Boolean).join(' / ')||'Unknown';
-      if(!map[key]) map[key]={count:0,processor:r.processor||'',ram:r.ram||''};
-      map[key].count++;
-    });
-    return Object.entries(map).sort((a,b)=>b[1].count-a[1].count);
-  }
-  const deployedEl=document.getElementById('dashDeployedSpecs');
-  const spareEl=document.getElementById('dashSpareSpecs');
-  const deployedEntries=buildSpecMap('Deployed');
-  const spareEntries=buildSpecMap('Spare');
-  if(deployedEl) deployedEl.innerHTML=deployedEntries.length
-    ?deployedEntries.map(([k,v])=>`
-      <div class="spec-pill sp-deployed" onclick="specCardClick('Deployed','${esc(v.processor)}','${esc(v.ram)}')" title="Show ${k} deployed assets">
-        <div class="spec-pill-label">${k}</div>
-        <div class="spec-pill-count">${v.count}</div>
-      </div>`).join('')
-    :`<span class="spec-section-empty">No deployed assets.</span>`;
-  if(spareEl) spareEl.innerHTML=spareEntries.length
-    ?spareEntries.map(([k,v])=>`
-      <div class="spec-pill sp-spare" onclick="specCardClick('Spare','${esc(v.processor)}','${esc(v.ram)}')" title="Show ${k} spare assets">
-        <div class="spec-pill-label">${k}</div>
-        <div class="spec-pill-count">${v.count}</div>
-      </div>`).join('')
-    :`<span class="spec-section-empty">No spare assets.</span>`;
-
   // ── Brand breakdown ──
-  const brandIcons={'Apple':'🍎','Lenovo':'🖥️','Dell':'💻','HP':'🖨️','Asus':'⚡','Acer':'🔷','Microsoft':'🪟','MSI':'🎮'};
+  const laptopSvg=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>`;
+  const brandSvgs={
+    'Apple':`<svg width="14" height="14" viewBox="0 0 814 1000" fill="currentColor"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 383.8 79.5 234.8 79.5 234.8c28.5-106 110.8-173.2 202.7-173.2 60.8 0 112.6 37.5 151.5 37.5 37.5 0 97.6-40.8 170.8-40.8 27.8 0 108.2 2.6 168.3 74.4zm-225.1-151.4c31.5-36.5 54.5-87.5 54.5-138.5 0-7.1-.6-14.3-1.9-20.1-51.6 1.9-113.1 34.5-149.7 75.8-28.5 32.1-55.1 83.1-55.1 135.1 0 8.4 1.3 16.8 1.9 19.4 3.2.6 8.4 1.3 13.6 1.3 46.3 0 102.9-30.8 136.7-72.9z"/></svg>`,
+    'Microsoft':`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="9" height="9"/><rect x="13" y="2" width="9" height="9"/><rect x="2" y="13" width="9" height="9"/><rect x="13" y="13" width="9" height="9"/></svg>`,
+  };
   const brands={};
   records.forEach(r=>{if(r.brand)brands[r.brand]=(brands[r.brand]||0)+1;});
   const brandEntries=Object.entries(brands).sort((a,b)=>b[1]-a[1]);
-  const brandEl=document.getElementById('dashBrandGrid');
+  const brandEl=document.getElementById('catBrandGrid');
   if(brandEl) brandEl.innerHTML=brandEntries.length
     ?brandEntries.map(([b,n])=>`
       <div class="brand-card">
-        <div class="brand-icon">${brandIcons[b]||'💻'}</div>
+        <div class="brand-icon">${brandSvgs[b]||laptopSvg}</div>
         <div class="brand-info">
           <div class="brand-name">${b}</div>
           <div class="brand-count">${n}</div>
@@ -2860,9 +3397,17 @@ function renderDashboard(){
       </div>`).join('')
     :`<p style="color:var(--text3);font-size:13px;">No brand data yet.</p>`;
 
-  // ── Status by Site table ──
+  // ── Status by Site — stacked bar chart ──
   const allSites=[...new Set(records.map(r=>r.siteLocation).filter(Boolean))].sort();
   const statuses=['Deployed','Spare','Repair','Docked','End of Life','For Return'];
+  const statusColors={
+    'Deployed':   'var(--green)',
+    'Spare':      'var(--blue)',
+    'Repair':     'var(--amber)',
+    'Docked':     '#818cf8',
+    'End of Life':'var(--text3)',
+    'For Return': 'var(--red)',
+  };
   const siteStatus={};
   records.forEach(r=>{
     if(!r.siteLocation) return;
@@ -2872,29 +3417,37 @@ function renderDashboard(){
   const siteStatusEl=document.getElementById('dashSiteStatusTable');
   if(siteStatusEl){
     if(!allSites.length){
-      siteStatusEl.innerHTML=`<p style="color:var(--text3);font-size:13px;padding:12px 16px;">No site data yet.</p>`;
+      siteStatusEl.innerHTML=`<p style="color:var(--text3);font-size:13px;padding:16px;">No site data yet.</p>`;
     }else{
-      siteStatusEl.innerHTML=`<table class="site-status-table">
-        <thead><tr>
-          <th>Site</th>
-          <th>🟢 Deployed</th>
-          <th>📦 Spare</th>
-          <th>🔧 Repair</th>
-          <th>🗃️ EOL</th>
-          <th>↩️ Return</th>
-          <th>Total</th>
-        </tr></thead>
-        <tbody>${allSites.map(site=>{
-          const d=siteStatus[site]||{};
-          const row=statuses.map(s=>d[s]||0);
-          const total=row.reduce((a,b)=>a+b,0);
-          return`<tr>
-            <td style="font-weight:700;">${site}</td>
-            ${row.map(n=>`<td class="sst-num ${n===0?'sst-zero':''}">${n||'—'}</td>`).join('')}
-            <td style="font-weight:800;color:var(--accent);">${total}</td>
-          </tr>`;
-        }).join('')}</tbody>
-      </table>`;
+      const maxTotal=Math.max(...allSites.map(s=>statuses.reduce((a,st)=>a+(siteStatus[s]?.[st]||0),0)),1);
+      siteStatusEl.innerHTML=`
+        <div class="site-bar-chart">
+          <div class="site-bar-legend">${statuses.map(s=>`
+            <div class="site-bar-legend-item">
+              <span class="site-bar-legend-dot" style="background:${statusColors[s]}"></span>
+              <span>${s}</span>
+            </div>`).join('')}
+          </div>
+          <div class="site-bar-columns">
+            ${allSites.map(site=>{
+              const d=siteStatus[site]||{};
+              const counts=statuses.map(s=>d[s]||0);
+              const total=counts.reduce((a,b)=>a+b,0);
+              const segments=statuses.map((s,i)=>{
+                if(!counts[i]) return '';
+                return`<div class="site-bar-seg" style="flex:${counts[i]};background:${statusColors[s]}" title="${s}: ${counts[i]}"></div>`;
+              }).filter(Boolean).reverse().join('');
+              const barHeightPct=((total/maxTotal)*100).toFixed(2);
+              return`<div class="site-bar-col">
+                <div class="site-bar-total">${total}</div>
+                <div class="site-bar-track">
+                  <div class="site-bar-fill" style="height:${barHeightPct}%">${segments}</div>
+                </div>
+                <div class="site-bar-label">${site}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
     }
   }
 
@@ -2924,56 +3477,27 @@ function renderDashboard(){
       <div class="acct-counter-num" style="color:${acctColors[s]}">${acctCount[s]}</div>
     </div>`).join('');
 
-  // ── Asset Trend (last 6 months added) ──
-  const trendEl=document.getElementById('dashTrendCard');
-  if(trendEl){
-    const months=[];
-    for(let i=5;i>=0;i--){
-      const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-i);
-      const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-      const label=d.toLocaleString('default',{month:'short'});
-      months.push({key,label});
-    }
-    const counts=months.map(m=>records.filter(r=>r.dateAdded&&r.dateAdded.startsWith(m.key)).length);
-    const maxCount=Math.max(...counts,1);
-    trendEl.innerHTML=`
-      <div class="trend-bars">
-        ${months.map((m,i)=>`
-          <div class="trend-col">
-            <div class="trend-val">${counts[i]||''}</div>
-            <div class="trend-bar-wrap">
-              <div class="trend-bar" style="height:${Math.round((counts[i]/maxCount)*60)+4}px"></div>
-            </div>
-            <div class="trend-month">${m.label}</div>
-          </div>`).join('')}
-      </div>
-      <div class="trend-legend">Assets added per month · Total ${records.length}</div>`;
-  }
-
-  // ── Recent activity — last 10 modified/added ──
-  const recent=[...records].sort((a,b)=>{
-    const ta=a.dateModified||a.dateAdded||'';
-    const tb=b.dateModified||b.dateAdded||'';
-    return tb.localeCompare(ta);
-  }).slice(0,10);
-  const dotColor={Deployed:'var(--green)',Spare:'var(--blue)',Repair:'var(--amber)',Docked:'#3a6abf','End of Life':'var(--text3)','For Return':'#8b5aa8'};
-  document.getElementById('dashActivity').innerHTML=recent.length
-    ?recent.map(r=>{
-      const isNew=!r.dateModified;
-      const dt=r.dateModified||r.dateAdded;
+  // ── Recent Modified Asset — last 10 edited records (all statuses) ──
+  const badgeClass={Deployed:'b-deployed',Spare:'b-spare',Repair:'b-repair',Docked:'b-docked','End of Life':'b-retired','For Return':'b-return'};
+  const recentModified=[...records].filter(r=>r.dateModified).sort((a,b)=>
+    (b.dateModified||'').localeCompare(a.dateModified||'')
+  ).slice(0,10);
+  document.getElementById('dashRecentModified').innerHTML=recentModified.length
+    ?recentModified.map(r=>{
       const by=r.modifiedBy?` · by ${r.modifiedBy}`:'';
       return`<div class="activity-row">
-        <div class="act-dot" style="background:${dotColor[r.assetStatus]||'var(--text3)'}"></div>
+        <div class="act-dot" style="background:var(--amber)"></div>
         <div class="act-info">
           <div class="act-title">${r.brand||'—'} ${r.model||''} <span style="font-size:11px;color:var(--text3)">${r.assetTag||r.serialNumber||''}</span></div>
-          <div class="act-sub">${isNew?'Added':'Updated'} · ${r.currentOwner||'No owner'}${by}</div>
+          <div class="act-sub">Modified · ${r.currentOwner||'No owner'}${by}</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <span class="badge ${({Deployed:'b-deployed',Spare:'b-spare',Repair:'b-repair',Docked:'b-docked','End of Life':'b-retired','For Return':'b-return'}[r.assetStatus]||'b-retired')}" style="font-size:10px;padding:2px 8px;">${r.assetStatus||'—'}</span>
-          <div class="act-time">${fmtDate(dt)}</div>
+          <span class="badge ${badgeClass[r.assetStatus]||'b-retired'}" style="font-size:10px;padding:2px 8px;">${r.assetStatus||'—'}</span>
+          <div class="act-time">${fmtDate(r.dateModified)}</div>
         </div>
       </div>`;}).join('')
-    :`<p style="color:var(--text3);font-size:13px;padding:12px 0;">No activity yet.</p>`;
+    :`<p style="color:var(--text3);font-size:13px;padding:12px 0;">No modified assets yet.</p>`;
+
 }
 function dashCardClick(status){
   switchView('inv');
@@ -3149,7 +3673,7 @@ async function saveRecord(){
     showToast('Record updated.');
     addAuditEntryFS('edit',`Updated ${finalRec.brand||''} ${finalRec.model||''}`,finalRec.assetTag||finalRec.serialNumber||'',{before:beforeSnap,after:{...finalRec},diff:diffStr});
   }else{
-    rec.id=genId();rec.dateAdded=now;rec.dateModified=null;rec.ownerHistory=[];rec.modifiedBy=null;
+    rec.id=genId();rec.dateAdded=now;rec.dateModified=null;rec.ownerHistory=[];rec.modifiedBy=null;rec.addedBy=currentUser?.username||'';
     finalRec=rec;
     records.push(rec);
     showToast('Laptop added!');
@@ -3829,24 +4353,48 @@ async function loadPresence(){
         return ms < 15*60*1000; // 15 min window
       })
       .sort((a,b)=>new Date(b.lastSeen)-new Date(a.lastSeen));
+
+    // ── Dashboard online list ──
     const el = document.getElementById('dashOnlineList');
-    if(!el) return;
-    if(!online.length){
-      el.innerHTML='<div class="online-empty">No users currently active.</div>';
-    } else {
-      el.innerHTML = online.map(p=>{
-        const ms = now - new Date(p.lastSeen).getTime();
-        const isActive = ms < 5*60*1000; // pulse if seen < 5 min
-        return`<div class="online-row">
-          <div class="online-avatar">${(p.displayName||p.username).slice(0,2).toUpperCase()}</div>
-          <div style="flex:1;min-width:0;">
-            <div class="online-name">${p.displayName||p.username}</div>
-            <div style="font-size:11px;color:var(--text3);">${roleLabel(p.role)}</div>
-          </div>
-          ${isActive?'<div class="online-pulse"></div>':''}
-          <div class="online-last-seen">${relativeTime(p.lastSeen)}</div>
-        </div>`;
-      }).join('');
+    if(el){
+      if(!online.length){
+        el.innerHTML='<div class="online-empty">No users currently active.</div>';
+      } else {
+        el.innerHTML = online.map(p=>{
+          const ms = now - new Date(p.lastSeen).getTime();
+          const isActive = ms < 5*60*1000;
+          return`<div class="online-row">
+            <div class="online-avatar">${(p.displayName||p.username).slice(0,2).toUpperCase()}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="online-name">${p.displayName||p.username}</div>
+              <div style="font-size:11px;color:var(--text3);">${roleLabel(p.role)}</div>
+            </div>
+            ${isActive?'<div class="online-pulse"></div>':''}
+            <div class="online-last-seen">${relativeTime(p.lastSeen)}</div>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    // ── Sidebar online list ──
+    const sbEl = document.getElementById('sidebarOnlineList');
+    if(sbEl){
+      if(!online.length){
+        sbEl.innerHTML='<div class="sb-online-empty">No active users.</div>';
+      } else {
+        sbEl.innerHTML = online.map(p=>{
+          const ms = now - new Date(p.lastSeen).getTime();
+          const isActive = ms < 5*60*1000;
+          return`<div class="sb-online-row">
+            <div class="sb-online-avatar">${(p.displayName||p.username).slice(0,2).toUpperCase()}</div>
+            <div class="sb-online-info">
+              <div class="sb-online-name">${p.displayName||p.username}</div>
+              <div class="sb-online-role">${roleLabel(p.role)}</div>
+            </div>
+            ${isActive?'<div class="sb-online-dot"></div>':''}
+          </div>`;
+        }).join('');
+      }
     }
   }catch(e){}
 }
@@ -3921,11 +4469,15 @@ function renderDashboardExtras(){
   const withHistory = records.filter(r=>r.ownerHistory&&r.ownerHistory.length>0).length;
   const el = document.getElementById('dashExtraGrid');
   if(!el) return;
+  const svgNoOwner=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+  const svgAdded=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+  const svgEdited=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+  const svgTransfer=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`;
   el.innerHTML = [
-    {icon:'👤',num:noOwner,lbl:'No Owner'},
-    {icon:'📅',num:addedThisMonth,lbl:'Added This Month'},
-    {icon:'✏️',num:modifiedThisMonth,lbl:'Updated This Month'},
-    {icon:'🔄',num:withHistory,lbl:'Owner Changes'},
+    {icon:svgNoOwner,  num:noOwner,          lbl:'No Owner'},
+    {icon:svgAdded,    num:addedThisMonth,    lbl:'Added This Month'},
+    {icon:svgEdited,   num:modifiedThisMonth, lbl:'Updated This Month'},
+    {icon:svgTransfer, num:withHistory,       lbl:'Owner Changes'},
   ].map(c=>`<div class="dash-extra-card">
     <div class="dec-icon">${c.icon}</div>
     <div class="dec-num">${c.num}</div>
@@ -4140,6 +4692,53 @@ document.addEventListener('click', e=>{
 // ── Expose functions to global scope (required for inline onclick in module scripts) ──
 window.toggleTheme=toggleTheme;
 window.switchView=switchView;
+
+function renderCategory(){
+  // Brand Overview
+  const brands={};
+  records.forEach(r=>{if(r.brand) brands[r.brand]=(brands[r.brand]||0)+1;});
+  const brandEntries=Object.entries(brands).sort((a,b)=>b[1]-a[1]);
+  const brandEl=document.getElementById('catBrandGrid');
+  if(brandEl) brandEl.innerHTML=brandEntries.length
+    ?brandEntries.map(([b,n])=>`
+      <div class="brand-card">
+        <div class="brand-info">
+          <div class="brand-name">${b}</div>
+          <div class="brand-count">${n}</div>
+        </div>
+      </div>`).join('')
+    :`<p style="color:var(--text3);font-size:13px;">No brand data yet.</p>`;
+
+  // Spec breakdown (Deployed + Spare)
+  function buildSpecMap(status){
+    const map={};
+    records.filter(r=>r.assetStatus===status).forEach(r=>{
+      const key=[r.processor,r.ram].filter(Boolean).join(' / ')||'Unknown';
+      if(!map[key]) map[key]={count:0,processor:r.processor||'',ram:r.ram||''};
+      map[key].count++;
+    });
+    return Object.entries(map).sort((a,b)=>b[1].count-a[1].count);
+  }
+  const deployedEl=document.getElementById('catDeployedSpecs');
+  const spareEl=document.getElementById('catSpareSpecs');
+  const deployedEntries=buildSpecMap('Deployed');
+  const spareEntries=buildSpecMap('Spare');
+  if(deployedEl) deployedEl.innerHTML=deployedEntries.length
+    ?deployedEntries.map(([k,v])=>`
+      <div class="spec-card sp-deployed" onclick="specCardClick('Deployed','${esc(v.processor)}','${esc(v.ram)}')" title="Filter: ${k} deployed">
+        <div class="spec-card-label">${k}</div>
+        <div class="spec-card-count">${v.count}</div>
+      </div>`).join('')
+    :`<span class="spec-section-empty">No deployed assets.</span>`;
+  if(spareEl) spareEl.innerHTML=spareEntries.length
+    ?spareEntries.map(([k,v])=>`
+      <div class="spec-card sp-spare" onclick="specCardClick('Spare','${esc(v.processor)}','${esc(v.ram)}')" title="Filter: ${k} spare">
+        <div class="spec-card-label">${k}</div>
+        <div class="spec-card-count">${v.count}</div>
+      </div>`).join('')
+    :`<span class="spec-section-empty">No spare assets.</span>`;
+}
+window.renderCategory=renderCategory;
 window.doLogin=doLogin;
 
 window.openPasswordStep=openPasswordStep;
@@ -4201,9 +4800,11 @@ window.refreshData=refreshData;
 window.specCardClick=specCardClick;
 
 loadTheme();
+loadSidebarState();
 // Hide both screens while splash is showing
 document.getElementById('loginScreen').classList.add('splash-hidden');
-document.getElementById('appScreen').style.display='none';
+const _appEl=document.getElementById('appScreen');
+_appEl.classList.remove('active');_appEl.style.display='';
 (async()=>{
   await loadUsersFromFirestore();
   if(checkSession()) {
