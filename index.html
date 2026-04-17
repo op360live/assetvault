@@ -1566,33 +1566,27 @@ mark.gsr-highlight {
 }
 .dash-big-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px; margin-bottom: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px; margin-bottom: 8px;
 }
 .dash-big-card {
   background: var(--glass-bg);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
-  padding: 28px 24px 22px;
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
   box-shadow: var(--glass-shadow-sm);
   transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer; position: relative; overflow: hidden;
+  cursor: pointer;
 }
-.dash-big-card::before {
-  content: ''; position: absolute; bottom: -20px; right: -20px;
-  width: 80px; height: 80px; border-radius: 50%;
-  background: var(--card-accent, var(--accent-glow));
-  opacity: 0.4;
-}
-.dash-big-card:hover { transform: translateY(-3px); box-shadow: var(--glass-shadow); }
+.dash-big-card:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow); }
 .dash-big-card.active-filter { border-color: var(--accent); box-shadow: var(--glass-shadow), 0 0 0 2px var(--accent-glow); }
 .dbc-icon {
-  width: 38px; height: 38px;
-  border-radius: 10px;
+  width: 34px; height: 34px;
+  border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   background: var(--dbc-icon-bg, rgba(255,255,255,0.08));
   color: var(--dbc-icon-color, var(--text2));
   flex-shrink: 0;
@@ -1604,11 +1598,11 @@ mark.gsr-highlight {
 .dbc-docked  { --dbc-icon-bg: rgba(99,102,241,0.15);  --dbc-icon-color: #818cf8; }
 .dbc-retired { --dbc-icon-bg: rgba(148,163,184,0.12); --dbc-icon-color: var(--text3); }
 .dbc-lost    { --dbc-icon-bg: rgba(248,113,113,0.15); --dbc-icon-color: var(--red); }
+.dbc-lbl { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 10px; }
 .dbc-num {
-  font-size: 42px; font-weight: 800; line-height: 1;
-  font-variant-numeric: tabular-nums; margin-bottom: 6px;
+  font-size: 30px; font-weight: 700; line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
-.dbc-lbl { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; }
 .dbc-total .dbc-num { color: var(--text); }
 .dbc-deployed .dbc-num { color: var(--green); }
 .dbc-spare .dbc-num { color: var(--blue); }
@@ -2122,9 +2116,8 @@ mark.gsr-highlight {
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
   }
-  .dbc-num { font-size: 32px; }
-  .dbc-icon { font-size: 22px; margin-bottom: 8px; }
-  .dash-big-card { padding: 18px 14px 14px; }
+  .dbc-num { font-size: 26px; }
+  .dash-big-card { padding: 14px 16px; }
 
   /* Dashboard two-col → single col */
   .dash-two-col {
@@ -2221,8 +2214,7 @@ mark.gsr-highlight {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
-  .dbc-num { font-size: 26px; }
-  .dbc-icon { font-size: 18px; margin-bottom: 6px; }
+  .dbc-num { font-size: 22px; }
   .dash-big-card { padding: 14px 12px 10px; }
 
   /* Accountability: 2 cols */
@@ -3139,7 +3131,9 @@ async function doLogout(){
   sessionStorage.removeItem(SESSION_KEY);currentUser=null;
   const as=document.getElementById('appScreen');
   as.classList.remove('active'); as.style.display='';
-  document.getElementById('loginScreen').style.display='flex';
+  const ls=document.getElementById('loginScreen');
+  ls.classList.remove('splash-hidden');
+  ls.style.display='flex';
   document.getElementById('loginUser').value='';
   if(document.getElementById('loginPass')) document.getElementById('loginPass').value='';
   closePasswordStep();
@@ -3253,21 +3247,29 @@ function badge(s, remarks){
 function renderStats(){
   const c={total:records.length,Deployed:0,Spare:0,Repair:0,Docked:0,'End of Life':0,'For Return':0};
   records.forEach(r=>{if(c[r.assetStatus]!==undefined)c[r.assetStatus]++;});
-  const mkCard=(lbl,val,cls,status,title)=>{
+  const svgTotal=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>`;
+  const svgDeployed=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const svgSpare=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>`;
+  const svgRepair=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`;
+  const svgDocked=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18" stroke-width="3"/></svg>`;
+  const svgRetired=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>`;
+  const svgReturn=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>`;
+  const mkCard=(lbl,val,cls,status,title,icon,iconCls)=>{
     const isActive=activeStatusFilter===status;
-    return`<div class="stat-card${isActive?' stat-active':''}" onclick="statCardClick('${status||''}')" title="Click to filter by ${title||lbl}" tabindex="0">
+    return`<div class="stat-card ${iconCls}${isActive?' stat-active':''}" onclick="statCardClick('${status||''}')" title="Click to filter by ${title||lbl}" tabindex="0">
+      <div class="dbc-icon">${icon}</div>
       <div class="stat-lbl">${lbl}</div>
       <div class="stat-val ${cls}">${val}</div>
     </div>`;
   };
   document.getElementById('statsGrid').innerHTML=
-    mkCard('Total Assets',c.total,'sv-total','','all')+
-    mkCard('Deployed',c.Deployed,'sv-deployed','Deployed')+
-    mkCard('Spare',c.Spare,'sv-spare','Spare')+
-    mkCard('Repair',c.Repair,'sv-repair','Repair')+
-    mkCard('Docked',c.Docked,'sv-docked','Docked')+
-    mkCard('End of Life',c['End of Life'],'sv-retired','End of Life')+
-    mkCard('For Return',c['For Return'],'sv-lost','For Return');
+    mkCard('Total Assets',c.total,'sv-total','','all',svgTotal,'dbc-total')+
+    mkCard('Deployed',c.Deployed,'sv-deployed','Deployed','',svgDeployed,'dbc-deployed')+
+    mkCard('Spare',c.Spare,'sv-spare','Spare','',svgSpare,'dbc-spare')+
+    mkCard('Repair',c.Repair,'sv-repair','Repair','',svgRepair,'dbc-repair')+
+    mkCard('Docked',c.Docked,'sv-docked','Docked','',svgDocked,'dbc-docked')+
+    mkCard('End of Life',c['End of Life'],'sv-retired','End of Life','',svgRetired,'dbc-retired')+
+    mkCard('For Return',c['For Return'],'sv-lost','For Return','',svgReturn,'dbc-lost');
 }
 function updateSiteFilter(){
   const sites=[...new Set(records.map(r=>r.siteLocation).filter(Boolean))].sort();
@@ -3398,8 +3400,8 @@ function renderDashboard(){
   document.getElementById('dashBigGrid').innerHTML=bigCards.map(card=>`
     <div class="dash-big-card ${card.cls}" onclick="dashCardClick('${card.status}')" title="Click to filter inventory">
       <div class="dbc-icon">${card.icon}</div>
-      <div class="dbc-num">${card.num}</div>
       <div class="dbc-lbl">${card.lbl}</div>
+      <div class="dbc-num">${card.num}</div>
     </div>`).join('');
 
   // ── Brand breakdown ──
@@ -3908,12 +3910,18 @@ async function renderAudit(){
   const start = (auditPage-1)*AUDIT_PER_PAGE;
   const page = filtered.slice(start, start+AUDIT_PER_PAGE);
 
-  const iconMap = { login:'🔐', add:'➕', edit:'✏️', delete:'🗑️', import:'📥' };
+  const iconMap = {
+    login:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>`,
+    add:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+    edit:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+    delete: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+    import: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  };
   const labelMap = { login:'Login', add:'Added', edit:'Modified', delete:'Deleted', import:'Import' };
 
   const list = document.getElementById('auditList');
   if(!filtered.length){
-    list.innerHTML = '<div class="audit-empty">📋 No audit events yet.</div>';
+    list.innerHTML = '<div class="audit-empty">No audit events yet.</div>';
   } else {
     list.innerHTML = page.map((e,idx)=>{
       const hasDetail = (e.type==='edit'&&e.meta)||e.type==='add';
