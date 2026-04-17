@@ -298,6 +298,47 @@ body {
   gap: 1px;
   overflow-y: auto;
 }
+.sb-search-wrap {
+  position: relative;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--search-bg, #f3f4f6);
+  border: 1.5px solid var(--sidebar-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+[data-theme="dark"] .sb-search-wrap {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+}
+.sb-search-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.sb-search-input {
+  border: none; background: transparent; outline: none;
+  font-size: 13px; color: var(--text); width: 100%; font-family: inherit;
+}
+.sb-search-input::placeholder { color: var(--text3); }
+#sidebar.collapsed .sb-search-wrap { display: none; }
+.sb-search-wrap .global-search-results {
+  position: fixed;
+  top: 76px;
+  left: 248px;
+  width: 320px;
+  max-height: calc(100vh - 90px);
+  background: var(--glass-bg-deep);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-left: none;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+  z-index: 300;
+  overflow-y: auto;
+  display: none;
+}
+.sb-search-wrap .global-search-results.open { display: block; }
 .sb-section-label {
   font-size: 10px; font-weight: 700;
   color: var(--text3);
@@ -447,48 +488,31 @@ body {
 /* TOP BAR SEARCH — replaces old .global-search-bar overlay */
 .topbar-search-wrap {
   display: flex; align-items: center; gap: 8px;
-  background: var(--search-bg, #f3f4f6);
-  border: 1px solid var(--sidebar-border, #e5e7eb);
+  background: #f3f4f6;
+  border: 1.5px solid #d1d5db;
   border-radius: 10px;
   padding: 9px 14px;
   min-width: 240px; max-width: 320px;
   position: relative;
-  transition: border-color 0.18s, box-shadow 0.18s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
 }
 .topbar-search-wrap:focus-within {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-glow);
-  background: var(--glass-bg-deep);
+  background: #ffffff;
 }
-[data-theme="dark"] .topbar-search-wrap { background: var(--glass-bg); }
+[data-theme="dark"] .topbar-search-wrap {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.18);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
 .topbar-search-input {
   border: none; background: transparent; outline: none;
   font-size: 13px; color: var(--text); width: 100%; font-family: inherit;
 }
 .topbar-search-input::placeholder { color: var(--text3); }
-/* Override old global-search-bar styles when used inline */
-#globalSearchBar {
-  position: static !important;
-  top: auto !important; left: auto !important;
-  width: auto !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-}
-#globalSearchBar .global-search-results {
-  position: absolute;
-  top: calc(100% + 6px); left: 0; right: 0;
-  background: var(--glass-bg-deep);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--glass-shadow);
-  z-index: 300;
-  max-height: 360px; overflow-y: auto;
-  display: none;
-}
+
 /* ── LOGIN BACKGROUND ── */
 #loginScreen {
   min-height: 100vh; display: flex; align-items: center;
@@ -913,8 +937,10 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius); padding: 10px 14px 10px 42px;
   color: var(--text); font-size: 14px; outline: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
+[data-theme="dark"] .search-input { box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
 .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
 .search-input::placeholder { color: var(--text3); }
 
@@ -2393,6 +2419,18 @@ mark.gsr-highlight {
 
     <!-- Nav -->
     <nav class="sb-nav">
+      <!-- Sidebar search -->
+      <div class="sb-search-wrap" id="globalSearchBar">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0;color:var(--text3)">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" class="sb-search-input" id="globalSearchInput"
+          placeholder="Search anything…"
+          oninput="onGlobalSearch(this.value)"
+          onkeydown="onGlobalSearchKey(event)"
+          autocomplete="off">
+        <div class="global-search-results" id="globalSearchResults"></div>
+      </div>
       <div class="sb-section-label">Menu</div>
       <button class="sb-item active" id="tabDash" onclick="switchView('dash')" title="Dashboard">
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="3" y="16" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/></svg>
@@ -2462,18 +2500,6 @@ mark.gsr-highlight {
         <h1 class="topbar-title" id="topBarTitle">Dashboard</h1>
       </div>
       <div class="topbar-right">
-        <!-- Inline global search -->
-        <div class="topbar-search-wrap" id="globalSearchBar">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0;color:#9ca3af">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <input type="text" class="topbar-search-input" id="globalSearchInput"
-            placeholder="Search anything…"
-            oninput="onGlobalSearch(this.value)"
-            onkeydown="onGlobalSearchKey(event)"
-            autocomplete="off">
-          <div class="global-search-results" id="globalSearchResults"></div>
-        </div>
         <!-- Add Laptop -->
         <button class="btn btn-primary" id="btnAddLaptop" onclick="openAddModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
