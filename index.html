@@ -171,21 +171,38 @@ body {
   flex-shrink: 0;
 }
 [data-theme="dark"] .sb-brand { border-bottom-color: var(--glass-border2); }
-/* Collapse toggle button */
+/* Collapse toggle button — floats fixed on the right border of the sidebar */
 .sb-collapse-btn {
-  margin-left: auto;
-  flex-shrink: 0;
+  position: fixed;
+  top: 50%;
+  left: calc(240px - 13px);
+  transform: translateY(-50%);
+  z-index: 100;
   width: 26px; height: 26px;
-  border-radius: 8px;
+  border-radius: 50%;
   border: 1px solid var(--sidebar-border, #e8eaed);
-  background: transparent;
+  background: var(--sidebar-bg, #fff);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; color: var(--text3);
-  transition: background 0.15s, color 0.15s, transform 0.22s cubic-bezier(.4,0,.2,1);
+  transition: background 0.15s, color 0.15s, left 0.22s cubic-bezier(.4,0,.2,1), box-shadow 0.15s;
   padding: 0;
 }
-.sb-collapse-btn:hover { background: var(--sb-hover); color: var(--text); }
-#sidebar.collapsed .sb-collapse-btn svg { transform: rotate(180deg); }
+.sb-collapse-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+[data-theme="dark"] .sb-collapse-btn {
+  background: rgba(20,16,34,0.98);
+  border-color: var(--glass-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.40);
+}
+.sb-collapse-btn svg {
+  transition: transform 0.22s cubic-bezier(.4,0,.2,1);
+}
+.sb-collapse-btn.is-collapsed svg { transform: rotate(180deg); }
 /* Hide text/label elements when collapsed */
 #sidebar.collapsed .sb-brand-name,
 #sidebar.collapsed .sb-section-label,
@@ -217,24 +234,9 @@ body {
   margin: 0 auto;
 }
 #sidebar.collapsed .sb-brand {
-  padding: 16px 0;
+  padding: 20px 18px 18px;
   justify-content: center;
   gap: 0;
-}
-#sidebar.collapsed .sb-collapse-btn {
-  position: absolute;
-  right: -13px;
-  top: 20px;
-  background: var(--sidebar-bg, #fff);
-  border: 1px solid var(--sidebar-border, #e8eaed);
-  border-radius: 50%;
-  width: 26px; height: 26px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.14);
-  z-index: 60;
-}
-[data-theme="dark"] #sidebar.collapsed .sb-collapse-btn {
-  background: rgba(30,22,50,0.98);
-  border-color: var(--glass-border);
 }
 #sidebar.collapsed .sb-footer {
   padding: 10px 0;
@@ -2394,8 +2396,13 @@ mark.gsr-highlight {
 <div id="appScreen">
 
   <!-- ══════════ SIDEBAR ══════════ -->
+  <!-- Sidebar collapse toggle — sits on the border line between sidebar and main -->
+  <button class="sb-collapse-btn" id="btnSidebarCollapse" onclick="toggleSidebar()" title="Toggle sidebar">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+
   <aside id="sidebar">
-    <!-- Brand + collapse toggle -->
+    <!-- Brand -->
     <div class="sb-brand">
       <div class="sb-logo">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2404,9 +2411,6 @@ mark.gsr-highlight {
         </svg>
       </div>
       <span class="sb-brand-name">Asset<span class="sb-brand-accent">Vault</span></span>
-      <button class="sb-collapse-btn" id="btnSidebarCollapse" onclick="toggleSidebar()" title="Collapse sidebar">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
     </div>
 
     <!-- Nav -->
@@ -2981,14 +2985,21 @@ function loadTheme(){
 /* SIDEBAR COLLAPSE */
 const SB_COLLAPSED_KEY='assetvault_sb_collapsed';
 function toggleSidebar(){
-  const sb=document.getElementById('sidebar');
-  const isCollapsed=sb.classList.toggle('collapsed');
-  localStorage.setItem(SB_COLLAPSED_KEY, isCollapsed?'1':'0');
+  const sb = document.getElementById('sidebar');
+  const btn = document.getElementById('btnSidebarCollapse');
+  const isCollapsed = sb.classList.toggle('collapsed');
+  localStorage.setItem(SB_COLLAPSED_KEY, isCollapsed ? '1' : '0');
+  btn.style.left = (isCollapsed ? 60 : 240) - 13 + 'px';
+  btn.classList.toggle('is-collapsed', isCollapsed);
 }
 window.toggleSidebar = toggleSidebar;
 function loadSidebarState(){
-  if(localStorage.getItem(SB_COLLAPSED_KEY)==='1'){
-    document.getElementById('sidebar').classList.add('collapsed');
+  const btn = document.getElementById('btnSidebarCollapse');
+  const isCollapsed = localStorage.getItem(SB_COLLAPSED_KEY) === '1';
+  if (isCollapsed) document.getElementById('sidebar').classList.add('collapsed');
+  if (btn) {
+    btn.style.left = (isCollapsed ? 60 : 240) - 13 + 'px';
+    btn.classList.toggle('is-collapsed', isCollapsed);
   }
 }
 
