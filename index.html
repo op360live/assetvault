@@ -1001,21 +1001,55 @@ body {
 table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1100px; }
 thead th {
   background: var(--surface-tint);
-  padding: 11px 16px; text-align: left;
+  padding: 8px 12px; text-align: left;
   font-size: 11px; font-weight: 700; color: var(--text3);
   text-transform: uppercase; letter-spacing: 0.7px;
   border-bottom: 1px solid var(--glass-border);
   white-space: nowrap; user-select: none; cursor: pointer;
   transition: color 0.15s;
+  position: relative;
+  overflow: hidden;
 }
+/* Column resize handle */
+.col-resizer {
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  z-index: 2;
+  user-select: none;
+}
+.col-resizer::after {
+  content: '';
+  position: absolute;
+  right: 2px; top: 20%; bottom: 20%;
+  width: 1px;
+  background: var(--glass-border);
+  border-radius: 1px;
+  transition: background 0.15s;
+}
+thead th:hover .col-resizer::after,
+.col-resizing .col-resizer::after {
+  background: var(--accent);
+}
+thead th.col-resizing { cursor: col-resize; }
+body.col-resizing-active { cursor: col-resize !important; user-select: none !important; }
 thead th:hover { color: var(--text2); }
 thead th.sort-asc::after { content: ' ↑'; color: var(--accent); }
 thead th.sort-desc::after { content: ' ↓'; color: var(--accent); }
 thead th.no-sort { cursor: default; }
+thead th[draggable] { cursor: grab; }
+thead th[draggable]:active { cursor: grabbing; }
+thead th.col-drag-active { opacity: 0.35; }
+thead th.col-drag-over {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
 tbody tr { border-bottom: 1px solid var(--glass-border2); transition: background 0.12s; }
 tbody tr:last-child { border-bottom: none; }
 tbody tr:hover { background: var(--surface-tint); }
-td { padding: 12px 16px; color: var(--text); vertical-align: middle; }
+td { padding: 7px 12px; color: var(--text); vertical-align: middle; }
 td.mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text2); }
 td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text3); white-space: nowrap; }
 .empty-state { text-align: center; padding: 64px 24px; color: var(--text3); }
@@ -2610,23 +2644,7 @@ mark.gsr-highlight {
       <div class="table-wrap">
         <table>
           <thead>
-            <tr>
-              <th onclick="sortBy('currentOwner')">Owner</th>
-              <th data-col="brand" onclick="sortBy('brand')">Brand</th>
-              <th data-col="model" onclick="sortBy('model')">Model</th>
-              <th data-col="serialNumber" onclick="sortBy('serialNumber')">Serial No.</th>
-              <th data-col="assetTag" onclick="sortBy('assetTag')">Asset Tag</th>
-              <th data-col="po" onclick="sortBy('po')">PO #</th>
-              <th data-col="processor" class="col-hidden" onclick="sortBy('processor')">Processor</th>
-              <th data-col="ram" class="col-hidden" onclick="sortBy('ram')">RAM</th>
-              <th data-col="os" class="col-hidden" onclick="sortBy('os')">OS</th>
-              <th data-col="siteLocation" onclick="sortBy('siteLocation')">Site</th>
-              <th data-col="assetStatus" onclick="sortBy('assetStatus')">Status</th>
-              <th data-col="accountabilityStatus" onclick="sortBy('accountabilityStatus')">Accountability</th>
-              <th data-col="dateAdded" onclick="sortBy('dateAdded')">Date Added</th>
-              <th data-col="dateModified" onclick="sortBy('dateModified')">Date Modified</th>
-              <th class="no-sort">Actions</th>
-            </tr>
+            <tr id="theadRow"></tr>
           </thead>
           <tbody id="tableBody"></tbody>
         </table>
@@ -3292,6 +3310,37 @@ function updateSiteFilter(){
 const DEFAULT_HIDDEN = new Set(['processor','ram','os']);
 const hiddenCols = new Set(['processor','ram','os']);
 
+/* ── Column metadata & drag-to-reorder ── */
+const COLUMNS_META = [
+  { key:'owner',                label:'Owner',          sortKey:'currentOwner' },
+  { key:'brand',                label:'Brand',          sortKey:'brand' },
+  { key:'model',                label:'Model',          sortKey:'model' },
+  { key:'serialNumber',         label:'Serial No.',     sortKey:'serialNumber' },
+  { key:'assetTag',             label:'Asset Tag',      sortKey:'assetTag' },
+  { key:'po',                   label:'PO #',           sortKey:'po' },
+  { key:'processor',            label:'Processor',      sortKey:'processor',  hideable:true },
+  { key:'ram',                  label:'RAM',            sortKey:'ram',        hideable:true },
+  { key:'os',                   label:'OS',             sortKey:'os',         hideable:true },
+  { key:'siteLocation',         label:'Site',           sortKey:'siteLocation' },
+  { key:'assetStatus',          label:'Status',         sortKey:'assetStatus' },
+  { key:'accountabilityStatus', label:'Accountability', sortKey:'accountabilityStatus' },
+  { key:'dateAdded',            label:'Date Added',     sortKey:'dateAdded' },
+  { key:'dateModified',         label:'Date Modified',  sortKey:'dateModified' },
+  { key:'actions',              label:'Actions',        noSort:true }
+];
+const DEFAULT_COL_ORDER = COLUMNS_META.map(c=>c.key);
+const COL_ORDER_KEY = 'assetvault_col_order';
+const COL_WIDTHS_KEY = 'assetvault_col_widths';
+let colWidths = (()=>{ try { const s=JSON.parse(localStorage.getItem(COL_WIDTHS_KEY)); return s&&typeof s==='object'?s:{}; } catch(e){ return {}; } })();
+let colOrder = (()=>{
+  try {
+    const s = JSON.parse(localStorage.getItem(COL_ORDER_KEY));
+    if(Array.isArray(s) && s.length === DEFAULT_COL_ORDER.length &&
+       s.every(k => DEFAULT_COL_ORDER.includes(k))) return s;
+  } catch(e) {}
+  return [...DEFAULT_COL_ORDER];
+})();
+
 function toggleCol(col){
   if(hiddenCols.has(col)) hiddenCols.delete(col); else hiddenCols.add(col);
   const btn = document.querySelector(`.col-toggle-btn[data-col="${col}"]`);
@@ -3320,12 +3369,88 @@ function restoreDefaultCols(){
       document.querySelectorAll(`[data-col="${col}"]`).forEach(el=>el.classList.add('col-hidden'));
     }
   });
+  // Reset column order and widths
+  colOrder = [...DEFAULT_COL_ORDER];
+  colWidths = {};
+  localStorage.removeItem(COL_ORDER_KEY);
+  localStorage.removeItem(COL_WIDTHS_KEY);
+  renderHeader();
+  renderTable();
   showToast('Column view restored to default.');
 }
 
 function acctBadge(s){
   const m={'Signed':'b-signed','Unsigned':'b-unsigned','For Deployment':'b-fordepl','Manual Signed':'b-manualsign','Deployed Onsite':'b-depsite'};
   return s?`<span class="badge ${m[s]||'b-unsigned'}">${s}</span>`:'<span style="color:var(--text3)">—</span>';
+}
+
+function renderHeader(){
+  const tr = document.getElementById('theadRow');
+  if(!tr) return;
+  let dragSrc = null;
+  tr.innerHTML = colOrder.map((key,idx) => {
+    const col = COLUMNS_META.find(c=>c.key===key);
+    if(!col) return '';
+    const classes = [];
+    if(col.noSort) classes.push('no-sort');
+    if(col.hideable && hiddenCols.has(key)) classes.push('col-hidden');
+    if(!col.noSort && sortCol===(col.sortKey||key)) classes.push(sortDir>0?'sort-asc':'sort-desc');
+    const clsAttr = classes.length ? ` class="${classes.join(' ')}"` : '';
+    const sortAttr = col.noSort ? '' : ` onclick="sortBy('${col.sortKey||key}')"`;
+    const drag = !col.noSort ? ` draggable="true" data-drag-idx="${idx}"` : '';
+    const widthStyle = colWidths[key] ? ` style="width:${colWidths[key]}px;min-width:${colWidths[key]}px"` : '';
+    const resizer = `<span class="col-resizer" data-resize-key="${key}"></span>`;
+    return `<th data-col="${key}"${clsAttr}${sortAttr}${drag}${widthStyle}>${col.label}${resizer}</th>`;
+  }).join('');
+  tr.querySelectorAll('th[draggable]').forEach(th => {
+    th.addEventListener('dragstart', e => {
+      dragSrc = +th.dataset.dragIdx;
+      th.classList.add('col-drag-active');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    th.addEventListener('dragend', () => th.classList.remove('col-drag-active'));
+    th.addEventListener('dragover', e => { e.preventDefault(); th.classList.add('col-drag-over'); });
+    th.addEventListener('dragleave', () => th.classList.remove('col-drag-over'));
+    th.addEventListener('drop', e => {
+      e.preventDefault();
+      th.classList.remove('col-drag-over');
+      const dropIdx = +th.dataset.dragIdx;
+      if(dragSrc === null || dragSrc === dropIdx) return;
+      const moved = colOrder.splice(dragSrc, 1)[0];
+      colOrder.splice(dropIdx, 0, moved);
+      localStorage.setItem(COL_ORDER_KEY, JSON.stringify(colOrder));
+      renderHeader();
+      renderTable();
+    });
+  });
+
+  // ── Resize handles ──
+  tr.querySelectorAll('.col-resizer').forEach(handle => {
+    handle.addEventListener('mousedown', e => {
+      e.stopPropagation(); e.preventDefault();
+      const key = handle.dataset.resizeKey;
+      const th = handle.closest('th');
+      const startX = e.clientX;
+      const startW = th.offsetWidth;
+      document.body.classList.add('col-resizing-active');
+      th.classList.add('col-resizing');
+      function onMove(ev) {
+        const newW = Math.max(50, startW + ev.clientX - startX);
+        th.style.width = newW + 'px';
+        th.style.minWidth = newW + 'px';
+        colWidths[key] = newW;
+      }
+      function onUp() {
+        document.body.classList.remove('col-resizing-active');
+        th.classList.remove('col-resizing');
+        localStorage.setItem(COL_WIDTHS_KEY, JSON.stringify(colWidths));
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
 }
 
 function renderTable(){
@@ -3350,7 +3475,7 @@ function renderTable(){
   }
   tbody.innerHTML=f.map(r=>{
     const ownerInit=(r.currentOwner||'?').trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-    const ownerAction = can('edit') ? `openEditModal('${r.id}')` : `openViewModal('${r.id}')`;
+    const ownerAction = `openViewModal('${r.id}')`;
     const ownerPill=r.currentOwner
       ?`<div class="owner-pill" onclick="${ownerAction}">
           <div class="owner-pill-avatar">${ownerInit}</div>
@@ -3360,29 +3485,32 @@ function renderTable(){
           <div class="owner-pill-avatar" style="background:var(--glass-border)">—</div>
           <span class="owner-pill-empty">No owner</span>
         </div>`;
-    return`<tr>
-      <td>${ownerPill}</td>
-      <td data-col="brand">${r.brand||'—'}</td>
-      <td data-col="model">${r.model||'—'}</td>
-      <td data-col="serialNumber" class="mono">${r.serialNumber||'—'}</td>
-      <td data-col="assetTag" class="mono">${r.assetTag||'—'}</td>
-      <td data-col="po" class="mono">${r.po||'—'}</td>
-      <td data-col="processor" class="${hiddenCols.has('processor')?'col-hidden':''}">${r.processor||'—'}</td>
-      <td data-col="ram" class="${hiddenCols.has('ram')?'col-hidden':''}">${r.ram||'—'}</td>
-      <td data-col="os" class="${hiddenCols.has('os')?'col-hidden':''}">${r.os||'—'}</td>
-      <td data-col="siteLocation">${r.siteLocation||'—'}</td>
-      <td data-col="assetStatus">${badge(r.assetStatus, r.repairRemarks)}</td>
-      <td data-col="accountabilityStatus">${acctBadge(r.accountabilityStatus)}</td>
-      <td data-col="dateAdded" class="date-cell">${fmtDate(r.dateAdded)}</td>
-      <td data-col="dateModified" class="date-cell">${fmtDate(r.dateModified)}</td>
-      <td><div class="row-actions">
-        ${can('edit')?`<button class="btn btn-sm" onclick="openViewModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Record</button>`:`<button class="btn btn-sm" onclick="openViewModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> View</button>`}
-      </div></td>
-    </tr>`;
+    const actionBtns=`<div class="row-actions">${can('edit')?`<button class="btn btn-sm" onclick="openViewModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Record</button>`:`<button class="btn btn-sm" onclick="openViewModal('`+r.id+`')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> View</button>`}</div>`;
+    const cells = colOrder.map(key => {
+      switch(key) {
+        case 'owner':                return `<td>${ownerPill}</td>`;
+        case 'brand':                return `<td data-col="brand">${r.brand||'—'}</td>`;
+        case 'model':                return `<td data-col="model">${r.model||'—'}</td>`;
+        case 'serialNumber':         return `<td data-col="serialNumber" class="mono">${r.serialNumber||'—'}</td>`;
+        case 'assetTag':             return `<td data-col="assetTag" class="mono">${r.assetTag||'—'}</td>`;
+        case 'po':                   return `<td data-col="po" class="mono">${r.po||'—'}</td>`;
+        case 'processor':            return `<td data-col="processor" class="${hiddenCols.has('processor')?'col-hidden':''}">${r.processor||'—'}</td>`;
+        case 'ram':                  return `<td data-col="ram" class="${hiddenCols.has('ram')?'col-hidden':''}">${r.ram||'—'}</td>`;
+        case 'os':                   return `<td data-col="os" class="${hiddenCols.has('os')?'col-hidden':''}">${r.os||'—'}</td>`;
+        case 'siteLocation':         return `<td data-col="siteLocation">${r.siteLocation||'—'}</td>`;
+        case 'assetStatus':          return `<td data-col="assetStatus">${badge(r.assetStatus, r.repairRemarks)}</td>`;
+        case 'accountabilityStatus': return `<td data-col="accountabilityStatus">${acctBadge(r.accountabilityStatus)}</td>`;
+        case 'dateAdded':            return `<td data-col="dateAdded" class="date-cell">${fmtDate(r.dateAdded)}</td>`;
+        case 'dateModified':         return `<td data-col="dateModified" class="date-cell">${fmtDate(r.dateModified)}</td>`;
+        case 'actions':              return `<td>${actionBtns}</td>`;
+        default:                     return '<td>—</td>';
+      }
+    }).join('');
+    return `<tr>${cells}</tr>`;
   }).join('');
 }
-function render(){renderStats();updateSiteFilter();renderTable();renderChips();}
-function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderTable();renderDashboard();}
+function render(){renderStats();updateSiteFilter();renderHeader();renderTable();renderChips();}
+function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderHeader();renderTable();renderDashboard();}
 
 /* ── DASHBOARD RENDER ── */
 function renderDashboard(){
