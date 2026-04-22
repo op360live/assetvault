@@ -1564,6 +1564,11 @@ mark.gsr-highlight {
         <h1 class="topbar-title" id="topbarTitle">Delivery Inventory</h1>
       </div>
       <div class="topbar-right">
+        <!-- App link -->
+        <a href="laptop-asset-inventory_v1.0.html" class="btn btn-sm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;" title="Go to Laptop Asset Inventory">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span class="btn-add-text">Laptop Inventory</span>
+        </a>
         <!-- Log Delivery button -->
         <button class="btn btn-primary" id="btnAddDelivery" onclick="openAddModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
@@ -2020,6 +2025,7 @@ const SESSION_KEY = 'deliveryAssets_session';
 const DEFAULT_PW  = 'ae33a34216f00d844796e3ab70b2aaedd30e8544b7e8f8fd105a03d7f7a7dbb5';
 
 const SEEDED_USERS = [
+  {username:'admin',    displayName:'Admin',      role:'admin',      passwordHash:'240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', mustChangePassword:false},
   {username:'rcabil',   displayName:'R. Cabil',   role:'superadmin', passwordHash:DEFAULT_PW, mustChangePassword:false},
   {username:'aalbia',   displayName:'A. Albia',   role:'superadmin', passwordHash:DEFAULT_PW, mustChangePassword:false},
   {username:'cinuabia', displayName:'C. Inuabia', role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
@@ -2103,7 +2109,19 @@ window.refreshData = function() {
 function loadUsers() {
   try {
     const s = JSON.parse(localStorage.getItem(LS_USERS));
-    if (Array.isArray(s) && s.length) { _usersCache = s; return; }
+    if (Array.isArray(s) && s.length) {
+      _usersCache = s;
+      // Merge in any seeded users not yet in localStorage
+      let changed = false;
+      SEEDED_USERS.forEach(seed => {
+        if (!_usersCache.find(u => u.username === seed.username)) {
+          _usersCache.push({...seed});
+          changed = true;
+        }
+      });
+      if (changed) localStorage.setItem(LS_USERS, JSON.stringify(_usersCache));
+      return;
+    }
   } catch {}
   _usersCache = SEEDED_USERS.map(u => ({...u}));
   localStorage.setItem(LS_USERS, JSON.stringify(_usersCache));
