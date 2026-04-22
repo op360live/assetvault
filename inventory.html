@@ -1,0 +1,3763 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23e8711a'/%3E%3Cpath d='M7 10h18M7 16h18M7 22h10' stroke='white' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='22' r='4' fill='%23f5a623'/%3E%3Cpath d='M22 22l1.5 1.5L26 20.5' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline';
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  img-src 'self' data: blob:;
+">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AssetVault — Delivery Inventory v2</title>
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══════════════════════════════
+   THEMES
+══════════════════════════════ */
+[data-theme="light"] {
+  --bg-from: #fdf8f4;
+  --bg-to:   #fff8f0;
+  --bg-mid:  #fef3eb;
+  --glass-bg:       rgba(255,255,255,0.60);
+  --glass-bg-hover: rgba(255,255,255,0.78);
+  --glass-bg-deep:  rgba(255,255,255,0.88);
+  --glass-border:   rgba(255,255,255,0.85);
+  --glass-border2:  rgba(240,200,160,0.45);
+  --glass-shadow:   0 8px 32px rgba(220,110,30,0.10), 0 1.5px 0 rgba(255,255,255,0.8) inset;
+  --glass-shadow-sm:0 4px 16px rgba(220,110,30,0.08);
+  --surface-tint:   rgba(255,255,255,0.40);
+  --text:    #1a1d23;
+  --text2:   #4b5563;
+  --text3:   #9ca3af;
+  --text-on-accent: #fff;
+  --accent:  #e8711a;
+  --accent2: #f5a623;
+  --accent-glow: rgba(232,113,26,0.18);
+  --green:   #3db48c;
+  --green-bg:rgba(61,180,140,0.13);
+  --blue:    #5b8fe8;
+  --blue-bg: rgba(91,143,232,0.13);
+  --amber:   #d4874a;
+  --amber-bg:rgba(212,135,74,0.13);
+  --red:     #d95a6a;
+  --red-bg:  rgba(217,90,106,0.12);
+  --radius:  14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  /* sidebar/layout */
+  --page-bg: #f0f2f5;
+  --sidebar-bg: #ffffff;
+  --topbar-bg: #ffffff;
+  --sidebar-border: #e8eaed;
+  --search-bg: #f3f4f6;
+  --sb-hover: rgba(0,0,0,0.045);
+  --card-bg: #ffffff;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+}
+[data-theme="dark"] {
+  --bg-from: #1a1008;
+  --bg-to:   #200e02;
+  --bg-mid:  #141008;
+  --glass-bg:       rgba(255,255,255,0.06);
+  --glass-bg-hover: rgba(255,255,255,0.11);
+  --glass-bg-deep:  rgba(255,255,255,0.09);
+  --glass-border:   rgba(255,255,255,0.12);
+  --glass-border2:  rgba(255,255,255,0.07);
+  --glass-shadow:   0 8px 32px rgba(0,0,0,0.50), 0 1px 0 rgba(255,255,255,0.07) inset;
+  --glass-shadow-sm:0 4px 16px rgba(0,0,0,0.38);
+  --surface-tint:   rgba(255,255,255,0.04);
+  --text:    #fdf4ec;
+  --text2:   #c9ab84;
+  --text3:   #7a6040;
+  --text-on-accent: #fff;
+  --accent:  #f09040;
+  --accent2: #f5c060;
+  --accent-glow: rgba(240,144,64,0.28);
+  --green:   #5fd4a8;
+  --green-bg:rgba(95,212,168,0.13);
+  --blue:    #7db0f5;
+  --blue-bg: rgba(125,176,245,0.13);
+  --amber:   #f0b070;
+  --amber-bg:rgba(240,176,112,0.13);
+  --red:     #f08090;
+  --red-bg:  rgba(240,128,144,0.13);
+  --radius:  14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  /* sidebar/layout */
+  --page-bg: #110a04;
+  --sidebar-bg: rgba(26,14,4,0.98);
+  --topbar-bg: rgba(26,14,4,0.95);
+  --sidebar-border: rgba(255,255,255,0.1);
+  --search-bg: rgba(255,255,255,0.06);
+  --sb-hover: rgba(255,255,255,0.07);
+  --card-bg: rgba(255,255,255,0.06);
+  --card-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  background: var(--page-bg, #f0f2f5);
+  min-height: 100vh;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  transition: background 0.3s;
+}
+
+/* ══════════════════════════════
+   SIDEBAR LAYOUT
+══════════════════════════════ */
+#appScreen { display: none; }
+#appScreen.active {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* SIDEBAR */
+#sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--sidebar-bg, #ffffff);
+  border-right: 1px solid var(--sidebar-border, #e8eaed);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 50;
+  transition: width 0.22s cubic-bezier(.4,0,.2,1), background 0.3s, border-color 0.3s;
+}
+#sidebar.collapsed { width: 60px; }
+[data-theme="dark"] #sidebar {
+  background: rgba(26,14,4,0.98);
+  border-right-color: var(--glass-border);
+}
+
+.sb-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 18px 18px;
+  border-bottom: 1px solid var(--sidebar-border, #f0f2f5);
+  flex-shrink: 0;
+}
+[data-theme="dark"] .sb-brand { border-bottom-color: var(--glass-border2); }
+
+/* Collapse button — floats on the right border of the sidebar */
+.sb-collapse-btn {
+  position: fixed;
+  top: 50%;
+  left: calc(240px - 13px);
+  transform: translateY(-50%);
+  z-index: 100;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--sidebar-border, #e8eaed);
+  background: var(--sidebar-bg, #fff);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text3);
+  transition: background 0.15s, color 0.15s, left 0.22s cubic-bezier(.4,0,.2,1), box-shadow 0.15s;
+  padding: 0;
+}
+.sb-collapse-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+[data-theme="dark"] .sb-collapse-btn {
+  background: rgba(36,18,4,0.98);
+  border-color: var(--glass-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.40);
+}
+#sidebar.collapsed ~ .sb-collapse-btn,
+#appScreen > .sb-collapse-btn { /* default — set by JS */ }
+#sidebar.collapsed + .sb-collapse-btn,
+.sb-collapse-btn.collapsed-pos { left: calc(60px - 13px); }
+.sb-collapse-btn svg {
+  transition: transform 0.22s cubic-bezier(.4,0,.2,1);
+}
+.sb-collapse-btn.is-collapsed svg { transform: rotate(180deg); }
+
+/* Hide text elements when collapsed */
+#sidebar.collapsed .sb-brand-name,
+#sidebar.collapsed .sb-section-label,
+#sidebar.collapsed .sb-item-label,
+#sidebar.collapsed .sb-theme-row > .pill-track,
+#sidebar.collapsed .sb-theme-row > .icon-sun,
+#sidebar.collapsed .sb-theme-row > .icon-moon,
+#sidebar.collapsed .sb-theme-row > .pill-label,
+#sidebar.collapsed .sb-divider { display: none; }
+
+#sidebar.collapsed .sb-item {
+  justify-content: center;
+  padding: 11px 0;
+  width: 60px;
+  border-radius: 0;
+}
+#sidebar.collapsed .sb-item-icon { opacity: 0.75; width: 20px; height: 20px; }
+#sidebar.collapsed .sb-item.active .sb-item-icon { opacity: 1; }
+#sidebar.collapsed .sb-brand {
+  padding: 20px 18px 18px;
+  justify-content: center;
+  gap: 0;
+}
+#sidebar.collapsed .sb-logo { margin: 0 auto; }
+#sidebar.collapsed .sb-footer { padding: 10px 0; align-items: center; }
+#sidebar.collapsed .sb-theme-row {
+  padding: 10px 0;
+  justify-content: center;
+  width: 60px;
+  border-radius: 0;
+}
+#sidebar.collapsed .sb-nav { padding: 8px 0; }
+
+/* Tooltip on hover when collapsed */
+#sidebar.collapsed .sb-item { position: relative; }
+#sidebar.collapsed .sb-item:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: 66px;
+  top: 50%; transform: translateY(-50%);
+  background: var(--card-bg, #fff);
+  color: var(--text);
+  font-size: 12px; font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+  border: 1px solid var(--sidebar-border, #e8eaed);
+  z-index: 100;
+  pointer-events: none;
+}
+[data-theme="dark"] #sidebar.collapsed .sb-item:hover::after {
+  background: rgba(36,18,4,0.98);
+  border-color: var(--glass-border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.sb-logo {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 10px var(--accent-glow);
+  flex-shrink: 0;
+}
+.sb-brand-name { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; }
+.sb-brand-accent { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.sb-brand-version {
+  font-size: 10px; font-weight: 600; color: var(--text3);
+  background: var(--search-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 5px;
+  padding: 1px 5px;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+#sidebar.collapsed .sb-brand-version { display: none; }
+
+.sb-nav {
+  flex: 1;
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-y: auto;
+}
+.sb-section-label {
+  font-size: 10px; font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  padding: 10px 8px 5px;
+}
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  color: var(--text2);
+  transition: background 0.15s, color 0.15s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sb-item:hover { background: var(--sb-hover, rgba(0,0,0,0.05)); color: var(--text); }
+[data-theme="dark"] .sb-item:hover { background: var(--glass-bg); }
+.sb-item.active { background: var(--accent-glow); color: var(--accent); font-weight: 700; }
+.sb-item-icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; opacity: 0.7; }
+.sb-item.active .sb-item-icon { opacity: 1; }
+.sb-divider { height: 1px; background: var(--sidebar-border, #f0f2f5); margin: 6px 4px; }
+[data-theme="dark"] .sb-divider { background: var(--glass-border2); }
+
+.sb-footer {
+  padding: 10px 12px 14px;
+  border-top: 1px solid var(--sidebar-border, #f0f2f5);
+  flex-shrink: 0;
+}
+[data-theme="dark"] .sb-footer { border-top-color: var(--glass-border2); }
+.sb-theme-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px; cursor: pointer;
+  user-select: none; transition: background 0.15s;
+  font-size: 12px; font-weight: 600; color: var(--text2);
+}
+.sb-theme-row:hover { background: var(--sb-hover, rgba(0,0,0,0.05)); }
+
+/* MAIN AREA */
+#mainArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--page-bg, #f0f2f5);
+  transition: background 0.3s;
+}
+
+/* TOP BAR */
+#topBar {
+  height: 64px;
+  background: var(--topbar-bg, #ffffff);
+  border-bottom: 1px solid var(--sidebar-border, #e8eaed);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  flex-shrink: 0;
+  gap: 16px;
+  transition: background 0.3s, border-color 0.3s;
+}
+[data-theme="dark"] #topBar {
+  background: rgba(26,14,4,0.97);
+  border-bottom-color: var(--glass-border);
+  box-shadow: 0 1px 0 var(--glass-border2);
+}
+.topbar-left { flex: 1; min-width: 0; }
+.topbar-title {
+  font-size: 20px; font-weight: 700;
+  color: var(--text); letter-spacing: -0.4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin: 0; padding: 0;
+}
+.topbar-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+/* ══════════════════════════════
+   LOGIN SCREEN
+══════════════════════════════ */
+#loginScreen {
+  min-height: 100vh; display: flex; align-items: center;
+  justify-content: center; padding: 24px;
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #1e0f04 0%, #2d1504 50%, #1a0e04 100%);
+}
+#loginScreen.splash-hidden { display: none !important; }
+.login-bg-canvas { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.login-card { position: relative; z-index: 1; }
+.login-version { position: absolute; bottom: 20px; right: 24px; z-index: 2; font-size: 11px; color: rgba(255,255,255,0.25); font-weight: 500; font-family: monospace; }
+.login-card {
+  width: 100%; max-width: 420px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255,255,255,0.85);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 8px 32px rgba(220,110,30,0.10), 0 0 0 0.5px rgba(240,200,160,0.45) inset;
+  overflow: hidden;
+}
+[data-theme="dark"] .login-card { background: rgba(30,15,5,0.92); }
+.login-hero {
+  padding: 36px 36px 28px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  position: relative; overflow: hidden;
+}
+.login-hero::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.18) 0%,transparent 60%); }
+.login-hero::after  { content:''; position:absolute; bottom:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.08); }
+.login-logo { display:flex; align-items:center; gap:12px; position:relative; z-index:1; }
+.login-logo-icon { width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,0.22); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.35); display:flex; align-items:center; justify-content:center; }
+.login-brand { font-size:22px; font-weight:700; color:#fff; letter-spacing:-0.5px; }
+.login-sub   { font-size:13px; color:rgba(255,255,255,0.72); margin-top:6px; position:relative; z-index:1; }
+.login-body  { padding:28px 32px 24px; display:flex; flex-direction:column; gap:16px; }
+.field-wrap  { display:flex; flex-direction:column; gap:7px; }
+.field-label { font-size:12px; font-weight:600; color:var(--text2); text-transform:uppercase; letter-spacing:0.6px; }
+.field-input { background:var(--surface-tint); border:1px solid var(--glass-border); border-radius:var(--radius); padding:12px 16px; color:var(--text); font-size:15px; outline:none; transition:border-color 0.2s,box-shadow 0.2s; width:100%; }
+.field-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+.field-input::placeholder { color:var(--text3); }
+.login-step  { display:flex; flex-direction:column; gap:14px; }
+.btn-social  { width:100%; display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--glass-bg-hover); border:1.5px solid var(--glass-border); border-radius:var(--radius); cursor:pointer; transition:all 0.18s; font-family:inherit; font-size:14px; font-weight:600; color:var(--text); }
+.btn-social:hover { background:var(--glass-bg-deep); box-shadow:var(--glass-shadow-sm); transform:translateY(-1px); }
+.btn-social-icon { width:22px; height:22px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.btn-social-text { flex:1; }
+.btn-social-arrow { font-size:14px; color:var(--text3); transition:transform 0.15s,color 0.15s; }
+.btn-social:hover .btn-social-arrow { transform:translateX(3px); color:var(--accent); }
+.login-pw-step { display:none; flex-direction:column; gap:14px; animation:slideDown 0.2s ease; }
+.login-pw-step.open { display:flex; }
+@keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+.btn-back-login { background:none; border:none; cursor:pointer; font-size:12px; color:var(--text3); font-weight:600; display:flex; align-items:center; gap:5px; padding:0; transition:color 0.15s; align-self:flex-start; }
+.btn-back-login:hover { color:var(--accent); }
+.btn-signin { width:100%; padding:13px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; border-radius:var(--radius); color:#fff; font-size:15px; font-weight:600; cursor:pointer; letter-spacing:0.2px; box-shadow:0 4px 16px var(--accent-glow); transition:opacity 0.2s,transform 0.1s; margin-top:4px; }
+.btn-signin:hover { opacity:0.90; }
+.btn-signin:active { transform:scale(0.98); }
+.login-error { background:var(--red-bg); border:1px solid rgba(220,38,38,0.25); border-radius:var(--radius); padding:11px 14px; font-size:13px; color:var(--red); display:none; animation:shake 0.3s ease; }
+.login-error.show { display:block; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+.login-footer { border-top:1px solid rgba(220,210,240,0.45); padding:16px 32px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+
+/* ══════════════════════════════
+   GLASS MIXIN
+══════════════════════════════ */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* ══════════════════════════════
+   THEME PILL
+══════════════════════════════ */
+.pill-track { width:32px; height:18px; border-radius:9px; background:var(--glass-border); position:relative; transition:background 0.2s; }
+[data-theme="dark"] .pill-track { background:var(--accent); }
+.pill-knob { position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:#fff; transition:transform 0.25s cubic-bezier(.34,1.56,.64,1); box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+[data-theme="dark"] .pill-knob { transform:translateX(14px); }
+.pill-label { font-size:12px; font-weight:600; color:var(--text2); min-width:28px; }
+.icon-sun, .icon-moon { font-size:14px; line-height:1; }
+.icon-moon { display:none; }
+[data-theme="dark"] .icon-sun { display:none; }
+[data-theme="dark"] .icon-moon { display:inline; }
+
+/* ══════════════════════════════
+   ACCOUNT DROPDOWN
+══════════════════════════════ */
+.acct-wrap { position:relative; }
+.acct-btn { display:flex; align-items:center; gap:9px; padding:6px 12px 6px 6px; background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:40px; cursor:pointer; backdrop-filter:blur(16px); transition:background 0.15s; user-select:none; }
+.acct-btn:hover { background:var(--glass-bg-hover); }
+.acct-dropdown { position:absolute; top:calc(100% + 8px); right:0; min-width:200px; background:var(--glass-bg-deep); backdrop-filter:blur(30px) saturate(200%); border:1px solid var(--glass-border); border-radius:var(--radius-lg); box-shadow:var(--glass-shadow); z-index:200; display:none; overflow:hidden; }
+.acct-dropdown.open { display:block; }
+.acct-dd-header { padding:14px 16px 10px; border-bottom:1px solid var(--glass-border2); }
+.acct-dd-name { font-size:14px; font-weight:700; color:var(--text); }
+.acct-dd-role { font-size:11px; color:var(--text3); margin-top:2px; text-transform:uppercase; letter-spacing:0.5px; }
+.acct-dd-item { display:flex; align-items:center; gap:10px; padding:11px 16px; cursor:pointer; font-size:13px; font-weight:500; color:var(--text2); transition:background 0.12s; }
+.acct-dd-item:hover { background:var(--surface-tint); color:var(--text); }
+.acct-dd-item.danger { color:var(--red); }
+.acct-dd-item.danger:hover { background:var(--red-bg); }
+.avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; }
+.chip-name { font-size:13px; font-weight:600; color:var(--text); }
+.chip-role { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-top:1px; }
+
+/* ══════════════════════════════
+   GLASS BUTTONS
+══════════════════════════════ */
+.btn { display:inline-flex; align-items:center; gap:7px; padding:8px 16px; border-radius:var(--radius); font-size:13px; font-weight:600; cursor:pointer; background:var(--glass-bg); border:1px solid var(--glass-border); color:var(--text2); transition:all 0.15s; white-space:nowrap; backdrop-filter:blur(16px); }
+.btn:hover { background:var(--glass-bg-hover); color:var(--text); }
+.btn-primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); border-color:transparent; color:#fff; box-shadow:0 4px 14px var(--accent-glow); }
+.btn-primary:hover { opacity:0.88; color:#fff; }
+.btn-danger { color:var(--red); border-color:rgba(220,38,38,0.25); background:var(--red-bg); }
+.btn-danger:hover { background:rgba(220,38,38,0.2); }
+.btn-sm { padding:5px 11px; font-size:12px; border-radius:10px; }
+
+/* ══════════════════════════════
+   MAIN CONTENT
+══════════════════════════════ */
+.main { padding:24px; max-width:none; }
+
+/* ══════════════════════════════
+   STATS — light mode white cards
+══════════════════════════════ */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px; }
+.stat-card {
+  background:var(--glass-bg);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);
+  padding:18px 20px;
+  box-shadow:var(--glass-shadow-sm);
+  transition:transform 0.2s,box-shadow 0.2s;
+  cursor:pointer;
+}
+.stat-card:hover { transform:translateY(-2px); box-shadow:var(--glass-shadow); }
+.stat-card.stat-active { border-color:var(--accent); box-shadow:var(--glass-shadow),0 0 0 2px var(--accent-glow); }
+.stat-lbl { font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.7px; margin-bottom:10px; }
+.stat-val { font-size:30px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1; }
+.sv-total    { color:var(--text); }
+.sv-received { color:var(--green); }
+.sv-pending  { color:var(--amber); }
+.sv-partial  { color:var(--blue); }
+.sv-returned { color:var(--text3); }
+.sv-cancelled{ color:var(--red); }
+
+/* ══════════════════════════════
+   TOOLBAR
+══════════════════════════════ */
+.toolbar { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
+.search-wrap { position:relative; flex:1; min-width:220px; }
+.search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text3); pointer-events:none; display:flex; }
+.search-input {
+  width:100%;
+  background:var(--glass-bg);
+  backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:10px 14px 10px 42px;
+  color:var(--text); font-size:14px; outline:none;
+  box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+[data-theme="dark"] .search-input { box-shadow:0 2px 6px rgba(0,0,0,0.35); }
+.search-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+.search-input::placeholder { color:var(--text3); }
+.filter-select {
+  background:var(--glass-bg);
+  backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:10px 14px;
+  color:var(--text2); font-size:13px; font-weight:500; outline:none; cursor:pointer;
+  transition:border-color 0.2s;
+}
+.filter-select:focus { border-color:var(--accent); }
+
+/* ══════════════════════════════
+   TABLE
+══════════════════════════════ */
+.count-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:12px; font-weight:500; color:var(--text3); }
+.table-wrap {
+  background:var(--glass-bg);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+  box-shadow:var(--glass-shadow-sm);
+}
+table { width:100%; border-collapse:collapse; font-size:13px; min-width:1200px; }
+thead th {
+  background:var(--surface-tint);
+  padding:8px 12px; text-align:left;
+  font-size:11px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.7px;
+  border-bottom:1px solid var(--glass-border);
+  white-space:nowrap; user-select:none; cursor:pointer;
+  transition:color 0.15s;
+}
+thead th:hover { color:var(--text2); }
+thead th.sort-asc::after  { content:' ↑'; color:var(--accent); }
+thead th.sort-desc::after { content:' ↓'; color:var(--accent); }
+thead th.no-sort { cursor:default; }
+tbody tr { border-bottom:1px solid var(--glass-border2); transition:background 0.12s; }
+tbody tr:last-child { border-bottom:none; }
+tbody tr:hover { background:var(--surface-tint); }
+td { padding:7px 12px; color:var(--text); vertical-align:middle; }
+.col-serial { display:none; }
+td.mono { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text2); }
+td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text3); white-space:nowrap; }
+.empty-state { text-align:center; padding:64px 24px; color:var(--text3); }
+.empty-icon { font-size:40px; margin-bottom:12px; opacity:0.4; }
+.row-actions { display:flex; gap:6px; }
+
+/* ══════════════════════════════
+   SIDEBAR SEARCH
+══════════════════════════════ */
+.sb-search-wrap {
+  position: relative;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--search-bg, #f3f4f6);
+  border: 1.5px solid var(--sidebar-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+[data-theme="dark"] .sb-search-wrap {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+}
+.sb-search-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.sb-search-input {
+  border: none; background: transparent; outline: none;
+  font-size: 13px; color: var(--text); width: 100%; font-family: inherit;
+}
+.sb-search-input::placeholder { color: var(--text3); }
+#sidebar.collapsed .sb-search-wrap { display: none; }
+.sb-search-wrap .global-search-results {
+  position: fixed;
+  width: 320px;
+  max-height: calc(100vh - 84px);
+  background: var(--glass-bg-deep);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
+  z-index: 300;
+  overflow-y: auto;
+  display: none;
+}
+[data-theme="light"] .sb-search-wrap .global-search-results {
+  background: #ffffff;
+  border-color: #e5e7eb;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.07);
+}
+.sb-search-wrap .global-search-results.open { display: block; }
+.gsr-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 16px; cursor: pointer;
+  border-bottom: 1px solid var(--glass-border2);
+  transition: background 0.12s;
+}
+.gsr-item:last-child { border-bottom: none; }
+.gsr-item:hover { background: var(--surface-tint); }
+.gsr-icon {
+  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+  background: var(--glass-bg-hover);
+  display: flex; align-items: center; justify-content: center;
+}
+.gsr-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.gsr-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.gsr-badge { margin-left: auto; flex-shrink: 0; }
+.gsr-empty { padding: 24px 16px; text-align: center; color: var(--text3); font-size: 13px; }
+.gsr-count {
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  padding: 8px 16px; border-bottom: 1px solid var(--glass-border2);
+  background: var(--surface-tint);
+}
+mark.gsr-highlight {
+  background: var(--accent-glow); color: var(--accent);
+  border-radius: 3px; padding: 0 2px; font-weight: 700; font-style: normal;
+}
+.gsr-section-label {
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  padding: 10px 16px 4px;
+  background: var(--surface-tint);
+  border-bottom: 1px solid var(--glass-border2);
+}
+.gsr-serial-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--glass-border2);
+}
+.gsr-serial-item:last-of-type { border-bottom: none; }
+.gsr-serial-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; font-weight: 600; color: var(--text);
+  flex: 1; min-width: 0;
+}
+.gsr-serial-po {
+  font-size: 11px; color: var(--text3); margin-top: 1px;
+}
+.gsr-status-select {
+  appearance: none; -webkit-appearance: none;
+  border: 1.5px solid var(--sidebar-border);
+  border-radius: 8px;
+  background: var(--search-bg);
+  color: var(--text);
+  font-size: 11px; font-weight: 600;
+  padding: 4px 22px 4px 8px;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.gsr-status-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+.gsr-status-select[data-status="Deployed"]  { border-color: var(--green); color: var(--green); }
+.gsr-status-select[data-status="Defective"] { border-color: var(--red); color: var(--red); }
+.gsr-status-select[data-status="Repair"]    { border-color: var(--amber); color: var(--amber); }
+.gsr-status-select[data-status="Lost"]      { border-color: var(--text3); color: var(--text3); }
+.gsr-status-select[data-status="Spare"]     { border-color: var(--blue); color: var(--blue); }
+.gsr-status-select[data-status="Untagged"]  { border-color: var(--sidebar-border); color: var(--text3); }
+
+/* ══════════════════════════════
+   USER MANAGEMENT
+══════════════════════════════ */
+.um-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.um-summary-card {
+  background: var(--card-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--card-shadow);
+}
+[data-theme="dark"] .um-summary-card {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+.um-summary-lbl { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; }
+.um-summary-val { font-size: 24px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+
+.um-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.um-card {
+  background: var(--card-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 0.18s, border-color 0.18s, transform 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="dark"] .um-card {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+.um-card:hover { box-shadow: var(--glass-shadow-sm); transform: translateY(-2px); }
+.um-card-top { display: flex; align-items: flex-start; gap: 13px; }
+.um-avatar {
+  width: 46px; height: 46px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 15px; color: #fff;
+  flex-shrink: 0;
+  position: relative;
+}
+.um-avatar-status {
+  position: absolute; bottom: 0; right: 0;
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 2px solid var(--card-bg);
+}
+[data-theme="dark"] .um-avatar-status { border-color: var(--glass-bg); }
+.um-avatar-status.active  { background: var(--green); }
+.um-avatar-status.inactive{ background: var(--text3); }
+.um-info { flex: 1; min-width: 0; }
+.um-name { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.um-username { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.um-role-pill {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+.um-divider { height: 1px; background: var(--sidebar-border); margin: 0 -18px; }
+[data-theme="dark"] .um-divider { background: var(--glass-border2); }
+.um-footer { display: flex; align-items: center; justify-content: space-between; }
+.um-status-text { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+.um-actions { display: flex; gap: 6px; }
+.um-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 8px;
+  border: 1px solid var(--sidebar-border);
+  background: transparent; cursor: pointer; color: var(--text2);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+[data-theme="dark"] .um-btn { border-color: var(--glass-border); color: var(--text3); }
+.um-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+.um-btn.danger:hover { background: var(--red); border-color: var(--red); color: #fff; }
+.um-btn.success:hover { background: var(--green); border-color: var(--green); color: #fff; }
+.um-stripe {
+  position: absolute; top: 0; left: 0;
+  width: 3px; height: 100%;
+  border-radius: 3px 0 0 3px;
+}
+.um-empty {
+  grid-column: 1 / -1;
+  text-align: center; padding: 60px 20px;
+  color: var(--text3); font-size: 13px;
+}
+
+/* ══════════════════════════════
+   AUDIT LOG
+══════════════════════════════ */
+.al-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.al-summary-card {
+  background: var(--card-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--card-shadow);
+  cursor: pointer;
+  transition: border-color 0.18s, box-shadow 0.18s, transform 0.15s;
+  user-select: none;
+}
+.al-summary-card:hover { box-shadow: var(--glass-shadow-sm); transform: translateY(-2px); }
+.al-summary-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow), var(--glass-shadow-sm);
+}
+[data-theme="dark"] .al-summary-card {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+.al-summary-lbl { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; }
+.al-summary-val { font-size: 24px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+
+.al-table-wrap {
+  background: var(--card-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+[data-theme="dark"] .al-table-wrap {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+.al-table { width: 100%; border-collapse: collapse; }
+.al-thead { background: var(--search-bg); }
+[data-theme="dark"] .al-thead { background: rgba(255,255,255,0.04); }
+.al-th {
+  padding: 10px 16px; text-align: left;
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.7px;
+  border-bottom: 1px solid var(--sidebar-border);
+  white-space: nowrap;
+}
+[data-theme="dark"] .al-th { border-bottom-color: var(--glass-border2); }
+.al-tr { border-bottom: 1px solid var(--sidebar-border); transition: background 0.12s; }
+[data-theme="dark"] .al-tr { border-bottom-color: var(--glass-border2); }
+.al-tr:last-child { border-bottom: none; }
+.al-tr:hover { background: var(--surface-tint); }
+.al-td { padding: 11px 16px; font-size: 12px; vertical-align: middle; }
+.al-time-main { font-weight: 500; color: var(--text); }
+.al-time-rel  { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.al-user-wrap { display: flex; align-items: center; gap: 8px; }
+.al-user-mini {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.al-user-name { font-weight: 600; color: var(--text); }
+.al-action-pill {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 20px; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  white-space: nowrap;
+}
+.al-details { color: var(--text2); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ══════════════════════════════
+   DASHBOARD
+══════════════════════════════ */
+.dash-welcome {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: var(--radius-lg);
+  color: #fff;
+  margin-bottom: 24px;
+}
+.dash-welcome-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.dash-welcome-sub   { font-size: 13px; opacity: 0.85; }
+.dash-section-title {
+  font-size: 11px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  margin-bottom: 12px;
+}
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+.dash-stat {
+  background: var(--card-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+[data-theme="dark"] .dash-stat {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+.dash-stat:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow-sm); }
+.dash-stat:hover { border-color: var(--accent); }
+.dash-stat-lbl { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; }
+.dash-stat-val { font-size: 28px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.dash-card {
+  background: var(--card-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+[data-theme="dark"] .dash-card {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+.dash-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+[data-theme="dark"] .dash-card-header { border-bottom-color: var(--glass-border2); }
+.dash-card-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.dash-recent-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--sidebar-border);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+[data-theme="dark"] .dash-recent-row { border-bottom-color: var(--glass-border2); }
+.dash-recent-row:last-child { border-bottom: none; }
+.dash-recent-row:hover { background: var(--surface-tint); }
+.dash-recent-po { font-size: 12px; font-weight: 700; color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+.dash-recent-meta { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.dash-type-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+[data-theme="dark"] .dash-type-row { border-bottom-color: var(--glass-border2); }
+.dash-type-row:last-child { border-bottom: none; }
+.dash-type-name { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+.dash-type-count { font-size: 12px; font-weight: 700; color: var(--accent); }
+.dash-type-bar-wrap { width: 80px; height: 6px; background: var(--search-bg); border-radius: 4px; overflow: hidden; }
+.dash-type-bar { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.dash-empty { padding: 20px 16px; text-align: center; color: var(--text3); font-size: 12px; }
+
+/* ══════════════════════════════
+   BADGES
+══════════════════════════════ */
+.badge { display:inline-block; padding:4px 11px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.3px; white-space:nowrap; }
+.b-received { background:var(--green-bg); color:var(--green); }
+.b-pending  { background:var(--amber-bg); color:var(--amber); }
+.b-partial  { background:var(--blue-bg);  color:var(--blue); }
+.b-returned { background:rgba(128,128,128,0.12); color:var(--text3); }
+.b-cancelled{ background:var(--red-bg);   color:var(--red); }
+
+/* ══════════════════════════════
+   MODAL
+══════════════════════════════ */
+.overlay { display:none; position:fixed; inset:0; z-index:200; background:rgba(30,20,50,0.30); backdrop-filter:blur(10px); align-items:center; justify-content:center; padding:20px; opacity:0; transition:opacity 0.22s ease; }
+[data-theme="dark"] .overlay { background:rgba(0,0,0,0.60); }
+.overlay.open { display:flex; animation:overlayIn 0.22s ease forwards; }
+@keyframes overlayIn { from{opacity:0} to{opacity:1} }
+.modal { background:var(--glass-bg-deep); backdrop-filter:blur(40px) saturate(200%); -webkit-backdrop-filter:blur(40px) saturate(200%); border:1px solid var(--glass-border); border-radius:var(--radius-xl); box-shadow:var(--glass-shadow),0 0 0 0.5px var(--glass-border2) inset; width:100%; max-width:700px; max-height:90vh; overflow-y:auto; transform:translateY(24px) scale(0.97); animation:modalIn 0.28s cubic-bezier(.34,1.3,.64,1) forwards; }
+@keyframes modalIn { from{transform:translateY(28px) scale(0.96);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
+.modal-header { padding:22px 26px 18px; border-bottom:1px solid var(--glass-border2); display:flex; align-items:center; justify-content:space-between; }
+.modal-title { font-size:17px; font-weight:700; color:var(--text); letter-spacing:-0.3px; }
+.modal-close { width:30px; height:30px; border-radius:50%; background:var(--glass-bg); border:1px solid var(--glass-border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text3); transition:all 0.15s; }
+.modal-close:hover { background:var(--red-bg); color:var(--red); border-color:rgba(217,90,106,0.25); }
+.modal-body { padding:22px 26px; }
+.modal-footer { padding:18px 26px; border-top:1px solid var(--glass-border2); display:flex; gap:10px; justify-content:flex-end; }
+
+/* ══════════════════════════════
+   FORM
+══════════════════════════════ */
+.date-strip { display:flex; gap:20px; margin-bottom:20px; padding:12px 16px; background:var(--surface-tint); border-radius:var(--radius); border:1px solid var(--glass-border2); flex-wrap:wrap; }
+.ds-item { display:flex; flex-direction:column; gap:3px; }
+.ds-label { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.6px; }
+.ds-value { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text2); }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.fg { display:flex; flex-direction:column; gap:7px; }
+.fg.full { grid-column:1/-1; }
+.fg label { font-size:11px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px; }
+.fg input, .fg select, .fg textarea {
+  background:var(--surface-tint); border:1px solid var(--glass-border);
+  border-radius:var(--radius); padding:10px 14px; color:var(--text);
+  font-size:13px; outline:none; width:100%;
+  transition:border-color 0.2s,box-shadow 0.2s; font-family:inherit;
+}
+.fg input:focus, .fg select:focus, .fg textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+.fg input::placeholder, .fg textarea::placeholder { color:var(--text3); }
+.fg textarea { resize:vertical; min-height:80px; }
+.serial-help { font-size:11px; color:var(--text3); }
+.serial-counter-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:4px; }
+.serial-count-badge { font-size:11px; font-weight:700; font-family:'IBM Plex Mono',monospace; white-space:nowrap; flex-shrink:0; }
+.scb-ok    { color:var(--green); }
+.scb-under { color:var(--text3); }
+.scb-over  { color:var(--red); }
+
+/* Items section in form */
+.items-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.items-section-title { font-size:11px; font-weight:700; color:var(--text2); text-transform:uppercase; letter-spacing:0.5px; }
+.items-count { color:var(--text3); font-weight:600; }
+.item-row { background:var(--surface-tint); border:1px solid var(--glass-border2); border-radius:var(--radius); padding:14px 14px 12px; margin-bottom:10px; position:relative; }
+.item-row:last-child { margin-bottom:0; }
+.item-row-label { font-size:10px; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:10px; }
+.item-row-remove { position:absolute; top:10px; right:10px; background:none; border:none; color:var(--text3); cursor:pointer; font-size:18px; line-height:1; padding:2px 7px; border-radius:6px; transition:background 0.15s,color 0.15s; }
+.item-row-remove:hover { background:var(--red-bg); color:var(--red); }
+
+/* ══════════════════════════════
+   VIEW DETAIL MODAL
+══════════════════════════════ */
+.delivery-modal-hero {
+  display:flex; align-items:flex-start; gap:16px;
+  padding:20px 22px; background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  margin:-22px -26px 20px;
+}
+.dmh-icon { width:48px; height:48px; border-radius:14px; background:rgba(255,255,255,0.22); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.dmh-info { flex:1; }
+.dmh-po { font-size:18px; font-weight:800; color:#fff; letter-spacing:-0.3px; }
+.dmh-sub { font-size:12px; color:rgba(255,255,255,0.75); margin-top:3px; }
+.dmh-badge { background:rgba(255,255,255,0.25); color:#fff; border-radius:20px; padding:3px 12px; font-size:11px; font-weight:700; border:1px solid rgba(255,255,255,0.3); }
+.detail-panels { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+.detail-panel { background:var(--surface-tint); border:1px solid var(--glass-border2); border-radius:var(--radius-lg); padding:16px 18px; }
+.dp-title { font-size:10px; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:0.7px; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--glass-border2); }
+.dp-row { display:flex; flex-direction:column; gap:2px; margin-bottom:10px; }
+.dp-row:last-child { margin-bottom:0; }
+.dp-label { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
+.dp-value { font-size:13px; font-weight:500; color:var(--text); word-break:break-word; }
+.dp-value.mono { font-family:'IBM Plex Mono',monospace; font-size:12px; }
+.dp-serials { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+.serial-tag { background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:8px; padding:3px 10px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text2); }
+
+/* ══════════════════════════════
+   TOAST
+══════════════════════════════ */
+.toast { position:fixed; bottom:28px; right:28px; background:var(--glass-bg-deep); backdrop-filter:blur(30px) saturate(200%); -webkit-backdrop-filter:blur(30px) saturate(200%); border:1px solid var(--glass-border); border-radius:var(--radius-lg); padding:14px 20px; color:var(--text); font-size:13px; font-weight:500; z-index:999; transform:translateY(80px); opacity:0; transition:all 0.3s cubic-bezier(.34,1.56,.64,1); display:flex; align-items:center; gap:12px; box-shadow:var(--glass-shadow); }
+.toast.show { transform:translateY(0); opacity:1; }
+.toast-dot { width:8px; height:8px; border-radius:50%; background:var(--green); flex-shrink:0; }
+.toast-dot.err { background:var(--red); }
+
+/* ══════════════════════════════
+   SPLASH
+══════════════════════════════ */
+#splashScreen { position:fixed; inset:0; z-index:10000; background:linear-gradient(135deg,#1e0f04 0%,#2d1504 50%,#1a0e04 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; transition:opacity 0.4s ease; }
+#splashScreen.fade-out { opacity:0; pointer-events:none; }
+.splash-logo { width:64px; height:64px; border-radius:18px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
+.splash-title { font-size:28px; font-weight:700; color:#fff; letter-spacing:-0.5px; }
+.splash-sub   { font-size:14px; color:rgba(255,255,255,0.55); margin-top:-12px; }
+.splash-spinner { width:32px; height:32px; border-radius:50%; border:3px solid rgba(255,255,255,0.15); border-top-color:rgba(255,255,255,0.85); animation:spin 0.8s linear infinite; margin-top:8px; }
+.splash-msg { font-size:13px; color:rgba(255,255,255,0.45); font-weight:500; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* ══════════════════════════════
+   LIGHT MODE — white cards
+══════════════════════════════ */
+[data-theme="light"] .stat-card,
+[data-theme="light"] .table-wrap {
+  background: var(--card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-color: var(--sidebar-border) !important;
+  box-shadow: var(--card-shadow) !important;
+}
+[data-theme="light"] .table-wrap { border-radius: var(--radius-lg) !important; }
+[data-theme="light"] thead th { background: #f9fafb !important; }
+[data-theme="light"] .search-input,
+[data-theme="light"] .filter-select {
+  background: #f9fafb !important;
+  backdrop-filter: none !important;
+  border-color: #e5e7eb !important;
+}
+[data-theme="light"] .search-input:focus,
+[data-theme="light"] .filter-select:focus { border-color: var(--accent) !important; }
+[data-theme="light"] .btn {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  border-color: #e5e7eb !important;
+}
+[data-theme="light"] .btn:hover { background: #f9fafb !important; }
+[data-theme="light"] .btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2)) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+[data-theme="light"] .acct-btn {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  border-color: #e5e7eb !important;
+}
+[data-theme="light"] .acct-dropdown {
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.12) !important;
+}
+
+/* ══════════════════════════════
+   SCROLLBAR
+══════════════════════════════ */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--glass-border); border-radius:10px; }
+
+/* ══════════════════════════════
+   RESPONSIVE
+══════════════════════════════ */
+@media (max-width: 768px) {
+  #sidebar { width:56px; overflow:hidden; }
+  .sb-brand { padding:16px 10px; justify-content:center; }
+  .sb-brand-name { display:none; }
+  .sb-item { padding:12px; justify-content:center; }
+  .sb-item-label { display:none; }
+  .sb-section-label { display:none; }
+  .sb-footer { padding:8px; }
+  .sb-theme-row > .pill-label,
+  .sb-theme-row > .pill-track { display:none; }
+  #topBar { padding:0 14px; gap:8px; }
+  .topbar-title { font-size:16px; }
+  .main { padding:16px 14px; }
+  .stats-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
+  .stat-val { font-size:24px; }
+  .toolbar { flex-direction:column; gap:8px; }
+  .toolbar .search-wrap { min-width:unset; width:100%; }
+  .filter-select { width:100%; }
+  .form-grid { grid-template-columns:1fr; }
+  .fg.full { grid-column:1; }
+  .detail-panels { grid-template-columns:1fr; }
+  .overlay { padding:12px; }
+  .modal { border-radius:var(--radius-lg); max-height:95vh; }
+  .toast { bottom:16px; right:16px; left:16px; }
+  .chip-name { display:none; }
+  .chip-role { display:none; }
+  .acct-btn { padding:4px 8px 4px 4px; }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .overlay { padding:8px; align-items:flex-end; }
+  .modal { border-radius:var(--radius-xl) var(--radius-xl) 0 0; max-height:96vh; border-bottom:none; }
+  .toast { bottom:0; right:0; left:0; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
+}
+@media (hover: none) {
+  .btn { min-height:40px; }
+  .btn-sm { min-height:34px; }
+  .filter-select { min-height:44px; }
+  .field-input { min-height:48px; }
+}
+
+/* ══════════════════════════════
+   INVENTORY VIEW
+══════════════════════════════ */
+.inv-stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-bottom:20px; }
+.inv-stat-card {
+  background:var(--glass-bg);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);
+  padding:14px 16px;
+  cursor:pointer;
+  transition:transform 0.15s,box-shadow 0.15s;
+}
+.inv-stat-card:hover { transform:translateY(-2px); box-shadow:var(--glass-shadow); }
+.inv-stat-card.active-filter { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-glow); }
+[data-theme="light"] .inv-stat-card {
+  background:var(--card-bg) !important;
+  backdrop-filter:none !important;
+  border-color:var(--sidebar-border) !important;
+  box-shadow:var(--card-shadow) !important;
+}
+
+/* PO accordion cards */
+.po-card {
+  background:var(--glass-bg);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  margin-bottom:10px;
+  transition:box-shadow 0.15s;
+}
+[data-theme="light"] .po-card {
+  background:var(--card-bg) !important;
+  backdrop-filter:none !important;
+  border-color:var(--sidebar-border) !important;
+  box-shadow:var(--card-shadow) !important;
+}
+.po-card-header {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 18px;
+  cursor:pointer;
+  user-select:none;
+  transition:background 0.12s;
+}
+.po-card-header:hover { background:var(--surface-tint); }
+.po-chevron {
+  flex-shrink:0;
+  width:20px; height:20px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text3);
+  transition:transform 0.22s cubic-bezier(.4,0,.2,1);
+}
+.po-card.expanded .po-chevron { transform:rotate(90deg); }
+.po-header-po {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px; font-weight:700;
+  color:var(--accent);
+  flex-shrink:0;
+  min-width:80px;
+}
+.po-header-meta { flex:1; display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-width:0; }
+.po-header-type { font-size:13px; font-weight:600; color:var(--text); }
+.po-header-brand { font-size:12px; color:var(--text2); }
+.po-header-date { font-size:11px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-left:auto; flex-shrink:0; }
+.po-header-counts { display:flex; gap:5px; flex-wrap:wrap; flex-shrink:0; }
+.po-count-chip {
+  font-size:10px; font-weight:700;
+  padding:2px 8px; border-radius:12px;
+  letter-spacing:0.2px;
+}
+.pcc-deployed  { background:var(--green-bg); color:var(--green); }
+.pcc-defective { background:var(--red-bg);   color:var(--red); }
+.pcc-repair    { background:var(--amber-bg); color:var(--amber); }
+.pcc-lost      { background:rgba(128,128,128,0.12); color:var(--text3); }
+.pcc-spare     { background:var(--blue-bg);  color:var(--blue); }
+.pcc-untagged  { background:var(--glass-border); color:var(--text3); }
+
+/* Multi-item sub-section within a PO card */
+.inv-item-group { }
+.inv-item-group-header {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 16px;
+  background:var(--surface-tint);
+  border-bottom:1px solid var(--glass-border2);
+  font-size:11px; font-weight:700;
+}
+.inv-item-group-header:not(:first-child) { border-top:2px solid var(--glass-border2); }
+.inv-item-group-idx { color:var(--text3); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+.inv-item-group-type { font-size:12px; font-weight:700; color:var(--text); }
+.inv-item-group-brand { font-size:11px; color:var(--text2); }
+.inv-item-group-units { font-size:10px; color:var(--text3); margin-left:auto; }
+
+/* Asset-type pill chips */
+.at-chip {
+  display:inline-flex; align-items:center;
+  font-size:11px; font-weight:700;
+  padding:2px 9px; border-radius:12px;
+  white-space:nowrap;
+}
+.at-chip-0 { background:rgba(91,143,232,0.14);  color:var(--blue); }
+.at-chip-1 { background:rgba(61,180,140,0.14);  color:var(--green); }
+.at-chip-2 { background:rgba(212,135,74,0.14);  color:var(--amber); }
+.at-chip-3 { background:rgba(162,104,221,0.14); color:#a268dd; }
+.at-chip-4 { background:rgba(232,91,150,0.14);  color:#e85b96; }
+.at-chip-5 { background:rgba(74,180,212,0.14);  color:#4ab4d4; }
+[data-theme="light"] .at-chip-0 { background:rgba(91,143,232,0.12);  color:#3a70d4; }
+[data-theme="light"] .at-chip-1 { background:rgba(61,180,140,0.12);  color:#1f8f68; }
+[data-theme="light"] .at-chip-2 { background:rgba(212,135,74,0.12);  color:#b06020; }
+[data-theme="light"] .at-chip-3 { background:rgba(162,104,221,0.12); color:#7a3ab8; }
+[data-theme="light"] .at-chip-4 { background:rgba(232,91,150,0.12);  color:#c0306a; }
+[data-theme="light"] .at-chip-5 { background:rgba(74,180,212,0.12);  color:#1a8aaa; }
+
+/* Asset rows table */
+.po-card-body { display:none; border-top:1px solid var(--glass-border2); }
+.po-card.expanded .po-card-body { display:block; }
+.inv-table { width:100%; border-collapse:collapse; font-size:13px; min-width:700px; }
+.inv-table thead th {
+  background:var(--surface-tint);
+  padding:9px 14px;
+  text-align:left;
+  font-size:10px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.6px;
+  border-bottom:1px solid var(--glass-border2);
+  white-space:nowrap;
+}
+[data-theme="light"] .inv-table thead th { background:#f9fafb !important; }
+.inv-table tbody tr { border-bottom:1px solid var(--glass-border2); transition:background 0.1s; }
+.inv-table tbody tr:last-child { border-bottom:none; }
+.inv-table tbody tr:hover { background:var(--surface-tint); }
+.inv-table td { padding:10px 14px; color:var(--text); vertical-align:middle; }
+
+/* Asset status select */
+.asset-status-select {
+  border-radius:20px;
+  padding:4px 10px;
+  font-size:11px; font-weight:700;
+  cursor:pointer; outline:none;
+  border:1.5px solid transparent;
+  appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 8px center;
+  padding-right:24px;
+  transition:all 0.15s;
+  font-family:inherit;
+}
+.asset-status-select[data-status="Deployed"]  { background-color:var(--green-bg); color:var(--green); border-color:var(--green); }
+.asset-status-select[data-status="Defective"] { background-color:var(--red-bg);   color:var(--red);   border-color:var(--red); }
+.asset-status-select[data-status="Repair"]    { background-color:var(--amber-bg); color:var(--amber); border-color:var(--amber); }
+.asset-status-select[data-status="Lost"]      { background-color:rgba(128,128,128,0.10); color:var(--text3); border-color:var(--text3); }
+.asset-status-select[data-status="Spare"]     { background-color:var(--blue-bg);  color:var(--blue);  border-color:var(--blue); }
+.asset-status-select[data-status="Untagged"]  { background-color:var(--glass-bg); color:var(--text3); border-color:var(--glass-border); }
+.inv-serial { font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--text2); }
+.inv-unit   { font-size:12px; color:var(--text3); font-style:italic; }
+.inv-notes-input {
+  background:var(--surface-tint);
+  border:1px solid var(--glass-border2);
+  border-radius:8px;
+  padding:5px 10px;
+  font-size:12px; color:var(--text);
+  outline:none; width:100%; min-width:140px;
+  transition:border-color 0.15s;
+  font-family:inherit;
+}
+.inv-notes-input:focus { border-color:var(--accent); }
+.inv-notes-input::placeholder { color:var(--text3); }
+.inv-updated { font-size:10px; color:var(--text3); white-space:nowrap; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     SPLASH
+════════════════════════════════ -->
+<div id="splashScreen">
+  <div class="splash-logo">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+      <line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/>
+    </svg>
+  </div>
+  <div class="splash-title">AssetVault</div>
+  <div class="splash-sub">Delivery Inventory</div>
+  <div class="splash-spinner"></div>
+  <div class="splash-msg" id="splashMsg">Loading…</div>
+</div>
+
+<!-- ════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-bg-canvas">
+    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+          <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(99,179,237,0.07)" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)"/>
+      <g opacity="0.06" stroke="rgba(147,197,253,1)" stroke-width="1.5" fill="none">
+        <g transform="translate(8%,12%)"><rect x="0" y="0" width="28" height="18" rx="2"/><line x1="-3" y1="19" x2="31" y2="19"/></g>
+        <g transform="translate(85%,8%)"><rect x="0" y="0" width="28" height="18" rx="2"/><line x1="-3" y1="19" x2="31" y2="19"/></g>
+        <g transform="translate(5%,72%)"><rect x="0" y="0" width="22" height="14" rx="2"/><line x1="-2" y1="15" x2="24" y2="15"/></g>
+        <g transform="translate(88%,75%)"><rect x="0" y="0" width="22" height="14" rx="2"/><line x1="-2" y1="15" x2="24" y2="15"/></g>
+        <g transform="translate(45%,5%)"><rect x="0" y="0" width="20" height="13" rx="2"/><line x1="-2" y1="14" x2="22" y2="14"/></g>
+        <g transform="translate(48%,85%)"><rect x="0" y="0" width="20" height="13" rx="2"/><line x1="-2" y1="14" x2="22" y2="14"/></g>
+      </g>
+      <g opacity="0.05" stroke="rgba(147,197,253,1)" stroke-width="1" fill="none">
+        <polyline points="0,200 120,200 120,350 280,350"/>
+        <polyline points="100%,300 80%,300 80%,150 60%,150"/>
+        <circle cx="120" cy="200" r="3" fill="rgba(147,197,253,0.4)"/>
+        <circle cx="280" cy="350" r="5" fill="rgba(147,197,253,0.3)" stroke-width="2"/>
+      </g>
+    </svg>
+  </div>
+  <div class="login-version">Delivery v2.0 · localStorage</div>
+  <div class="login-card">
+    <div class="login-hero">
+      <div class="login-logo">
+        <div class="login-logo-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            <line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/>
+          </svg>
+        </div>
+        <span class="login-brand">AssetVault</span>
+      </div>
+      <div class="login-sub">IT Asset Delivery Inventory</div>
+    </div>
+    <div class="login-body">
+      <div class="login-step" id="loginStep1">
+        <div class="field-wrap">
+          <label class="field-label">Username</label>
+          <input type="text" class="field-input" id="loginUser" placeholder="Enter your username" autocomplete="username">
+        </div>
+        <button class="btn-social" onclick="openPasswordStep()">
+          <span class="btn-social-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
+          <span class="btn-social-text">Continue with Password</span>
+          <span class="btn-social-arrow">→</span>
+        </button>
+        <div class="login-error" id="loginError"></div>
+      </div>
+      <div class="login-pw-step" id="loginStep2">
+        <button class="btn-back-login" onclick="closePasswordStep()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Back
+        </button>
+        <div style="font-size:13px;color:var(--text2);font-weight:600;padding:4px 0 2px;">
+          Signing in as <span id="loginUserConfirm" style="color:var(--accent)"></span>
+        </div>
+        <div class="field-wrap">
+          <label class="field-label">Password</label>
+          <input type="password" class="field-input" id="loginPass" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <div class="login-error" id="loginError2"></div>
+        <button class="btn-signin" onclick="doLogin()">Sign In →</button>
+      </div>
+    </div>
+    <div class="login-footer">
+      <div style="font-size:12px;color:var(--text3);">AssetVault · IT Department</div>
+      <div style="font-size:11px;color:var(--text3);">Contact your IT admin for access</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     APP SCREEN
+════════════════════════════════ -->
+<div id="appScreen">
+
+  <!-- Sidebar collapse toggle — sits on the border line between sidebar and main -->
+  <button class="sb-collapse-btn" id="btnSidebarCollapse" onclick="toggleSidebar()" title="Toggle sidebar">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <aside id="sidebar">
+    <!-- Brand -->
+    <div class="sb-brand">
+      <div class="sb-logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="9" y1="13" x2="15" y2="13"/>
+        </svg>
+      </div>
+      <span class="sb-brand-name">Asset<span class="sb-brand-accent">Vault</span></span>
+      <span class="sb-brand-version">v2.4</span>
+    </div>
+
+    <!-- Nav -->
+    <nav class="sb-nav">
+      <div class="sb-search-wrap" id="globalSearchBar">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0;color:var(--text3)">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" class="sb-search-input" id="globalSearchInput"
+          placeholder="Search deliveries…"
+          oninput="onGlobalSearch(this.value)"
+          onkeydown="onGlobalSearchKey(event)"
+          autocomplete="off">
+        <div class="global-search-results" id="globalSearchResults"></div>
+      </div>
+      <div class="sb-section-label">Menu</div>
+      <button class="sb-item active" id="navDashboard" onclick="switchView('dashboard')" title="Dashboard">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="8" rx="1"/>
+          <rect x="14" y="3" width="7" height="5" rx="1"/>
+          <rect x="14" y="12" width="7" height="9" rx="1"/>
+          <rect x="3" y="15" width="7" height="6" rx="1"/>
+        </svg>
+        <span class="sb-item-label">Dashboard</span>
+      </button>
+      <button class="sb-item" id="navDeliveries" onclick="switchView('deliveries')" title="Deliveries">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+        </svg>
+        <span class="sb-item-label">Deliveries</span>
+      </button>
+      <button class="sb-item" id="navInventory" onclick="switchView('inventory')" title="Inventory">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span class="sb-item-label">Inventory</span>
+      </button>
+
+      <div class="sb-divider"></div>
+      <div class="sb-section-label">Tools</div>
+
+      <button class="sb-item" onclick="exportCSV()" title="Export CSV">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="8 17 12 21 16 17"/>
+          <line x1="12" y1="12" x2="12" y2="21"/>
+          <path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/>
+        </svg>
+        <span class="sb-item-label">Export CSV</span>
+      </button>
+      <button class="sb-item" onclick="refreshData()" title="Refresh Data">
+        <svg class="sb-item-icon" id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        <span class="sb-item-label">Refresh</span>
+      </button>
+
+      <div class="sb-divider"></div>
+      <div class="sb-section-label">Admin</div>
+
+      <button class="sb-item" id="navUsers" onclick="switchView('users')" title="User Management">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+          <path d="M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+        <span class="sb-item-label">Users</span>
+      </button>
+      <button class="sb-item" id="navAudit" onclick="switchView('audit')" title="Audit Log">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        <span class="sb-item-label">Audit Log</span>
+      </button>
+    </nav>
+
+    <!-- Footer: theme toggle -->
+    <div class="sb-footer">
+      <div class="sb-theme-row" onclick="toggleTheme()">
+        <span class="icon-sun"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></span>
+        <span class="icon-moon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></span>
+        <div class="pill-track"><div class="pill-knob"></div></div>
+        <span class="pill-label" id="themeLabel">Light</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════════ MAIN AREA ══════════ -->
+  <div id="mainArea">
+
+    <!-- TOP BAR (sticky) -->
+    <div id="topBar">
+      <div class="topbar-left">
+        <h1 class="topbar-title" id="topbarTitle">Delivery Inventory</h1>
+      </div>
+      <div class="topbar-right">
+        <!-- Log Delivery button -->
+        <button class="btn btn-primary" id="btnAddDelivery" onclick="openAddModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span class="btn-add-text">Log Delivery</span>
+        </button>
+        <!-- Account dropdown -->
+        <div class="acct-wrap" id="acctWrap">
+          <div class="acct-btn" onclick="toggleAcctMenu()">
+            <div class="avatar" id="userAvatar">--</div>
+            <div>
+              <div class="chip-name" id="userNameDisplay">—</div>
+              <div class="chip-role" id="userRoleDisplay">—</div>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-left:2px;opacity:0.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="acct-dropdown" id="acctDropdown">
+            <div class="acct-dd-header">
+              <div class="acct-dd-name" id="acctDdName">—</div>
+              <div class="acct-dd-role" id="acctDdRole">—</div>
+            </div>
+            <div class="acct-dd-item danger" onclick="doLogout()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Sign Out
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <main class="main" id="dashboardMain" style="display:none;">
+      <div class="dash-welcome" id="dashWelcome"></div>
+
+      <div class="dash-section-title">Deliveries Overview</div>
+      <div class="dash-grid" id="dashDeliveryGrid"></div>
+
+      <div class="dash-section-title" style="margin-top:28px;">Asset Inventory Status</div>
+      <div class="dash-grid" id="dashInvGrid"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px;">
+        <!-- Recent deliveries -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <span class="dash-card-title">Recent Deliveries</span>
+            <button class="btn btn-sm" onclick="switchView('deliveries')" style="font-size:11px;">View All</button>
+          </div>
+          <div id="dashRecentDeliveries"></div>
+        </div>
+        <!-- Asset type breakdown -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <span class="dash-card-title">Asset Types</span>
+            <button class="btn btn-sm" onclick="switchView('deliveries')" style="font-size:11px;">View All</button>
+          </div>
+          <div id="dashAssetTypes"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- DELIVERIES VIEW -->
+    <main class="main" id="deliveriesMain">
+      <!-- Stats -->
+      <div class="stats-grid" id="statsGrid"></div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search PO#, brand, serial, tech, from/to…" oninput="renderTable()">
+        </div>
+        <select class="filter-select" id="statusFilter" onchange="renderTable()">
+          <option value="">All Status</option>
+          <option>Received</option>
+          <option>Pending</option>
+          <option>Partial</option>
+          <option>Returned</option>
+          <option>Cancelled</option>
+        </select>
+        <select class="filter-select" id="typeFilter" onchange="renderTable()">
+          <option value="">All Asset Types</option>
+          <option>Laptop</option>
+          <option>Desktop</option>
+          <option>Monitor</option>
+          <option>Printer</option>
+          <option>Keyboard</option>
+          <option>Mouse</option>
+          <option>Headset</option>
+          <option>Webcam</option>
+          <option>Docking Station</option>
+          <option>Network Switch</option>
+          <option>Access Point</option>
+          <option>UPS</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <!-- Count bar -->
+      <div class="count-bar">
+        <span id="recordCount">0 records</span>
+        <span id="lastSync" style="font-size:11px;color:var(--text3);"></span>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortBy('po')">PO #</th>
+              <th onclick="sortBy('deliveryDate')">Delivery Date</th>
+              <th onclick="sortBy('status')">Status</th>
+              <th onclick="sortBy('quantity')">Qty</th>
+              <th onclick="sortBy('assetType')">Asset Type</th>
+              <th onclick="sortBy('brand')">Brand</th>
+              <th onclick="sortBy('specifications')">Specifications</th>
+              <th class="no-sort col-serial">Serial Numbers</th>
+              <th onclick="sortBy('itTech')">IT Tech</th>
+              <th onclick="sortBy('from')">From</th>
+              <th onclick="sortBy('to')">To</th>
+              <th onclick="sortBy('dateLogged')">Date Logged</th>
+              <th class="no-sort">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- INVENTORY VIEW -->
+    <main class="main" id="inventoryMain" style="display:none;">
+      <!-- Inv Stats -->
+      <div class="inv-stats-grid" id="invStatsGrid"></div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
+          <input type="text" class="search-input" id="invSearchInput" placeholder="Search PO#, serial number, brand…" oninput="renderInventory()">
+        </div>
+        <select class="filter-select" id="invStatusFilter" onchange="renderInventory()">
+          <option value="">All Status</option>
+          <option>Deployed</option>
+          <option>Defective</option>
+          <option>Repair</option>
+          <option>Lost</option>
+          <option>Spare</option>
+          <option>Untagged</option>
+        </select>
+        <select class="filter-select" id="invTypeFilter" onchange="renderInventory()">
+          <option value="">All Asset Types</option>
+          <option>Laptop</option>
+          <option>Desktop</option>
+          <option>Monitor</option>
+          <option>Printer</option>
+          <option>Keyboard</option>
+          <option>Mouse</option>
+          <option>Headset</option>
+          <option>Webcam</option>
+          <option>Docking Station</option>
+          <option>Network Switch</option>
+          <option>Access Point</option>
+          <option>UPS</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <!-- Count bar -->
+      <div class="count-bar">
+        <span id="invRecordCount">0 assets</span>
+        <span style="font-size:11px;color:var(--text3);">Updates save automatically</span>
+      </div>
+
+      <!-- PO Cards -->
+      <div id="invBody"></div>
+    </main>
+
+    <!-- ═════════════════════════════════════════════════════════════════ -->
+    <!-- USERS MAIN -->
+    <!-- ═════════════════════════════════════════════════════════════════ -->
+    <main class="main" id="usersMain" style="display:none;">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
+          <input type="text" class="search-input" id="userSearchInput" placeholder="Search username, display name…" oninput="renderUsers()">
+        </div>
+        <select class="filter-select" id="userRoleFilter" onchange="renderUsers()">
+          <option value="">All Roles</option>
+          <option>superadmin</option>
+          <option>admin</option>
+          <option>member</option>
+        </select>
+        <select class="filter-select" id="userStatusFilter" onchange="renderUsers()">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <button class="btn-primary" onclick="openUserModal()" style="margin-left:auto;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add User
+        </button>
+      </div>
+
+      <!-- Count bar -->
+      <div class="count-bar">
+        <span id="userRecordCount">0 users</span>
+      </div>
+
+      <!-- User Cards -->
+      <div id="userBody"></div>
+    </main>
+
+    <!-- ═════════════════════════════════════════════════════════════════ -->
+    <!-- AUDIT MAIN -->
+    <!-- ═════════════════════════════════════════════════════════════════ -->
+    <main class="main" id="auditMain" style="display:none;">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
+          <input type="text" class="search-input" id="auditSearchInput" placeholder="Search action, user, details…" oninput="renderAudit()">
+        </div>
+        <select class="filter-select" id="auditActionFilter" onchange="renderAudit()">
+          <option value="">All Actions</option>
+          <option>Login</option>
+          <option>Logout</option>
+          <option>Create</option>
+          <option>Update</option>
+          <option>Delete</option>
+          <option>Export</option>
+        </select>
+        <select class="filter-select" id="auditUserFilter" onchange="renderAudit()">
+          <option value="">All Users</option>
+        </select>
+        <input type="date" class="filter-select" id="auditDateFilter" onchange="renderAudit()" style="width:auto;">
+      </div>
+
+      <!-- Count bar -->
+      <div class="count-bar">
+        <span id="auditRecordCount">0 logs</span>
+        <button class="btn-sm" onclick="clearAuditLog()" style="margin-left:auto;padding:4px 10px;font-size:11px;">Clear Log</button>
+      </div>
+
+      <!-- Audit Table -->
+      <div id="auditBody"></div>
+    </main>
+
+  </div><!-- /mainArea -->
+</div><!-- /appScreen -->
+
+<!-- ════════════════════════════════
+     FORM MODAL
+════════════════════════════════ -->
+<div class="overlay" id="formOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Log Delivery</span>
+      <button class="modal-close" onclick="closeFormModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="date-strip" id="dateStrip" style="display:none;">
+        <div class="ds-item"><span class="ds-label">Date Logged</span><span class="ds-value" id="ds_logged">—</span></div>
+        <div class="ds-item"><span class="ds-label">Last Modified</span><span class="ds-value" id="ds_modified">—</span></div>
+        <div class="ds-item"><span class="ds-label">Modified By</span><span class="ds-value" id="ds_modifiedBy">—</span></div>
+      </div>
+      <div class="form-grid">
+        <div class="fg">
+          <label>PO # <span style="color:var(--red)">*</span></label>
+          <input type="text" id="f_po" placeholder="e.g. PO-2024-001" required
+            oninput="checkDuplicatePO(this.value)" onblur="checkDuplicatePO(this.value)">
+          <span id="po-dup-warning" style="display:none;font-size:11px;font-weight:700;color:var(--red);margin-top:3px;">&#9888; This PO already exists.</span>
+        </div>
+        <div class="fg">
+          <label>Delivery Date <span style="color:var(--red)">*</span></label>
+          <input type="date" id="f_deliveryDate" required>
+        </div>
+        <div class="fg">
+          <label>Status <span style="color:var(--red)">*</span></label>
+          <select id="f_status" required>
+            <option value="">Select Status</option>
+            <option>Received</option>
+            <option>Pending</option>
+            <option>Partial</option>
+            <option>Returned</option>
+            <option>Cancelled</option>
+          </select>
+        </div>
+        <div class="fg full" style="grid-column:1/-1;">
+          <div class="items-section-header">
+            <span class="items-section-title">Items <span class="items-count" id="itemsCount">(1)</span></span>
+            <button type="button" class="btn" onclick="addItemRow()" style="font-size:12px;padding:5px 12px;gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Item
+            </button>
+          </div>
+          <div id="itemsContainer"></div>
+        </div>
+        <div class="fg" style="display:none">
+          <label>Asset Type placeholder (unused)</label>
+          <select id="f_assetType">
+            <option value="">Select Asset Type</option>
+            <option>Laptop</option>
+            <option>Desktop</option>
+            <option>Monitor</option>
+            <option>Printer</option>
+            <option>Keyboard</option>
+            <option>Mouse</option>
+            <option>Headset</option>
+            <option>Webcam</option>
+            <option>Docking Station</option>
+            <option>Network Switch</option>
+            <option>Access Point</option>
+            <option>UPS</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fg" style="display:none">
+          <label>Brand placeholder (unused)</label>
+          <select id="f_brand"><option value="">Select Brand</option></select>
+        </div>
+        <input type="hidden" id="f_quantity">
+        <input type="hidden" id="f_specifications">
+        <textarea id="f_serialNumbers" style="display:none"></textarea>
+        <div class="fg">
+          <label>IT Tech <span style="color:var(--red)">*</span></label>
+          <select id="f_itTech" required>
+            <option value="">Select IT Tech</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>From <span style="color:var(--red)">*</span></label>
+          <input type="text" id="f_from" placeholder="e.g. Supplier / Vendor name" required>
+        </div>
+        <div class="fg full">
+          <label>To <span style="color:var(--red)">*</span></label>
+          <input type="text" id="f_to" placeholder="e.g. Department / Site / Person receiving the asset" required>
+        </div>
+        <div class="fg full">
+          <label>Notes / Remarks</label>
+          <textarea id="f_notes" placeholder="Any additional notes, conditions, or remarks about this delivery…" rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeFormModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRecord()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Save Record
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     VIEW MODAL
+════════════════════════════════ -->
+<div class="overlay" id="viewOverlay">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header">
+      <span class="modal-title">Delivery Details</span>
+      <button class="modal-close" onclick="closeViewModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body" id="viewModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeViewModal()">Close</button>
+      <button class="btn btn-primary" id="viewEditBtn" onclick="editFromView()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Edit
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     DELETE MODAL
+════════════════════════════════ -->
+<div class="overlay" id="deleteOverlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <span class="modal-title">Delete Record</span>
+      <button class="modal-close" onclick="closeDeleteModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body"><p id="deleteMsg" style="color:var(--text2);font-size:14px;line-height:1.7;"></p></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14H6L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/>
+          <path d="M9 6V4h6v2"/>
+        </svg>
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-dot" id="toastDot"></div>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ── localStorage-only mode (Firebase will be wired later) ──
+
+const LS_DATA  = 'deliveryAssets_data';
+const LS_USERS = 'deliveryAssets_users';
+const THEME_KEY   = 'deliveryAssets_theme';
+const SESSION_KEY = 'deliveryAssets_session';
+const DEFAULT_PW  = 'ae33a34216f00d844796e3ab70b2aaedd30e8544b7e8f8fd105a03d7f7a7dbb5';
+
+const SEEDED_USERS = [
+  {username:'rcabil',   displayName:'R. Cabil',   role:'superadmin', passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'aalbia',   displayName:'A. Albia',   role:'superadmin', passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'cinuabia', displayName:'C. Inuabia', role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'cllanto',  displayName:'C. Llanto',  role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'jmalalay', displayName:'J. Malalay', role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'ipintor',  displayName:'I. Pintor',  role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'grosco',   displayName:'G. Rosco',   role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'wdacay',   displayName:'W. Dacay',   role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'kipogosa', displayName:'K. Ipogosa', role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'aninting', displayName:'A. Ninting', role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'ritase',   displayName:'R. Itase',   role:'member',     passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'chrcastro',displayName:'C. Castro',  role:'member',     passwordHash:DEFAULT_PW, mustChangePassword:false},
+  {username:'jasoy',    displayName:'J. Asoy',    role:'member',     passwordHash:DEFAULT_PW, mustChangePassword:false},
+];
+
+// ── STATE ──
+let records     = [];
+let editId      = null;
+let deleteId    = null;
+let viewId      = null;
+let sortCol     = 'deliveryDate';
+let sortDir     = -1;
+let _gsTimer    = null;
+let currentUser = null;
+let _usersCache = null;
+
+function can(action) {
+  const r = currentUser?.role;
+  if (r === 'superadmin') return true;
+  if (r === 'admin')      return ['add','edit','export'].includes(action);
+  if (r === 'member')     return ['export'].includes(action);
+  return false;
+}
+
+// ── SIDEBAR ──
+window.toggleSidebar = function() {
+  const sidebar = document.getElementById('sidebar');
+  const btn = document.getElementById('btnSidebarCollapse');
+  sidebar.classList.toggle('collapsed');
+  const isCollapsed = sidebar.classList.contains('collapsed');
+  btn.style.left = (isCollapsed ? 60 : 240) - 13 + 'px';
+  btn.classList.toggle('is-collapsed', isCollapsed);
+};
+
+// Position the button correctly once DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  const btn = document.getElementById('btnSidebarCollapse');
+  const isCollapsed = document.getElementById('sidebar')?.classList.contains('collapsed');
+  if (btn) {
+    btn.style.left = (isCollapsed ? 60 : 240) - 13 + 'px';
+    btn.classList.toggle('is-collapsed', !!isCollapsed);
+  }
+});
+
+// ── THEME ──
+window.toggleTheme = function() {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem(THEME_KEY, next);
+  document.getElementById('themeLabel').textContent = next === 'dark' ? 'Dark' : 'Light';
+};
+function loadTheme() {
+  const s = localStorage.getItem(THEME_KEY) || 'light';
+  document.documentElement.setAttribute('data-theme', s);
+  const l = document.getElementById('themeLabel');
+  if (l) l.textContent = s === 'dark' ? 'Dark' : 'Light';
+}
+
+// ── REFRESH ──
+window.refreshData = function() {
+  const icon = document.getElementById('refreshIcon');
+  if (icon) icon.style.animation = 'spin 0.6s linear';
+  loadRecords();
+  syncInventoryFromRecords();
+  switchView(currentView || 'dashboard');
+  showToast('Data refreshed.');
+  setTimeout(() => { if (icon) icon.style.animation = ''; }, 700);
+};
+
+// ── USERS (localStorage) ──
+function loadUsers() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_USERS));
+    if (Array.isArray(s) && s.length) { _usersCache = s; return; }
+  } catch {}
+  _usersCache = SEEDED_USERS.map(u => ({...u}));
+  localStorage.setItem(LS_USERS, JSON.stringify(_usersCache));
+}
+function getUsers() { return _usersCache || SEEDED_USERS.map(u => ({...u})); }
+
+async function hashPassword(pw) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+// NOTE: crypto.subtle requires a secure context (HTTPS or localhost).
+
+// ── LOGIN ──
+window.openPasswordStep = function() {
+  const u = document.getElementById('loginUser').value.trim();
+  if (!u) { showLoginErr('Please enter your username first.'); return; }
+  document.getElementById('loginStep1').style.display = 'none';
+  document.getElementById('loginStep2').classList.add('open');
+  document.getElementById('loginUserConfirm').textContent = u;
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError2').classList.remove('show');
+  setTimeout(() => document.getElementById('loginPass').focus(), 100);
+};
+window.closePasswordStep = function() {
+  document.getElementById('loginStep2').classList.remove('open');
+  document.getElementById('loginStep1').style.display = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError2').classList.remove('show');
+};
+function showLoginErr(msg, field = 'loginError') {
+  const e = document.getElementById(field);
+  if (e) { e.textContent = msg; e.classList.add('show'); }
+}
+
+window.doLogin = async function() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (!u || !p) { showLoginErr('Please enter your password.', 'loginError2'); return; }
+  loadUsers();
+  const users = getUsers();
+  const hash  = await hashPassword(p);
+  const user  = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.passwordHash === hash);
+  if (!user) { showLoginErr('Incorrect password.', 'loginError2'); document.getElementById('loginPass').value = ''; return; }
+  if (user.active === false) { showLoginErr('This account has been disabled.', 'loginError2'); return; }
+  document.getElementById('loginError2').classList.remove('show');
+  currentUser = {...user};
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  logAudit('Login', u);
+  await showApp();
+};
+
+window.doLogout = function() {
+  const username = currentUser?.username || 'unknown';
+  logAudit('Logout', username);
+  sessionStorage.removeItem(SESSION_KEY);
+  currentUser = null;
+  document.getElementById('appScreen').classList.remove('active');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  if (document.getElementById('loginPass')) document.getElementById('loginPass').value = '';
+  window.closePasswordStep();
+};
+
+function checkSession() {
+  try {
+    const s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+    if (s && s.username) { currentUser = s; return true; }
+  } catch {}
+  return false;
+}
+
+async function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').classList.add('active');
+
+  const name = currentUser.displayName || currentUser.username;
+  const init = name.slice(0, 2).toUpperCase();
+  document.getElementById('userAvatar').textContent      = init;
+  document.getElementById('userNameDisplay').textContent = name;
+  const roleDisp = currentUser.role === 'superadmin' ? 'Super Admin' :
+                   currentUser.role === 'admin'       ? 'Admin' : 'Member';
+  document.getElementById('userRoleDisplay').textContent = roleDisp;
+  const an = document.getElementById('acctDdName');
+  const ar = document.getElementById('acctDdRole');
+  if (an) an.textContent = name;
+  if (ar) ar.textContent = roleDisp;
+
+  // Restrict add button
+  const addBtn = document.getElementById('btnAddDelivery');
+  if (addBtn) addBtn.style.display = can('add') ? '' : 'none';
+
+  // Populate IT Tech dropdown
+  populateTechDropdown();
+
+  // Load data
+  loadRecords();
+  loadInventory();
+  switchView('dashboard');
+}
+
+function populateTechDropdown() {
+  const sel = document.getElementById('f_itTech');
+  if (!sel) return;
+  const users = getUsers();
+  while (sel.options.length > 1) sel.remove(1);
+  users.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.displayName || u.username;
+    opt.textContent = (u.displayName || u.username) + ' (' + (u.role === 'superadmin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : 'Member') + ')';
+    sel.appendChild(opt);
+  });
+}
+
+// ── DATA (localStorage) ──
+function loadRecords() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(LS_DATA));
+    if (Array.isArray(stored)) records = stored;
+  } catch {}
+  document.getElementById('lastSync').textContent = 'Loaded from local storage';
+}
+
+function persistRecord(id, data) {
+  const idx = records.findIndex(r => r.id === id);
+  const isUpdate = idx >= 0;
+  if (isUpdate) records[idx] = { id, ...data };
+  else records.push({ id, ...data });
+  localStorage.setItem(LS_DATA, JSON.stringify(records));
+  logAudit(isUpdate ? 'Update' : 'Create', `PO# ${data.po || id}`);
+  return true;
+}
+
+function removeRecord(id) {
+  const rec = records.find(r => r.id === id);
+  records = records.filter(r => r.id !== id);
+  localStorage.setItem(LS_DATA, JSON.stringify(records));
+  logAudit('Delete', `PO# ${rec?.po || id}`);
+  return true;
+}
+
+// ── DASHBOARD ──
+function renderDashboard() {
+  syncInventoryFromRecords();
+
+  // Welcome banner
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const name = currentUser?.displayName || currentUser?.username || '';
+  document.getElementById('dashWelcome').innerHTML = `
+    <div class="dash-welcome-title">${greeting}, ${esc(name)} 👋</div>
+    <div class="dash-welcome-sub">Here's a live overview of your delivery and asset inventory.</div>`;
+
+  // Delivery counters
+  const total    = records.length;
+  const received = records.filter(r => r.status === 'Received').length;
+  const pending  = records.filter(r => r.status === 'Pending').length;
+  const partial  = records.filter(r => r.status === 'Partial').length;
+  const returned = records.filter(r => r.status === 'Returned').length;
+  const cancelled= records.filter(r => r.status === 'Cancelled').length;
+  const totalQty = records.reduce((s, r) => s + (parseInt(r.quantity) || 0), 0);
+
+  document.getElementById('dashDeliveryGrid').innerHTML = [
+    { lbl: 'Total POs',      val: total,     cls: 'sv-total',    action: "switchView('deliveries')" },
+    { lbl: 'Total Items',    val: totalQty,  cls: 'sv-total',    action: "switchView('deliveries')" },
+    { lbl: 'Received',       val: received,  cls: 'sv-received', action: "switchView('deliveries');filterByStatus('Received')" },
+    { lbl: 'Pending',        val: pending,   cls: 'sv-pending',  action: "switchView('deliveries');filterByStatus('Pending')" },
+    { lbl: 'Partial',        val: partial,   cls: 'sv-partial',  action: "switchView('deliveries');filterByStatus('Partial')" },
+    { lbl: 'Returned',       val: returned,  cls: 'sv-returned', action: "switchView('deliveries');filterByStatus('Returned')" },
+  ].map(c => `
+    <div class="dash-stat" onclick="${c.action}">
+      <div class="dash-stat-lbl">${c.lbl}</div>
+      <div class="dash-stat-val ${c.cls}">${c.val}</div>
+    </div>`).join('');
+
+  // Inventory counters
+  const allInv = Object.values(invItems);
+  const invTotal = allInv.length;
+  const invCounts = { Deployed:0, Defective:0, Repair:0, Lost:0, Spare:0, Untagged:0 };
+  allInv.forEach(v => { if (invCounts[v.status] !== undefined) invCounts[v.status]++; });
+
+  document.getElementById('dashInvGrid').innerHTML = [
+    { lbl: 'Total Assets', val: invTotal,              cls: 'sv-total',    filter: '' },
+    { lbl: 'Deployed',     val: invCounts.Deployed,    cls: 'sv-received', filter: 'Deployed' },
+    { lbl: 'Untagged',     val: invCounts.Untagged,    cls: 'sv-returned', filter: 'Untagged' },
+    { lbl: 'Repair',       val: invCounts.Repair,      cls: 'sv-pending',  filter: 'Repair' },
+    { lbl: 'Defective',    val: invCounts.Defective,   cls: 'sv-cancelled',filter: 'Defective' },
+    { lbl: 'Spare',        val: invCounts.Spare,        cls: 'sv-partial',  filter: 'Spare' },
+  ].map(c => `
+    <div class="dash-stat" onclick="switchView('inventory');invFilterStatus('${c.filter}')">
+      <div class="dash-stat-lbl">${c.lbl}</div>
+      <div class="dash-stat-val ${c.cls}">${c.val}</div>
+    </div>`).join('');
+
+  // Recent deliveries (last 5 by dateLogged)
+  const recent = [...records]
+    .sort((a, b) => (b.dateLogged || '').localeCompare(a.dateLogged || ''))
+    .slice(0, 5);
+  document.getElementById('dashRecentDeliveries').innerHTML = recent.length
+    ? recent.map(r => `
+      <div class="dash-recent-row" onclick="openViewModal('${r.id}')">
+        <div style="flex:1;min-width:0">
+          <div class="dash-recent-po">${esc(r.po || '—')}</div>
+          <div class="dash-recent-meta">${esc(r.assetType || '—')} · ${esc(r.brand || '—')} · ${r.quantity || '—'} unit${r.quantity != 1 ? 's' : ''}</div>
+        </div>
+        <div>${statusBadgeHtml(r.status)}</div>
+      </div>`).join('')
+    : '<div class="dash-empty">No deliveries yet.</div>';
+
+  // Asset type breakdown
+  const typeCounts = {};
+  records.forEach(r => {
+    if (r.assetType) typeCounts[r.assetType] = (typeCounts[r.assetType] || 0) + (parseInt(r.quantity) || 1);
+  });
+  const typeEntries = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const maxType = typeEntries[0]?.[1] || 1;
+  document.getElementById('dashAssetTypes').innerHTML = typeEntries.length
+    ? typeEntries.map(([type, count]) => `
+      <div class="dash-type-row">
+        <div class="dash-type-name">${esc(type)}</div>
+        <div class="dash-type-bar-wrap"><div class="dash-type-bar" style="width:${Math.round(count/maxType*100)}%"></div></div>
+        <div class="dash-type-count">${count}</div>
+      </div>`).join('')
+    : '<div class="dash-empty">No data yet.</div>';
+}
+
+// ── STATS ──
+function renderStats() {
+  const total    = records.length;
+  const received = records.filter(r => r.status === 'Received').length;
+  const pending  = records.filter(r => r.status === 'Pending').length;
+  const partial  = records.filter(r => r.status === 'Partial').length;
+  const returned = records.filter(r => r.status === 'Returned').length;
+  const totalQty = records.reduce((s, r) => s + (parseInt(r.quantity) || 0), 0);
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card" onclick="filterByStatus('')">
+      <div class="stat-lbl">Total Deliveries</div>
+      <div class="stat-val sv-total">${total}</div>
+    </div>
+    <div class="stat-card" onclick="filterByStatus('Received')">
+      <div class="stat-lbl">Received</div>
+      <div class="stat-val sv-received">${received}</div>
+    </div>
+    <div class="stat-card" onclick="filterByStatus('Pending')">
+      <div class="stat-lbl">Pending</div>
+      <div class="stat-val sv-pending">${pending}</div>
+    </div>
+    <div class="stat-card" onclick="filterByStatus('Partial')">
+      <div class="stat-lbl">Partial</div>
+      <div class="stat-val sv-partial">${partial}</div>
+    </div>
+    <div class="stat-card" onclick="filterByStatus('Returned')">
+      <div class="stat-lbl">Returned</div>
+      <div class="stat-val sv-returned">${returned}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-lbl">Total Items</div>
+      <div class="stat-val sv-total">${totalQty}</div>
+    </div>
+  `;
+}
+
+window.filterByStatus = function(status) {
+  document.getElementById('statusFilter').value = status;
+  renderTable();
+};
+
+// ── TABLE ──
+function getFiltered() {
+  const q      = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const status = document.getElementById('statusFilter')?.value || '';
+  const type   = document.getElementById('typeFilter')?.value   || '';
+
+  return records.filter(r => {
+    const matchSearch = !q || [r.po, r.brand, r.assetType, r.specifications, r.serialNumbers,
+      r.itTech, r.from, r.to, r.notes].some(v => (v||'').toLowerCase().includes(q));
+    const matchStatus = !status || r.status === status;
+    const matchType   = !type   || r.assetType === type;
+    return matchSearch && matchStatus && matchType;
+  });
+}
+
+function renderTable() {
+  const filtered = getFiltered();
+  filtered.sort((a, b) => {
+    let av = a[sortCol] || '', bv = b[sortCol] || '';
+    if (sortCol === 'quantity') { av = parseInt(av)||0; bv = parseInt(bv)||0; }
+    if (av < bv) return -sortDir;
+    if (av > bv) return sortDir;
+    return 0;
+  });
+
+  document.getElementById('recordCount').textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '');
+
+  document.querySelectorAll('thead th').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+    if (th.getAttribute('onclick') === `sortBy('${sortCol}')`) {
+      th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
+    }
+  });
+
+  const tb = document.getElementById('tableBody');
+  if (!filtered.length) {
+    tb.innerHTML = `<tr><td colspan="13"><div class="empty-state"><div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div><div style="font-size:15px;font-weight:600;margin-bottom:6px;">No delivery records found</div><div style="font-size:13px;">Add a delivery or adjust your search filters.</div></div></td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = filtered.map(r => {
+    const statusBadge = statusBadgeHtml(r.status);
+    const serials     = (r.serialNumbers || '').trim();
+    const serialParts = serials ? serials.split(/[\n,]+/).map(s => s.trim()).filter(Boolean) : [];
+    const serialDisplay = serialParts.length
+      ? serialParts.slice(0, 3).map(s => `<span class="serial-tag">${esc(s)}</span>`).join(' ')
+        + (serialParts.length > 3 ? ` <span style="font-size:11px;color:var(--text3)">+${serialParts.length - 3} more</span>` : '')
+      : '<span style="color:var(--text3);font-size:12px;">—</span>';
+    const canEdit = can('edit');
+    const canDel  = can('delete') || currentUser?.role === 'superadmin';
+    return `<tr>
+      <td class="mono">${esc(r.po||'—')}</td>
+      <td class="date-cell">${r.deliveryDate ? fmtDate(r.deliveryDate) : '—'}</td>
+      <td>${statusBadge}</td>
+      <td style="font-weight:700;text-align:center;">${r.quantity||'—'}</td>
+      <td>${r.items && r.items.length > 1
+        ? `<span style="font-weight:600;">${esc(r.items[0].assetType)}</span> <span style="font-size:11px;color:var(--accent);font-weight:700;">+${r.items.length-1} more</span>`
+        : `<span style="font-weight:600;">${esc(r.assetType||'—')}</span>`
+      }</td>
+      <td>${r.items && r.items.length > 1
+        ? esc(r.items.map(x=>x.brand||'—').join(', '))
+        : esc(r.brand||'—')
+      }</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(r.specifications||'')}">${esc(r.specifications||'—')}</td>
+      <td class="col-serial"><div style="display:flex;flex-wrap:wrap;gap:4px;">${serialDisplay}</div></td>
+      <td style="font-weight:600;">${esc(r.itTech||'—')}</td>
+      <td>${esc(r.from||'—')}</td>
+      <td>${esc(r.to||'—')}</td>
+      <td class="date-cell">${r.dateLogged ? fmtDate(r.dateLogged) : '—'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn btn-sm" onclick="openViewModal('${r.id}')" title="View">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          ${canEdit ? `<button class="btn btn-sm" onclick="openEditModal('${r.id}')" title="Edit">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>` : ''}
+          ${canDel ? `<button class="btn btn-sm btn-danger" onclick="openDeleteModal('${r.id}')" title="Delete">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+window.sortBy = function(col) {
+  if (sortCol === col) sortDir = -sortDir;
+  else { sortCol = col; sortDir = -1; }
+  renderTable();
+};
+
+// ── STATUS BADGE ──
+function statusBadgeHtml(status) {
+  const map = { 'Received':'b-received', 'Pending':'b-pending', 'Partial':'b-partial', 'Returned':'b-returned', 'Cancelled':'b-cancelled' };
+  const cls = map[status] || 'b-pending';
+  return `<span class="badge ${cls}">${esc(status||'—')}</span>`;
+}
+
+// ── FORM MODAL ──
+window.openAddModal = function() {
+  if (!can('add')) { showToast('You do not have permission to add records.', true); return; }
+  editId = null;
+  document.getElementById('modalTitle').textContent = 'Log Delivery';
+  document.getElementById('dateStrip').style.display = 'none';
+  clearForm();
+  document.getElementById('f_deliveryDate').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('formOverlay').classList.add('open');
+};
+
+window.openEditModal = function(id) {
+  if (!can('edit')) { showToast('You do not have permission to edit records.', true); return; }
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  editId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Delivery';
+  document.getElementById('dateStrip').style.display = 'flex';
+  document.getElementById('ds_logged').textContent     = r.dateLogged   ? fmtDateFull(r.dateLogged)   : '—';
+  document.getElementById('ds_modified').textContent   = r.dateModified ? fmtDateFull(r.dateModified) : '—';
+  document.getElementById('ds_modifiedBy').textContent = r.modifiedBy   || '—';
+  document.getElementById('f_po').value           = r.po           || '';
+  document.getElementById('f_deliveryDate').value = r.deliveryDate || '';
+  document.getElementById('f_status').value       = r.status       || '';
+  document.getElementById('f_itTech').value       = r.itTech       || '';
+  document.getElementById('f_from').value         = r.from         || '';
+  document.getElementById('f_to').value           = r.to           || '';
+  document.getElementById('f_notes').value        = r.notes        || '';
+  // Populate items
+  const _itemsCont = document.getElementById('itemsContainer');
+  if (_itemsCont) {
+    _itemsCont.innerHTML = '';
+    const _items = (r.items && r.items.length) ? r.items : [{
+      assetType: r.assetType||'', brand: r.brand||'',
+      quantity: r.quantity||1, specifications: r.specifications||'',
+      serialNumbers: r.serialNumbers||''
+    }];
+    _items.forEach(item => addItemRow(item));
+  }
+  document.getElementById('formOverlay').classList.add('open');
+};
+
+window.closeFormModal = function() { document.getElementById('formOverlay').classList.remove('open'); };
+
+function clearForm() {
+  ['f_po','f_deliveryDate','f_status','f_itTech','f_from','f_to','f_notes']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const container = document.getElementById('itemsContainer');
+  if (container) { container.innerHTML = ''; addItemRow(); }
+}
+
+// ── ITEM ROW HELPERS ──
+const ASSET_TYPES_LIST = ['Laptop','Desktop','Monitor','Printer','Keyboard','Mouse','Headset','Webcam','Docking Station','Network Switch','Access Point','UPS','Other'];
+const ASSET_BRANDS_LIST = ['Acer','Apple','Asus','Canon','Cisco','Dell','Epson','HP','Lenovo','Logitech','Microsoft','MSI','Samsung','TP-Link','Ubiquiti','Other'];
+
+function _typeOpts(sel) {
+  return ASSET_TYPES_LIST.map(t => `<option value="${t}"${sel===t?' selected':''}>${t}</option>`).join('');
+}
+function _brandOpts(sel) {
+  return '<option value="">Select Brand</option>' + ASSET_BRANDS_LIST.map(b => `<option value="${b}"${sel===b?' selected':''}>${b}</option>`).join('');
+}
+
+function _itemRowHtml(idx, d) {
+  d = d || {};
+  const specVal = (d.specifications||'').replace(/"/g,'&quot;');
+  return `<div class="item-row">
+    <div class="item-row-label">Item ${idx + 1}</div>
+    ${idx > 0 ? '<button type="button" class="item-row-remove" onclick="removeItemRow(this)" title="Remove item">&times;</button>' : ''}
+    <div class="form-grid">
+      <div class="fg">
+        <label>Asset Type <span style="color:var(--red)">*</span></label>
+        <select class="i_assetType" required>
+          <option value="">Select Asset Type</option>
+          ${_typeOpts(d.assetType||'')}
+        </select>
+      </div>
+      <div class="fg">
+        <label>Brand</label>
+        <select class="i_brand">${_brandOpts(d.brand||'')}</select>
+      </div>
+      <div class="fg">
+        <label>Quantity <span style="color:var(--red)">*</span></label>
+        <input type="number" class="i_quantity" min="1" placeholder="e.g. 5" value="${d.quantity||''}" oninput="updateSerialCountForRow(this)">
+      </div>
+      <div class="fg">
+        <label>Specifications</label>
+        <input type="text" class="i_specifications" placeholder="e.g. Intel Core i5, 16GB RAM" value="${specVal}">
+      </div>
+      <div class="fg full">
+        <label>Serial Numbers <span style="color:var(--red)">*</span></label>
+        <textarea class="i_serialNumbers" rows="2" placeholder="One per line or comma-separated&#10;e.g. SN-001, SN-002" oninput="updateSerialCount(this)">${d.serialNumbers||''}</textarea>
+        <div class="serial-counter-row">
+          <span class="serial-help">💡 Separate multiple serial numbers with commas or new lines.</span>
+          <span class="serial-count-badge"></span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function countSerials(textarea) {
+  return (textarea.value || '').split(/[\n,]+/).map(s => s.trim()).filter(Boolean).length;
+}
+
+window.checkDuplicatePO = function(val) {
+  const warning = document.getElementById('po-dup-warning');
+  if (!warning) return;
+  const v = (val || '').trim().toLowerCase();
+  const isDup = !!v && records.some(r => r.po && r.po.trim().toLowerCase() === v && r.id !== editId);
+  warning.style.display = isDup ? 'block' : 'none';
+  document.getElementById('f_po').style.borderColor = isDup ? 'var(--red)' : '';
+};
+
+window.updateSerialCount = function(textarea) {
+  const row    = textarea.closest('.item-row');
+  if (!row) return;
+  const qtyEl  = row.querySelector('.i_quantity');
+  const badge  = row.querySelector('.serial-count-badge');
+  const qty    = parseInt(qtyEl?.value) || 0;
+  const entered = countSerials(textarea);
+  if (!badge) return;
+  if (qty < 1) {
+    badge.textContent = '';
+    badge.className = 'serial-count-badge';
+    return;
+  }
+  badge.textContent = entered + ' / ' + qty + ' serial' + (qty !== 1 ? 's' : '');
+  if (entered > qty) {
+    badge.className = 'serial-count-badge scb-over';
+  } else if (entered === qty) {
+    badge.className = 'serial-count-badge scb-ok';
+  } else {
+    badge.className = 'serial-count-badge scb-under';
+  }
+};
+
+window.updateSerialCountForRow = function(qtyInput) {
+  const row = qtyInput.closest('.item-row');
+  if (!row) return;
+  const ta = row.querySelector('.i_serialNumbers');
+  if (ta) updateSerialCount(ta);
+};
+
+window.addItemRow = function(data) {
+  const container = document.getElementById('itemsContainer');
+  if (!container) return;
+  const idx = container.querySelectorAll('.item-row').length;
+  container.insertAdjacentHTML('beforeend', _itemRowHtml(idx, data));
+  updateItemCount();
+};
+
+window.removeItemRow = function(btn) {
+  const container = document.getElementById('itemsContainer');
+  if (container.querySelectorAll('.item-row').length <= 1) return;
+  btn.closest('.item-row').remove();
+  container.querySelectorAll('.item-row').forEach((row, i) => {
+    const lbl = row.querySelector('.item-row-label');
+    if (lbl) lbl.textContent = 'Item ' + (i + 1);
+    const rb = row.querySelector('.item-row-remove');
+    if (i === 0 && rb) rb.remove();
+    if (i > 0 && !rb) {
+      const lbl2 = row.querySelector('.item-row-label');
+      if (lbl2) lbl2.insertAdjacentHTML('afterend', '<button type="button" class="item-row-remove" onclick="removeItemRow(this)" title="Remove item">&times;</button>');
+    }
+  });
+  updateItemCount();
+};
+
+function updateItemCount() {
+  const c = document.getElementById('itemsContainer');
+  const n = c ? c.querySelectorAll('.item-row').length : 0;
+  const el = document.getElementById('itemsCount');
+  if (el) el.textContent = '(' + n + ')';
+}
+
+function getItemsFromDOM() {
+  return Array.from(document.querySelectorAll('#itemsContainer .item-row')).map(row => ({
+    assetType:      row.querySelector('.i_assetType')?.value    || '',
+    brand:          row.querySelector('.i_brand')?.value        || '',
+    quantity:       parseInt(row.querySelector('.i_quantity')?.value) || 0,
+    specifications: row.querySelector('.i_specifications')?.value || '',
+    serialNumbers:  row.querySelector('.i_serialNumbers')?.value  || '',
+  }));
+}
+
+window.saveRecord = async function() {
+  const po           = document.getElementById('f_po').value.trim();
+  const deliveryDate = document.getElementById('f_deliveryDate').value;
+  const status       = document.getElementById('f_status').value;
+  const itTech       = document.getElementById('f_itTech').value;
+  const from         = document.getElementById('f_from').value.trim();
+  const to           = document.getElementById('f_to').value.trim();
+
+  if (!po || !deliveryDate || !status || !itTech || !from || !to) {
+    showToast('Please fill in all required fields.', true);
+    return;
+  }
+
+  // Duplicate PO check (skip when editing the same record)
+  const dupRecord = records.find(r => r.po && r.po.trim().toLowerCase() === po.toLowerCase() && r.id !== editId);
+  if (dupRecord) {
+    showToast('PO "' + po + '" already exists. Please use a unique PO number.', true);
+    document.getElementById('f_po').focus();
+    return;
+  }
+
+  const items = getItemsFromDOM();
+  for (let i = 0; i < items.length; i++) {
+    if (!items[i].assetType) { showToast('Item ' + (i+1) + ': Asset Type is required.', true); return; }
+    if (!items[i].quantity || items[i].quantity < 1) { showToast('Item ' + (i+1) + ': Quantity is required.', true); return; }
+    const enteredSerials = (items[i].serialNumbers||'').split(/[\n,]+/).map(s=>s.trim()).filter(Boolean);
+    if (enteredSerials.length === 0) { showToast('Item ' + (i+1) + ': At least one serial number is required.', true); return; }
+    if (enteredSerials.length < items[i].quantity) { showToast('Item ' + (i+1) + ': Serial numbers incomplete — ' + enteredSerials.length + ' entered but ' + items[i].quantity + ' required.', true); return; }
+    if (enteredSerials.length > items[i].quantity) { showToast('Item ' + (i+1) + ': Too many serials entered — ' + enteredSerials.length + ' entered but only ' + items[i].quantity + ' allowed.', true); return; }
+  }
+
+  // Aggregate top-level compat fields from all items
+  const totalQty     = items.reduce((s, x) => s + (x.quantity||0), 0);
+  const allSerials   = items.map(x => (x.serialNumbers||'').trim()).filter(Boolean).join('\n');
+
+  const now  = new Date().toISOString();
+  const data = {
+    po, deliveryDate, status,
+    itTech, from, to,
+    notes:          document.getElementById('f_notes').value.trim() || '',
+    items,
+    // top-level compat fields (from first item / aggregated)
+    quantity:       totalQty,
+    assetType:      items[0].assetType,
+    brand:          items[0].brand,
+    specifications: items[0].specifications,
+    serialNumbers:  allSerials,
+    dateModified:   now,
+    modifiedBy:     currentUser?.displayName || currentUser?.username || '',
+  };
+
+  if (!editId) {
+    data.dateLogged = now;
+    data.loggedBy   = currentUser?.displayName || currentUser?.username || '';
+  } else {
+    const existing  = records.find(r => r.id === editId);
+    data.dateLogged = existing?.dateLogged || now;
+    data.loggedBy   = existing?.loggedBy   || '';
+  }
+
+  const id = editId || ('del_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7));
+  persistRecord(id, data);
+  closeFormModal();
+  syncInventoryFromRecords();
+  renderStats();
+  renderTable();
+  showToast(editId ? 'Delivery record updated.' : 'Delivery record saved.');
+  editId = null;
+};
+
+// ── VIEW MODAL ──
+window.openViewModal = function(id) {
+  viewId = id;
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+
+  const serials    = (r.serialNumbers || '').split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+  const serialTags = serials.length
+    ? serials.map(s => `<span class="serial-tag">${esc(s)}</span>`).join('')
+    : '<span style="color:var(--text3);">—</span>';
+
+  document.getElementById('viewModalBody').innerHTML = `
+    <div class="delivery-modal-hero">
+      <div class="dmh-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+      <div class="dmh-info">
+        <div class="dmh-po">${esc(r.po || '—')}</div>
+        <div class="dmh-sub">${esc(r.assetType || '')}${r.brand ? ' · ' + esc(r.brand) : ''} · ${r.deliveryDate ? fmtDate(r.deliveryDate) : '—'}</div>
+      </div>
+      <div class="dmh-badge">${esc(r.status || '—')}</div>
+    </div>
+    <div class="detail-panels">
+      <div class="detail-panel">
+        <div class="dp-title">Delivery Info</div>
+        <div class="dp-row"><div class="dp-label">PO Number</div><div class="dp-value mono">${esc(r.po||'—')}</div></div>
+        <div class="dp-row"><div class="dp-label">Delivery Date</div><div class="dp-value">${r.deliveryDate ? fmtDate(r.deliveryDate) : '—'}</div></div>
+        <div class="dp-row"><div class="dp-label">Status</div><div class="dp-value">${statusBadgeHtml(r.status)}</div></div>
+        <div class="dp-row"><div class="dp-label">Quantity</div><div class="dp-value" style="font-weight:700;font-size:16px;">${r.quantity||'—'}</div></div>
+        <div class="dp-row"><div class="dp-label">IT Tech</div><div class="dp-value">${esc(r.itTech||'—')}</div></div>
+      </div>
+      <div class="detail-panel">
+        <div class="dp-title">Asset Info</div>
+        ${(r.items && r.items.length > 1)
+          ? `<div class="dp-row"><div class="dp-label">Items</div><div class="dp-value" style="font-size:12px;color:var(--accent);font-weight:700;">${r.items.length} line items</div></div>`
+          : `<div class="dp-row"><div class="dp-label">Asset Type</div><div class="dp-value">${esc(r.assetType||'—')}</div></div>
+             <div class="dp-row"><div class="dp-label">Brand</div><div class="dp-value">${esc(r.brand||'—')}</div></div>
+             <div class="dp-row"><div class="dp-label">Specifications</div><div class="dp-value">${esc(r.specifications||'—')}</div></div>`
+        }
+        <div class="dp-row"><div class="dp-label">From</div><div class="dp-value">${esc(r.from||'—')}</div></div>
+        <div class="dp-row"><div class="dp-label">To</div><div class="dp-value">${esc(r.to||'—')}</div></div>
+      </div>
+    </div>
+    ${(r.items && r.items.length > 1) ? `
+    <div class="detail-panel" style="margin-bottom:14px;">
+      <div class="dp-title">Items (${r.items.length})</div>
+      <div style="overflow-x:auto;margin:0 -4px;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px;">
+        <thead><tr style="border-bottom:1px solid var(--glass-border2);">
+          <th style="text-align:left;padding:5px 8px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">#</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Asset Type</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Brand</th>
+          <th style="text-align:center;padding:5px 8px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Qty</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Specs</th>
+          <th style="text-align:left;padding:5px 8px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Serials</th>
+        </tr></thead>
+        <tbody>${r.items.map((it,i) => `<tr style="border-bottom:1px solid var(--glass-border2);">
+          <td style="padding:6px 8px;color:var(--text3);">${i+1}</td>
+          <td style="padding:6px 8px;font-weight:600;white-space:nowrap;">${esc(it.assetType||'—')}</td>
+          <td style="padding:6px 8px;white-space:nowrap;">${esc(it.brand||'—')}</td>
+          <td style="padding:6px 8px;text-align:center;font-weight:700;">${it.quantity||'—'}</td>
+          <td style="padding:6px 8px;color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(it.specifications||'')}">${esc(it.specifications||'—')}</td>
+          <td style="padding:6px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(it.serialNumbers||'').replace(/[\n,]+/g,' · ')}">${esc(it.serialNumbers||'—').replace(/[\n,]+/g,' · ')}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      </div>
+    </div>` : serials.length ? `
+    <div class="detail-panel" style="margin-bottom:14px;">
+      <div class="dp-title">Serial Numbers (${serials.length})</div>
+      <div class="dp-serials">${serialTags}</div>
+    </div>` : ''}
+    ${r.notes ? `
+    <div class="detail-panel" style="margin-bottom:14px;">
+      <div class="dp-title">Notes / Remarks</div>
+      <div class="dp-value">${esc(r.notes)}</div>
+    </div>` : ''}
+    <div style="display:flex;gap:20px;flex-wrap:wrap;padding:10px 14px;background:var(--surface-tint);border-radius:var(--radius);border:1px solid var(--glass-border2);">
+      <div class="ds-item"><span class="ds-label">Date Logged</span><span class="ds-value">${r.dateLogged ? fmtDateFull(r.dateLogged) : '—'}</span></div>
+      <div class="ds-item"><span class="ds-label">Logged By</span><span class="ds-value">${esc(r.loggedBy||'—')}</span></div>
+      <div class="ds-item"><span class="ds-label">Last Modified</span><span class="ds-value">${r.dateModified ? fmtDateFull(r.dateModified) : '—'}</span></div>
+      <div class="ds-item"><span class="ds-label">Modified By</span><span class="ds-value">${esc(r.modifiedBy||'—')}</span></div>
+    </div>
+  `;
+
+  const editBtn = document.getElementById('viewEditBtn');
+  if (editBtn) editBtn.style.display = can('edit') ? '' : 'none';
+  document.getElementById('viewOverlay').classList.add('open');
+};
+window.closeViewModal = function() { document.getElementById('viewOverlay').classList.remove('open'); };
+window.editFromView   = function() { closeViewModal(); if (viewId) openEditModal(viewId); };
+
+// ── DELETE ──
+window.openDeleteModal = function(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  deleteId = id;
+  document.getElementById('deleteMsg').innerHTML =
+    `Are you sure you want to delete the delivery record for <strong>${esc(r.po||'this entry')}</strong>?<br><span style="color:var(--text3);font-size:13px;">${esc(r.assetType||'')}${r.brand?' · '+esc(r.brand):''} · ${r.deliveryDate ? fmtDate(r.deliveryDate) : '—'}</span><br><br>This action cannot be undone.`;
+  document.getElementById('deleteOverlay').classList.add('open');
+};
+window.closeDeleteModal = function() { document.getElementById('deleteOverlay').classList.remove('open'); deleteId = null; };
+window.confirmDelete = function() {
+  if (!deleteId) return;
+  removeRecord(deleteId);
+  closeDeleteModal();
+  syncInventoryFromRecords();
+  renderStats();
+  renderTable();
+  showToast('Record deleted.');
+};
+
+// ── ACCOUNT MENU ──
+window.toggleAcctMenu = function() { document.getElementById('acctDropdown').classList.toggle('open'); };
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('acctWrap');
+  if (wrap && !wrap.contains(e.target)) document.getElementById('acctDropdown')?.classList.remove('open');
+});
+
+// ── EXPORT CSV ──
+window.exportCSV = function() {
+  if (!can('export')) { showToast('You do not have permission to export.', true); return; }
+  const filtered = getFiltered();
+  const headers  = ['PO #','Delivery Date','Status','Quantity','Asset Type','Brand','Specifications','Serial Numbers','IT Tech','From','To','Notes/Remarks','Date Logged','Logged By','Date Modified','Modified By'];
+  const rows     = filtered.map(r => [
+    r.po, r.deliveryDate, r.status, r.quantity, r.assetType, r.brand,
+    r.specifications, (r.serialNumbers||'').replace(/\n/g,'; '),
+    r.itTech, r.from, r.to, r.notes,
+    r.dateLogged   ? fmtDateFull(r.dateLogged)   : '',
+    r.loggedBy,
+    r.dateModified ? fmtDateFull(r.dateModified) : '',
+    r.modifiedBy,
+  ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`));
+  const csv  = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `delivery-inventory-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  logAudit('Export', `${filtered.length} records`);
+  showToast('CSV exported.');
+};
+
+// ── TOAST ──
+let _toastTimer = null;
+function showToast(msg, err = false) {
+  const t = document.getElementById('toast');
+  const d = document.getElementById('toastDot');
+  const m = document.getElementById('toastMsg');
+  if (!t) return;
+  d.className = 'toast-dot' + (err ? ' err' : '');
+  m.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── HELPERS ──
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso.length === 10 ? iso + 'T00:00:00' : iso);
+  return d.toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' });
+}
+function fmtDateFull(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) + ' ' +
+         d.toLocaleTimeString('en-PH', { hour:'2-digit', minute:'2-digit' });
+}
+
+// ════════════════════════════════
+// INVENTORY
+// ════════════════════════════════
+const LS_INV = 'deliveryAssets_inventory';
+let invItems = {};   // key: `${recordId}__${serial}` → { status, notes, updatedBy, updatedAt }
+let currentView = 'deliveries';
+let invStatusFilter = ''; // active stat-card filter
+
+function loadInventory() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_INV));
+    if (s && typeof s === 'object') invItems = s;
+  } catch {}
+}
+
+function persistInventory() {
+  localStorage.setItem(LS_INV, JSON.stringify(invItems));
+}
+
+// Build/sync inventory items from delivery records.
+// Creates new entries for any serial/unit not yet tracked; preserves existing statuses.
+function syncInventoryFromRecords() {
+  loadInventory();
+  records.forEach(r => {
+    // Helper to upsert one unit into invItems
+    function upsert(key, assetType, brand, serial, unit, itemIdx) {
+      if (!invItems[key]) invItems[key] = { status: 'Untagged', notes: '', updatedBy: '', updatedAt: '' };
+      invItems[key]._rec      = r.id;
+      invItems[key]._assetType = assetType || '';
+      invItems[key]._brand     = brand     || '';
+      invItems[key]._serial    = serial    || null;
+      invItems[key]._unit      = unit      || null;
+      if (itemIdx !== undefined) invItems[key]._itemIdx = itemIdx;
+    }
+
+    if (r.items && r.items.length > 0) {
+      // Multi-item PO: each item gets its own key namespace  r.id + '__i{idx}__'
+      r.items.forEach((item, idx) => {
+        const serials = (item.serialNumbers || '').split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+        if (serials.length) {
+          serials.forEach(serial => upsert(r.id + '__i' + idx + '__' + serial, item.assetType, item.brand, serial, null, idx));
+        } else {
+          const qty = parseInt(item.quantity) || 1;
+          for (let i = 1; i <= qty; i++) upsert(r.id + '__i' + idx + '__unit_' + i, item.assetType, item.brand, null, i, idx);
+        }
+      });
+    } else {
+      // Legacy single-item record: use top-level fields
+      const serials = (r.serialNumbers || '').split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+      if (serials.length) {
+        serials.forEach(serial => upsert(r.id + '__' + serial, r.assetType, r.brand, serial, null, 0));
+      } else {
+        const qty = parseInt(r.quantity) || 1;
+        for (let i = 1; i <= qty; i++) upsert(r.id + '__unit_' + i, r.assetType, r.brand, null, i, 0);
+      }
+    }
+  });
+  // Remove orphan keys (records deleted)
+  const validIds = new Set(records.map(r => r.id));
+  Object.keys(invItems).forEach(k => {
+    const recId = k.split('__')[0];
+    if (!validIds.has(recId)) delete invItems[k];
+  });
+  persistInventory();
+}
+
+window.setAssetStatus = function(key, value) {
+  if (!invItems[key]) return;
+  invItems[key].status = value;
+  invItems[key].updatedBy = currentUser?.displayName || currentUser?.username || '';
+  invItems[key].updatedAt = new Date().toISOString();
+  persistInventory();
+  // Update the select's data-status for CSS color
+  const sel = document.querySelector(`.asset-status-select[data-key="${key.replace(/"/g,'&quot;')}"]`);
+  if (sel) {
+    sel.setAttribute('data-status', value);
+    // Update "last updated" cell — find by sibling structure
+    const tr = sel.closest('tr');
+    if (tr) {
+      const updEl = tr.querySelector('.inv-updated');
+      if (updEl) updEl.textContent = 'by ' + (invItems[key].updatedBy || '—') + ' · just now';
+    }
+  }
+  renderInvStats();
+};
+
+window.setAssetNotes = function(key, value) {
+  if (!invItems[key]) return;
+  invItems[key].notes = value;
+  invItems[key].updatedBy = currentUser?.displayName || currentUser?.username || '';
+  invItems[key].updatedAt = new Date().toISOString();
+  persistInventory();
+};
+
+function invStatusColor(s) {
+  const map = { Deployed:'b-received', Defective:'b-cancelled', Repair:'b-pending', Lost:'b-returned', Spare:'b-partial', Untagged:'b-returned' };
+  return map[s] || 'b-returned';
+}
+
+function renderInvStats() {
+  const all   = Object.values(invItems);
+  const total = all.length;
+  const counts = { Deployed:0, Defective:0, Repair:0, Lost:0, Spare:0, Untagged:0 };
+  all.forEach(v => { if (counts[v.status] !== undefined) counts[v.status]++; });
+
+  const cards = [
+    { label:'Total Assets', val:total,            cls:'sv-total',    filter:'' },
+    { label:'Deployed',     val:counts.Deployed,  cls:'sv-received', filter:'Deployed' },
+    { label:'Defective',    val:counts.Defective, cls:'sv-returned', filter:'Defective' },
+    { label:'Repair',       val:counts.Repair,    cls:'sv-pending',  filter:'Repair' },
+    { label:'Lost',         val:counts.Lost,      cls:'sv-returned', filter:'Lost' },
+    { label:'Spare',        val:counts.Spare,     cls:'sv-partial',  filter:'Spare' },
+    { label:'Untagged',     val:counts.Untagged,  cls:'sv-returned', filter:'Untagged' },
+  ];
+
+  document.getElementById('invStatsGrid').innerHTML = cards.map(c => `
+    <div class="inv-stat-card${invStatusFilter === c.filter ? ' active-filter' : ''}" onclick="invFilterStatus('${c.filter}')">
+      <div class="stat-lbl">${c.label}</div>
+      <div class="stat-val ${c.cls}">${c.val}</div>
+    </div>
+  `).join('');
+}
+
+window.invFilterStatus = function(f) {
+  invStatusFilter = f;
+  document.getElementById('invStatusFilter').value = f;
+  renderInventory();
+  renderInvStats(); // re-render to update active-filter highlight
+};
+
+function renderInventory() {
+  syncInventoryFromRecords();
+  const q    = (document.getElementById('invSearchInput')?.value || '').toLowerCase();
+  const sf   = document.getElementById('invStatusFilter')?.value || invStatusFilter || '';
+  const tf   = document.getElementById('invTypeFilter')?.value || '';
+
+  // Group items by record
+  const groups = {};
+  records.forEach(r => {
+    groups[r.id] = { rec: r, items: [] };
+  });
+  Object.entries(invItems).forEach(([key, item]) => {
+    const recId = item._rec || key.split('__')[0];
+    if (!groups[recId]) return;
+    groups[recId].items.push({ key, ...item });
+  });
+
+  // Filter groups
+  const filtered = Object.values(groups).filter(g => {
+    const r = g.rec;
+    // type filter — match any item's assetType
+    if (tf) {
+      const hasType = r.assetType === tf || g.items.some(it => (it._assetType||'') === tf);
+      if (!hasType) return false;
+    }
+    // each group must have at least one item matching the search/status
+    const matchingItems = g.items.filter(item => {
+      const serial = item._serial || ('Unit ' + item._unit);
+      const matchQ = !q || [r.po, serial, item._brand||r.brand, item._assetType||r.assetType, r.specifications, item.notes].some(v => (v||'').toLowerCase().includes(q));
+      const matchS = !sf || item.status === sf;
+      return matchQ && matchS;
+    });
+    return matchingItems.length > 0;
+  });
+
+  // Sort by delivery date desc
+  filtered.sort((a, b) => (b.rec.deliveryDate || '').localeCompare(a.rec.deliveryDate || ''));
+
+  // Count for display
+  let totalVisible = 0;
+  filtered.forEach(g => {
+    g.items.forEach(item => {
+      const serial = item._serial || ('Unit ' + item._unit);
+      const matchQ = !q || [g.rec.po, serial, item._brand||g.rec.brand, item._assetType||g.rec.assetType, g.rec.specifications, item.notes].some(v => (v||'').toLowerCase().includes(q));
+      const matchS = !sf || item.status === sf;
+      if (matchQ && matchS) totalVisible++;
+    });
+  });
+  document.getElementById('invRecordCount').textContent = totalVisible + ' asset' + (totalVisible !== 1 ? 's' : '') + ' · ' + filtered.length + ' PO' + (filtered.length !== 1 ? 's' : '');
+
+  if (!filtered.length) {
+    document.getElementById('invBody').innerHTML = `<div class="empty-state"><div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.35"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4.03 3-9 3S3 13.66 3 12"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/></svg></div><div style="font-size:15px;font-weight:600;margin-bottom:6px;">No inventory items found</div><div style="font-size:13px;">Add a delivery with serial numbers to start tracking assets.</div></div>`;
+    return;
+  }
+
+  document.getElementById('invBody').innerHTML = filtered.map(g => {
+    const r = g.rec;
+    const counts = { Deployed:0, Defective:0, Repair:0, Lost:0, Spare:0, Untagged:0 };
+    g.items.forEach(item => { if (counts[item.status] !== undefined) counts[item.status]++; });
+    const countChips = Object.entries(counts)
+      .filter(([,v]) => v > 0)
+      .map(([s, v]) => `<span class="po-count-chip pcc-${s.toLowerCase()}">${s} ${v}</span>`)
+      .join('');
+
+    // Filter items for display
+    const visibleItems = g.items.filter(item => {
+      const serial = item._serial || ('Unit ' + item._unit);
+      const matchQ = !q || [r.po, serial, item._brand||r.brand, item._assetType||r.assetType, r.specifications, item.notes].some(v => (v||'').toLowerCase().includes(q));
+      const matchS = !sf || item.status === sf;
+      return matchQ && matchS;
+    }).sort((a, b) => {
+      // Sort by itemIdx first, then serial/unit
+      if ((a._itemIdx||0) !== (b._itemIdx||0)) return (a._itemIdx||0) - (b._itemIdx||0);
+      const sa = a._serial || ('Unit ' + String(a._unit).padStart(4,'0'));
+      const sb = b._serial || ('Unit ' + String(b._unit).padStart(4,'0'));
+      return sa.localeCompare(sb);
+    });
+
+    function buildItemRow(item) {
+      const unitLabel = item._serial
+        ? `<span class="inv-serial">${esc(item._serial)}</span>`
+        : `<span class="inv-unit">Unit ${item._unit}</span>`;
+      const statusOpts = ['Deployed','Defective','Repair','Lost','Spare','Untagged']
+        .map(s => `<option value="${s}"${item.status===s?' selected':''}>${s}</option>`).join('');
+      const safeKey = item.key.replace(/"/g,'&quot;');
+      return `<tr>
+        <td>${unitLabel}</td>
+        <td>
+          <select class="asset-status-select" data-key="${safeKey}" data-status="${item.status}"
+            onchange="setAssetStatus(this.dataset.key, this.value)">
+            ${statusOpts}
+          </select>
+        </td>
+        <td><input class="inv-notes-input" data-key="${safeKey}" type="text" value="${esc(item.notes||'')}" placeholder="Add notes…"
+          onblur="setAssetNotes(this.dataset.key, this.value)"></td>
+        <td class="inv-updated">${item.updatedBy ? 'by ' + esc(item.updatedBy) + ' · ' + (item.updatedAt ? fmtDate(item.updatedAt) : '') : '—'}</td>
+      </tr>`;
+    }
+
+    const isMultiItem = r.items && r.items.length > 1;
+
+    // Build body HTML — grouped by item index when multi-item
+    let bodyHtml;
+    if (isMultiItem) {
+      // Group visible items by _itemIdx
+      const byIdx = {};
+      visibleItems.forEach(item => {
+        const idx = item._itemIdx ?? 0;
+        if (!byIdx[idx]) byIdx[idx] = [];
+        byIdx[idx].push(item);
+      });
+      bodyHtml = Object.entries(byIdx).map(([idx, items]) => {
+        const srcItem = r.items[idx] || {};
+        const brandLabel = esc(srcItem.brand || items[0]._brand || '');
+        const unitCount = items.length;
+        return `
+          <div class="inv-item-group">
+            <div class="inv-item-group-header">
+              <span class="inv-item-group-idx">Item ${parseInt(idx)+1}</span>
+              ${atChip(srcItem.assetType || items[0]._assetType, parseInt(idx))}
+              ${brandLabel ? `<span class="inv-item-group-brand">· ${brandLabel}</span>` : ''}
+              <span class="inv-item-group-units">${unitCount} unit${unitCount!==1?'s':''}</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="inv-table">
+                <thead><tr>
+                  <th>Serial / Unit</th><th>Status</th><th>Notes</th><th>Last Updated</th>
+                </tr></thead>
+                <tbody>${items.map(buildItemRow).join('')}</tbody>
+              </table>
+            </div>
+          </div>`;
+      }).join('');
+    } else {
+      bodyHtml = `<div style="overflow-x:auto;">
+        <table class="inv-table">
+          <thead><tr>
+            <th>Serial / Unit</th><th>Status</th><th>Notes</th><th>Last Updated</th>
+          </tr></thead>
+          <tbody>${visibleItems.map(buildItemRow).join('')}</tbody>
+        </table>
+      </div>`;
+    }
+
+    // Asset-type pill helper (color cycles by index)
+    function atChip(assetType, colorIdx) {
+      return `<span class="at-chip at-chip-${colorIdx % 6}">${esc(assetType||'—')}</span>`;
+    }
+
+    // PO card header summary
+    const headerTypeSummary = isMultiItem
+      ? r.items.map((x, i) => atChip(x.assetType, i)).join('')
+      : `${atChip(r.assetType, 0)}${r.brand ? `<span class="po-header-brand">· ${esc(r.brand)}</span>` : ''}`;
+
+    const isExpanded = q || sf ? true : (document.querySelector(`#pocard_${CSS.escape(r.id)}.expanded`) !== null);
+
+    return `<div class="po-card${isExpanded ? ' expanded' : ''}" id="pocard_${r.id}">
+      <div class="po-card-header" onclick="togglePoCard('${r.id}')">
+        <svg class="po-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <span class="po-header-po">${esc(r.po||'—')}</span>
+        <div class="po-header-meta">
+          ${headerTypeSummary}
+          <span style="font-size:11px;color:var(--text3);">${g.items.length} unit${g.items.length!==1?'s':''}</span>
+          <div class="po-header-counts">${countChips}</div>
+        </div>
+        <span class="po-header-date">${r.deliveryDate ? fmtDate(r.deliveryDate) : '—'}</span>
+      </div>
+      <div class="po-card-body">${bodyHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+window.togglePoCard = function(id) {
+  const card = document.getElementById('pocard_' + id);
+  if (card) card.classList.toggle('expanded');
+};
+
+// ── USERS MANAGEMENT ──
+const LS_AUDIT = 'deliveryAssets_audit';
+let auditLogs = [];
+
+function loadAuditLog() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(LS_AUDIT));
+    if (Array.isArray(stored)) auditLogs = stored;
+  } catch {}
+}
+
+function logAudit(action, details = '') {
+  const entry = {
+    id: Date.now(),
+    timestamp: new Date().toISOString(),
+    user: currentUser?.username || 'system',
+    action,
+    details
+  };
+  auditLogs.unshift(entry);
+  // Keep last 1000 entries
+  if (auditLogs.length > 1000) auditLogs = auditLogs.slice(0, 1000);
+  localStorage.setItem(LS_AUDIT, JSON.stringify(auditLogs));
+}
+
+function renderUsers() {
+  const users = getUsers();
+  const q  = (document.getElementById('userSearchInput')?.value || '').toLowerCase();
+  const rf = document.getElementById('userRoleFilter')?.value || '';
+  const sf = document.getElementById('userStatusFilter')?.value || '';
+
+  const filtered = users.filter(u => {
+    const matchQ = !q || [u.username, u.displayName, u.email].some(v => (v||'').toLowerCase().includes(q));
+    const matchR = !rf || u.role === rf;
+    const matchS = !sf || (sf === 'active' ? u.active !== false : u.active === false);
+    return matchQ && matchR && matchS;
+  });
+
+  filtered.sort((a, b) => {
+    const order = { superadmin: 0, admin: 1, member: 2 };
+    const ro = (order[a.role] ?? 3) - (order[b.role] ?? 3);
+    return ro !== 0 ? ro : (a.username || '').localeCompare(b.username || '');
+  });
+
+  const total      = users.length;
+  const activeCount= users.filter(u => u.active !== false).length;
+  const adminCount = users.filter(u => u.role === 'admin' || u.role === 'superadmin').length;
+  const memberCount= users.filter(u => u.role === 'member').length;
+
+  document.getElementById('userRecordCount').textContent =
+    filtered.length + ' user' + (filtered.length !== 1 ? 's' : '');
+
+  const body = document.getElementById('userBody');
+
+  // Summary strip
+  const summaryHtml = `
+    <div class="um-summary">
+      <div class="um-summary-card">
+        <div class="um-summary-lbl">Total Users</div>
+        <div class="um-summary-val" style="color:var(--text);">${total}</div>
+      </div>
+      <div class="um-summary-card">
+        <div class="um-summary-lbl">Active</div>
+        <div class="um-summary-val" style="color:var(--green);">${activeCount}</div>
+      </div>
+      <div class="um-summary-card">
+        <div class="um-summary-lbl">Inactive</div>
+        <div class="um-summary-val" style="color:var(--text3);">${total - activeCount}</div>
+      </div>
+      <div class="um-summary-card">
+        <div class="um-summary-lbl">Admins</div>
+        <div class="um-summary-val" style="color:var(--accent);">${adminCount}</div>
+      </div>
+      <div class="um-summary-card">
+        <div class="um-summary-lbl">Members</div>
+        <div class="um-summary-val" style="color:var(--blue);">${memberCount}</div>
+      </div>
+    </div>`;
+
+  if (!filtered.length) {
+    body.innerHTML = summaryHtml + `
+      <div class="um-grid">
+        <div class="um-empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.3;margin-bottom:10px;">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+          <div>No users found</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const roleConfig = {
+    superadmin: { label: 'Super Admin', color: 'var(--red)', bg: 'var(--red-bg)',   avatar: '#c94458' },
+    admin:      { label: 'Admin',       color: 'var(--accent)', bg: 'var(--amber-bg)', avatar: '#e8711a' },
+    member:     { label: 'Member',      color: 'var(--blue)',   bg: 'var(--blue-bg)', avatar: '#5b8fe8' },
+  };
+
+  const cards = filtered.map(u => {
+    const isActive = u.active !== false;
+    const rc = roleConfig[u.role] || roleConfig.member;
+    const initials = (u.displayName || u.username).slice(0, 2).toUpperCase();
+    const isSelf = currentUser?.username === u.username;
+    const isProtected = u.role === 'superadmin' && !['superadmin'].includes(currentUser?.role);
+
+    return `
+      <div class="um-card">
+        <div class="um-stripe" style="background:${rc.color};"></div>
+        <div class="um-card-top">
+          <div class="um-avatar" style="background:${rc.avatar};">
+            ${initials}
+            <span class="um-avatar-status ${isActive ? 'active' : 'inactive'}"></span>
+          </div>
+          <div class="um-info">
+            <div class="um-name">${esc(u.displayName || u.username)}${isSelf ? ' <span style="font-size:10px;color:var(--accent);font-weight:500;">(you)</span>' : ''}</div>
+            <div class="um-username">@${esc(u.username)}</div>
+            <div class="um-role-pill" style="color:${rc.color};background:${rc.bg};">${rc.label}</div>
+          </div>
+        </div>
+        <div class="um-divider"></div>
+        <div class="um-footer">
+          <div class="um-status-text" style="color:${isActive ? 'var(--green)' : 'var(--text3)'};">
+            <span style="font-size:8px;">●</span>
+            ${isActive ? 'Active' : 'Inactive'}
+          </div>
+          ${can('edit') && !isProtected ? `
+          <div class="um-actions">
+            <button class="um-btn" onclick="editUser('${u.username}')" title="Edit user">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+            <button class="um-btn ${isActive ? 'danger' : 'success'}" onclick="toggleUserStatus('${u.username}')" title="${isActive ? 'Deactivate user' : 'Activate user'}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                ${isActive
+                  ? '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'
+                  : '<polyline points="20 6 9 17 4 12"/>'}
+              </svg>
+            </button>
+          </div>` : `<div style="font-size:10px;color:var(--text3);">${isSelf ? 'Current session' : 'Protected'}</div>`}
+        </div>
+      </div>`;
+  }).join('');
+
+  body.innerHTML = summaryHtml + `<div class="um-grid">${cards}</div>`;
+}
+
+window.openUserModal = function(username = null) {
+  // TODO: Implement user add/edit modal
+  showToast('User management modal - coming soon');
+};
+
+window.editUser = function(username) {
+  showToast('Edit user: ' + username + ' - coming soon');
+};
+
+window.toggleUserStatus = function(username) {
+  const users = getUsers();
+  const user = users.find(u => u.username === username);
+  if (!user) return;
+  
+  user.active = user.active === false ? true : false;
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  _usersCache = users;
+  logAudit(user.active ? 'Activate User' : 'Deactivate User', username);
+  renderUsers();
+  showToast(`User ${username} ${user.active ? 'activated' : 'deactivated'}`);
+};
+
+// ── AUDIT LOG ──
+window.auditFilterQuick = function(key) {
+  const actionSel = document.getElementById('auditActionFilter');
+  const dateSel   = document.getElementById('auditDateFilter');
+  const today     = new Date().toISOString().slice(0, 10);
+
+  if (key === 'all') {
+    if (actionSel) actionSel.value = '';
+    if (dateSel)   dateSel.value   = '';
+  } else if (key === 'today') {
+    if (actionSel) actionSel.value = '';
+    if (dateSel)   dateSel.value   = today;
+  } else {
+    if (actionSel) actionSel.value = key;
+    if (dateSel)   dateSel.value   = '';
+  }
+  renderAudit();
+};
+
+function renderAudit() {
+  loadAuditLog();
+  const q  = (document.getElementById('auditSearchInput')?.value || '').toLowerCase();
+  const af = document.getElementById('auditActionFilter')?.value || '';
+  const uf = document.getElementById('auditUserFilter')?.value || '';
+  const df = document.getElementById('auditDateFilter')?.value || '';
+
+  // Populate user filter dynamically
+  const userFilter = document.getElementById('auditUserFilter');
+  if (userFilter && userFilter.options.length === 1) {
+    const uniqueUsers = [...new Set(auditLogs.map(l => l.user))].sort();
+    uniqueUsers.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u; opt.textContent = u;
+      userFilter.appendChild(opt);
+    });
+  }
+
+  const filtered = auditLogs.filter(log => {
+    const matchQ = !q || [log.action, log.user, log.details].some(v => (v||'').toLowerCase().includes(q));
+    const matchA = !af || log.action === af;
+    const matchU = !uf || log.user === uf;
+    const matchD = !df || log.timestamp.startsWith(df);
+    return matchQ && matchA && matchU && matchD;
+  });
+
+  document.getElementById('auditRecordCount').textContent =
+    filtered.length + ' log' + (filtered.length !== 1 ? 's' : '');
+
+  const body = document.getElementById('auditBody');
+
+  // Action color config
+  const actionConfig = {
+    'Login':           { color: 'var(--green)',  bg: 'var(--green-bg)' },
+    'Logout':          { color: 'var(--text3)',   bg: 'var(--search-bg)' },
+    'Create':          { color: 'var(--blue)',    bg: 'var(--blue-bg)' },
+    'Update':          { color: 'var(--amber)',   bg: 'var(--amber-bg)' },
+    'Delete':          { color: 'var(--red)',     bg: 'var(--red-bg)' },
+    'Export':          { color: 'var(--accent)',  bg: 'var(--accent-glow)' },
+    'Activate User':   { color: 'var(--green)',   bg: 'var(--green-bg)' },
+    'Deactivate User': { color: 'var(--text3)',   bg: 'var(--search-bg)' },
+  };
+
+  // Summary stats
+  const today = new Date().toISOString().slice(0, 10);
+  const todayLogs   = auditLogs.filter(l => l.timestamp.startsWith(today)).length;
+  const loginCount  = auditLogs.filter(l => l.action === 'Login').length;
+  const createCount = auditLogs.filter(l => l.action === 'Create').length;
+  const deleteCount = auditLogs.filter(l => l.action === 'Delete').length;
+
+  // Determine active quick-filter state for card highlight
+  const qfAction = document.getElementById('auditActionFilter')?.value || '';
+  const qfDate   = document.getElementById('auditDateFilter')?.value || '';
+
+  function alCard(lbl, val, color, clickFn, isActive) {
+    return `<div class="al-summary-card${isActive ? ' active' : ''}" onclick="${clickFn}" title="Filter: ${lbl}">
+      <div class="al-summary-lbl">${lbl}</div>
+      <div class="al-summary-val" style="color:${color};">${val}</div>
+    </div>`;
+  }
+
+  const summaryHtml = `
+    <div class="al-summary">
+      ${alCard('All Logs',  auditLogs.length, 'var(--text)',  'auditFilterQuick("all")',    !qfAction && !qfDate)}
+      ${alCard('Today',     todayLogs,         'var(--accent)','auditFilterQuick("today")',   !qfAction && qfDate === today)}
+      ${alCard('Logins',    loginCount,         'var(--green)', 'auditFilterQuick("Login")',   qfAction === 'Login')}
+      ${alCard('Creates',   createCount,        'var(--blue)',  'auditFilterQuick("Create")',  qfAction === 'Create')}
+      ${alCard('Deletes',   deleteCount,        'var(--red)',   'auditFilterQuick("Delete")',  qfAction === 'Delete')}
+    </div>`;
+
+  if (!filtered.length) {
+    body.innerHTML = summaryHtml + `
+      <div style="text-align:center;padding:60px 20px;color:var(--text3);">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.3;margin-bottom:10px;">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <div>No audit logs found</div>
+      </div>`;
+    return;
+  }
+
+  // Relative time helper
+  function relTime(iso) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    const hrs  = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    if (mins < 1)  return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    if (hrs  < 24) return hrs  + 'h ago';
+    if (days < 7)  return days + 'd ago';
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  const rows = filtered.map((log, i) => {
+    const date = new Date(log.timestamp);
+    const timeStr = date.toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true
+    });
+    const ac = actionConfig[log.action] || { color: 'var(--text2)', bg: 'var(--search-bg)' };
+    const initials = (log.user || '?').slice(0, 2).toUpperCase();
+    const rowBg = i % 2 ? 'background:rgba(0,0,0,0.015);' : '';
+    return `
+      <tr class="al-tr" style="${rowBg}">
+        <td class="al-td">
+          <div class="al-time-main">${timeStr}</div>
+          <div class="al-time-rel">${relTime(log.timestamp)}</div>
+        </td>
+        <td class="al-td">
+          <div class="al-user-wrap">
+            <div class="al-user-mini">${esc(initials)}</div>
+            <div class="al-user-name">${esc(log.user)}</div>
+          </div>
+        </td>
+        <td class="al-td">
+          <span class="al-action-pill" style="color:${ac.color};background:${ac.bg};">${esc(log.action)}</span>
+        </td>
+        <td class="al-td">
+          <div class="al-details" title="${esc(log.details || '')}">${esc(log.details || '—')}</div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  body.innerHTML = summaryHtml + `
+    <div class="al-table-wrap">
+      <table class="al-table">
+        <thead class="al-thead">
+          <tr>
+            <th class="al-th">Timestamp</th>
+            <th class="al-th">User</th>
+            <th class="al-th">Action</th>
+            <th class="al-th">Details</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+window.clearAuditLog = function() {
+  if (!confirm('Clear all audit logs? This cannot be undone.')) return;
+  auditLogs = [];
+  localStorage.setItem(LS_AUDIT, JSON.stringify(auditLogs));
+  renderAudit();
+  showToast('Audit log cleared');
+};
+
+// ── VIEW SWITCHER ──
+window.switchView = function(view) {
+  currentView = view;
+  const dash = document.getElementById('dashboardMain');
+  const dm   = document.getElementById('deliveriesMain');
+  const im   = document.getElementById('inventoryMain');
+  const um   = document.getElementById('usersMain');
+  const am   = document.getElementById('auditMain');
+  const ndb  = document.getElementById('navDashboard');
+  const nd   = document.getElementById('navDeliveries');
+  const ni   = document.getElementById('navInventory');
+  const nu   = document.getElementById('navUsers');
+  const na   = document.getElementById('navAudit');
+  const addBtn = document.getElementById('btnAddDelivery');
+  const title  = document.getElementById('topbarTitle');
+
+  // Hide all, deactivate all nav
+  [dash, dm, im, um, am].forEach(el => { if (el) el.style.display = 'none'; });
+  [ndb, nd, ni, nu, na].forEach(el => { if (el) el.classList.remove('active'); });
+  if (addBtn) addBtn.style.display = 'none';
+
+  if (view === 'dashboard') {
+    dash.style.display = '';
+    if (ndb) ndb.classList.add('active');
+    if (title) title.textContent = 'Dashboard';
+    if (addBtn) addBtn.style.display = can('add') ? '' : 'none';
+    renderDashboard();
+  } else if (view === 'inventory') {
+    im.style.display = '';
+    if (ni) ni.classList.add('active');
+    if (title) title.textContent = 'Asset Inventory';
+    if (addBtn) addBtn.style.display = can('add') ? '' : 'none';
+    syncInventoryFromRecords();
+    renderInvStats();
+    renderInventory();
+  } else if (view === 'users') {
+    um.style.display = '';
+    if (nu) nu.classList.add('active');
+    if (title) title.textContent = 'User Management';
+    renderUsers();
+  } else if (view === 'audit') {
+    am.style.display = '';
+    if (na) na.classList.add('active');
+    if (title) title.textContent = 'Audit Log';
+    renderAudit();
+  } else {
+    dm.style.display = '';
+    if (nd) nd.classList.add('active');
+    if (title) title.textContent = 'Delivery Inventory';
+    if (addBtn) addBtn.style.display = can('add') ? '' : 'none';
+    renderStats();
+    renderTable();
+  }
+};
+
+// ── INIT ──
+(async function init() {
+  loadTheme();
+  const splash = document.getElementById('splashScreen');
+  document.getElementById('splashMsg').textContent = 'Loading users…';
+
+  loadUsers();
+  loadAuditLog();
+
+  if (checkSession()) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('splashMsg').textContent = 'Loading records…';
+    await showApp();
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+
+  setTimeout(() => {
+    if (splash) {
+      splash.classList.add('fade-out');
+      setTimeout(() => splash.remove(), 450);
+    }
+  }, 600);
+})();
+
+// ── SIDEBAR GLOBAL SEARCH ──
+window.onGlobalSearch = function(query) {
+  clearTimeout(_gsTimer);
+  const results = document.getElementById('globalSearchResults');
+  if (!query.trim()) { results.classList.remove('open'); return; }
+  _gsTimer = setTimeout(() => { renderGlobalResults(query.trim()); }, 200);
+};
+
+window.onGlobalSearchKey = function(e) {
+  const q = e._q || document.getElementById('globalSearchInput')?.value?.trim() || '';
+  if (e.key === 'Escape') {
+    document.getElementById('globalSearchInput').value = '';
+    document.getElementById('globalSearchResults').classList.remove('open');
+  }
+  if (e.key === 'Enter') {
+    if (q) {
+      document.getElementById('globalSearchResults').classList.remove('open');
+      document.getElementById('globalSearchInput').value = '';
+      switchView('deliveries');
+      const bar = document.getElementById('searchInput');
+      if (bar) { bar.value = q; renderTable(); }
+    }
+  }
+};
+
+function positionSearchResults() {
+  const bar = document.getElementById('globalSearchBar');
+  const panel = document.getElementById('globalSearchResults');
+  if (!bar || !panel) return;
+  const rect = bar.getBoundingClientRect();
+  const gap = 10; // px gap between sidebar edge and panel
+  panel.style.top  = rect.top + 'px';
+  panel.style.left = (rect.right + gap) + 'px';
+  panel.style.maxHeight = (window.innerHeight - rect.top - 8) + 'px';
+}
+
+function renderGlobalResults(query) {
+  const results = document.getElementById('globalSearchResults');
+  const q = query.toLowerCase();
+
+  // ── Serial number hits (inventory) ──
+  const serialHits = [];
+  Object.entries(invItems).forEach(([key, item]) => {
+    if (item._serial && item._serial.toLowerCase().includes(q)) {
+      const rec = records.find(r => r.id === item._rec);
+      if (rec) serialHits.push({ key, item, rec });
+    }
+  });
+
+  // ── Delivery record hits ──
+  const allRecHits = records.filter(r =>
+    [r.po, r.assetType, r.brand, r.specifications, r.itTech, r.from, r.to, r.serialNumbers]
+    .some(v => (v || '').toLowerCase().includes(q))
+  );
+  const recHits = allRecHits.slice(0, serialHits.length ? 4 : 8);
+
+  if (!serialHits.length && !recHits.length) {
+    results.innerHTML = `<div class="gsr-empty">No results for "<strong>${esc(query)}</strong>"</div>`;
+    positionSearchResults();
+    results.classList.add('open');
+    return;
+  }
+
+  const hl = (str) => {
+    if (!str) return '—';
+    const idx = str.toLowerCase().indexOf(q);
+    if (idx < 0) return esc(str);
+    return esc(str.slice(0, idx)) + '<mark class="gsr-highlight">' + esc(str.slice(idx, idx + q.length)) + '</mark>' + esc(str.slice(idx + q.length));
+  };
+
+  const statusOpts = ['Deployed','Defective','Repair','Lost','Spare','Untagged']
+    .map(s => `<option value="${s}">`+s+'</option>').join('');
+
+  let html = '';
+
+  // Serial section
+  if (serialHits.length) {
+    html += `<div class="gsr-section-label">Serial Numbers (${serialHits.length})</div>`;
+    html += serialHits.slice(0, 6).map(({ key, item, rec }) => {
+      const safeKey = key.replace(/"/g, '&quot;');
+      return `<div class="gsr-serial-item">
+        <div style="flex:1;min-width:0">
+          <div class="gsr-serial-num">${hl(item._serial)}</div>
+          <div class="gsr-serial-po">${esc(rec.po || '—')} &middot; ${esc(rec.assetType || '—')} &middot; ${esc(rec.brand || '—')}</div>
+        </div>
+        <select class="gsr-status-select" data-status="${item.status}" data-key="${safeKey}"
+          onchange="setAssetStatus(this.dataset.key,this.value);this.setAttribute('data-status',this.value)">
+          ${['Deployed','Defective','Repair','Lost','Spare','Untagged'].map(s=>`<option value="${s}"${item.status===s?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>`;
+    }).join('');
+  }
+
+  // Delivery records section
+  if (recHits.length) {
+    html += `<div class="gsr-section-label">Delivery Records (${allRecHits.length}${allRecHits.length > 4 && serialHits.length ? ', showing 4' : allRecHits.length > 8 ? ', showing 8' : ''})</div>`;
+    html += recHits.map(r => `
+      <div class="gsr-item" onclick="selectGlobalResult('${r.id}')">
+        <div class="gsr-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <div style="min-width:0;flex:1">
+          <div class="gsr-title">${hl(r.po || '—')} &middot; ${hl(r.assetType || '—')}</div>
+          <div class="gsr-sub">${hl(r.brand || '')}${r.itTech ? ' · ' + hl(r.itTech) : ''}${r.deliveryDate ? ' · ' + fmtDate(r.deliveryDate) : ''}</div>
+        </div>
+        <div class="gsr-badge">${statusBadgeHtml(r.status)}</div>
+      </div>`).join('');
+  }
+
+  if (allRecHits.length > recHits.length) {
+    html += `<div class="gsr-count" style="cursor:pointer;color:var(--accent);text-align:center" onclick="window.onGlobalSearchKey({key:'Enter',_q:document.getElementById('globalSearchInput').value})">Press Enter to see all results →</div>`;
+  }
+
+  results.innerHTML = html;
+  positionSearchResults();
+  results.classList.add('open');
+}
+
+window.selectGlobalResult = function(id) {
+  document.getElementById('globalSearchInput').value = '';
+  document.getElementById('globalSearchResults').classList.remove('open');
+  switchView('deliveries');
+  openViewModal(id);
+};
+
+// Close results when clicking outside
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('globalSearchBar')?.contains(e.target)) {
+    document.getElementById('globalSearchResults')?.classList.remove('open');
+  }
+});
+
+window.addEventListener('resize', function() {
+  if (document.getElementById('globalSearchResults')?.classList.contains('open')) {
+    positionSearchResults();
+  }
+});
+</script>
+</body>
+</html>
