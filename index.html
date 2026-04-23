@@ -4553,76 +4553,151 @@ function regenerateBarcode() {
 }
 
 function printBarcodeLabel() {
-  const tag   = document.getElementById('bcAssetTag').value.trim();
+  const tag = document.getElementById('bcAssetTag').value.trim();
   if (!tag) {
     document.getElementById('bcError').textContent = 'Please enter an asset tag first.';
     document.getElementById('bcError').style.display = '';
     return;
   }
+  _renderLabelCanvas(tag, document.getElementById('bcLabel').value.trim(), function(pngDataUrl) {
+    _openLabelPrint(pngDataUrl, tag);
+  });
+}
 
-  const label = document.getElementById('bcLabel').value.trim();
-  const svgEl = document.getElementById('bcSvg');
+function saveBarcodeLabel() {
+  const tag = document.getElementById('bcAssetTag').value.trim();
+  if (!tag) {
+    document.getElementById('bcError').textContent = 'Please enter an asset tag first.';
+    document.getElementById('bcError').style.display = '';
+    return;
+  }
+  _renderLabelCanvas(tag, document.getElementById('bcLabel').value.trim(), function(pngDataUrl) {
+    const a = document.createElement('a');
+    a.href = pngDataUrl;
+    a.download = 'barcode-' + tag.replace(/[^a-zA-Z0-9._-]/g,'_') + '.png';
+    a.click();
+  });
+}
 
-  // Serialize SVG inline so the print window is fully self-contained
-  const svgData = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(
-    new XMLSerializer().serializeToString(svgEl)
-  )));
+// Render the full label to a Canvas at 300 DPI (QL-800 native) → callback(pngDataUrl)
+// Canvas size: 62mm × 29mm @ 300dpi = 732 × 342 px
+function _renderLabelCanvas(tag, label, callback) {
+  const W = 732, H = 342; // 62mm × 29mm at 300dpi
 
-  // Open a minimal popup — toolbar/chrome must be 0 so @page size is respected by the browser
-  const printWin = window.open('', '_blank',
-    'width=250,height=130,toolbar=0,scrollbars=0,status=0,menubar=0,location=0,resizable=0');
-  if (!printWin) {
-    document.getElementById('bcError').textContent = 'Popup blocked — allow popups for this page then try again.';
+  // Generate a fresh, high-res barcode SVG off-screen
+  const tmpSvg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  document.body.appendChild(tmpSvg);
+  try {
+    JsBarcode(tmpSvg, tag, {
+      format:       'CODE128',
+      width:        2.8,     // bar width in px — generous for 300dpi
+      height:       180,     // bar height in px
+      displayValue: false,
+      margin:       0,
+      background:   '#ffffff',
+      lineColor:    '#000000',
+    });
+  } catch(e) {
+    document.body.removeChild(tmpSvg);
+    document.getElementById('bcError').textContent = 'Cannot encode value — use alphanumeric characters only.';
     document.getElementById('bcError').style.display = '';
     return;
   }
 
-  // QL-800 DK-11209 label = 62mm × 29mm (2.4" × 1.1")
-  // Use mm so the browser passes the exact page size to the printer driver.
-  // In the print dialog: Paper = "DK-11209", Margins = None, Scale = 100%
-  const esc = s => s.replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  printWin.document.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<title>Barcode \u2014 '
-    + esc(tag) + '</title>\n<style>\n'
-    + '  @page { size: 62mm 29mm; margin: 0; }\n'
-    + '  * { box-sizing: border-box; margin: 0; padding: 0; }\n'
-    + '  html, body {\n'
-    + '    width: 62mm; height: 29mm;\n'
-    + '    overflow: hidden; background: #fff;\n'
-    + '    -webkit-print-color-adjust: exact; print-color-adjust: exact;\n'
-    + '  }\n'
-    + '  .label {\n'
-    + '    width: 62mm; height: 29mm;\n'
-    + '    display: flex; flex-direction: column;\n'
-    + '    align-items: center; justify-content: center;\n'
-    + '    padding: 1.5mm 2mm; gap: 0.3mm;\n'
-    + '    font-family: "Courier New", Courier, monospace;\n'
-    + '    background: #fff;\n'
-    + '  }\n'
-    + '  .lbl-top {\n'
-    + '    font-size: 6pt; font-weight: 700; color: #000;\n'
-    + '    letter-spacing: 0.2pt; white-space: nowrap;\n'
-    + '    max-width: 58mm; overflow: hidden; text-overflow: ellipsis;\n'
-    + '    text-align: center; line-height: 1.2;\n'
-    + '  }\n'
-    + '  .lbl-barcode { width: 58mm; display: flex; justify-content: center; }\n'
-    + '  .lbl-barcode img { width: 58mm; height: 13mm; object-fit: fill; display: block; }\n'
-    + '  .lbl-bottom {\n'
-    + '    font-size: 6pt; color: #000; letter-spacing: 0.3pt;\n'
-    + '    white-space: nowrap; text-align: center; line-height: 1.2;\n'
-    + '  }\n'
-    + '  @media print { html, body { width: 62mm; height: 29mm; } .label { page-break-inside: avoid; } }\n'
-    + '</style>\n</head>\n<body>\n<div class="label">\n'
-    + (label ? '  <div class="lbl-top">' + esc(label) + '</div>\n' : '')
-    + '  <div class="lbl-barcode"><img src="' + svgData + '" alt="barcode"></div>\n'
-    + '  <div class="lbl-bottom">(21)\u00a0' + esc(tag) + '</div>\n'
-    + '</div>\n<script>\n'
-    + '  window.onload = function() {\n'
-    + '    setTimeout(function() {\n'
-    + '      window.print();\n'
-    + '      setTimeout(function(){ window.close(); }, 1000);\n'
-    + '    }, 150);\n'
-    + '  };\n'
-    + '<\/script>\n</body>\n</html>');
+  const svgData = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(
+    new XMLSerializer().serializeToString(tmpSvg)
+  )));
+  document.body.removeChild(tmpSvg);
+
+  const canvas  = document.createElement('canvas');
+  canvas.width  = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const img = new Image();
+  img.onload = function() {
+    // White background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+
+    const hasLabel = label && label.trim();
+    let barcodeY, barcodeH, bottomY;
+
+    if (hasLabel) {
+      // Top: brand/model — 36px bold
+      ctx.font = 'bold 36px "Courier New", Courier, monospace';
+      const maxChars = 36;
+      const topText  = label.length > maxChars ? label.substring(0, maxChars - 1) + '\u2026' : label;
+      ctx.fillText(topText, W / 2, 46);
+      barcodeY = 58;
+      barcodeH = 200;
+      bottomY  = barcodeY + barcodeH + 32;
+    } else {
+      barcodeY = 36;
+      barcodeH = 216;
+      bottomY  = barcodeY + barcodeH + 36;
+    }
+
+    // Draw barcode image, centred, clipped to 700px wide
+    const bcW = Math.min(img.width, 700);
+    const bcX = (W - bcW) / 2;
+    ctx.drawImage(img, bcX, barcodeY, bcW, barcodeH);
+
+    // Bottom: "(21) TAG" — 30px
+    ctx.font = '30px "Courier New", Courier, monospace';
+    ctx.fillText('(21)  ' + tag, W / 2, bottomY);
+
+    callback(canvas.toDataURL('image/png'));
+  };
+  img.onerror = function() {
+    document.getElementById('bcError').textContent = 'Failed to render barcode image.';
+    document.getElementById('bcError').style.display = '';
+  };
+  img.src = svgData;
+}
+
+// Open a minimal print window containing only the label PNG at exact mm dimensions
+function _openLabelPrint(pngDataUrl, tag) {
+  // 62mm × 29mm at 96 screen-dpi ≈ 234 × 110 screen pixels for window size
+  const printWin = window.open('', '_blank',
+    'width=300,height=160,toolbar=0,scrollbars=0,status=0,menubar=0,location=0,resizable=0');
+  if (!printWin) {
+    document.getElementById('bcError').textContent = 'Popup blocked \u2014 allow popups for this page then try again.';
+    document.getElementById('bcError').style.display = '';
+    return;
+  }
+
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // Single <img> sized to exact label dimensions in mm.
+  // @page declares the page size so the print driver gets correct dimensions.
+  // Set "Margins: None, Scale: 100%" in the browser print dialog.
+  printWin.document.write(
+    '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    + '<title>Label \u2014 ' + esc(tag) + '</title>'
+    + '<style>'
+    + '@page{size:62mm 29mm;margin:0;}'
+    + '*{box-sizing:border-box;margin:0;padding:0;}'
+    + 'html,body{width:62mm;height:29mm;overflow:hidden;background:#fff;'
+    + '-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+    + 'img{display:block;width:62mm;height:29mm;'
+    + 'image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;}'
+    + '@media print{html,body{width:62mm;height:29mm;}}'
+    + '</style></head><body>'
+    + '<img src="' + pngDataUrl + '" alt="label">'
+    + '<script>'
+    + 'window.onload=function(){'
+    + 'setTimeout(function(){'
+    + 'window.print();'
+    + 'setTimeout(function(){window.close();},1200);'
+    + '},200);'
+    + '};'
+    + '<\/script>'
+    + '</body></html>'
+  );
   printWin.document.close();
 }
 /* ── PRESENCE / WHO'S ONLINE ── */
@@ -5099,6 +5174,7 @@ window.openBarcodeModal=openBarcodeModal;
 window.closeBarcodeModal=closeBarcodeModal;
 window.regenerateBarcode=regenerateBarcode;
 window.printBarcodeLabel=printBarcodeLabel;
+window.saveBarcodeLabel=saveBarcodeLabel;
 window.loadPresence=loadPresence;
 window.submitForceChange=submitForceChange;
 window.addAuditEntryFS=addAuditEntryFS;
@@ -5223,11 +5299,19 @@ _appEl.classList.remove('active');_appEl.style.display='';
       <div id="bcError" style="display:none;color:var(--red);font-size:12px;text-align:center;margin-bottom:8px;"></div>
       <div style="font-size:11px;color:var(--text3);text-align:center;">
         Label size: <strong>62 mm &times; 29 mm</strong> (2.4" &times; 1.1") &nbsp;&middot;&nbsp; Format: GS1-128 (Code 128)
-        <br><span style="font-size:10px;opacity:.75;">In print dialog &rarr; Paper: <strong>DK-11209</strong> &nbsp;&middot;&nbsp; Margins: <strong>None</strong> &nbsp;&middot;&nbsp; Scale: <strong>100%</strong></span>
+        <br><span style="font-size:10px;opacity:.75;">Print dialog: Paper <strong>DK-11209</strong>, Margins <strong>None</strong>, Scale <strong>100%</strong> &nbsp;&middot;&nbsp; Or use <strong>Save PNG</strong> &rarr; print via OS image viewer</span>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeBarcodeModal()">Cancel</button>
+      <button class="btn" onclick="saveBarcodeLabel()" title="Download PNG for manual printing">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Save PNG
+      </button>
       <button class="btn btn-primary" onclick="printBarcodeLabel()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
           <polyline points="6 9 6 2 18 2 18 9"/>
