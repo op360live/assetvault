@@ -4563,90 +4563,68 @@ function printBarcodeLabel() {
   const label = document.getElementById('bcLabel').value.trim();
   const svgEl = document.getElementById('bcSvg');
 
-  // Serialize SVG to data-URL so print window is self-contained
+  // Serialize SVG inline so the print window is fully self-contained
   const svgData = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(
     new XMLSerializer().serializeToString(svgEl)
   )));
 
-  const printWin = window.open('', '_blank', 'width=400,height=300');
-  printWin.document.write(`<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Barcode \u2014 ${tag}</title>
-<style>
-  @page {
-    size: 2.4in 1.1in;
-    margin: 0;
+  // Open a minimal popup — toolbar/chrome must be 0 so @page size is respected by the browser
+  const printWin = window.open('', '_blank',
+    'width=250,height=130,toolbar=0,scrollbars=0,status=0,menubar=0,location=0,resizable=0');
+  if (!printWin) {
+    document.getElementById('bcError').textContent = 'Popup blocked — allow popups for this page then try again.';
+    document.getElementById('bcError').style.display = '';
+    return;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    width: 2.4in;
-    height: 1.1in;
-    overflow: hidden;
-    background: #fff;
-  }
-  .label {
-    width: 2.4in;
-    height: 1.1in;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 5pt 8pt;
-    gap: 2pt;
-    font-family: 'Courier New', monospace;
-    background: #fff;
-  }
-  .lbl-top {
-    font-size: 7pt;
-    font-weight: bold;
-    color: #111;
-    letter-spacing: 0.3pt;
-    white-space: nowrap;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .lbl-barcode {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-  .lbl-barcode img {
-    width: 2.1in;
-    height: 42pt;
-    object-fit: fill;
-    display: block;
-  }
-  .lbl-bottom {
-    font-size: 7pt;
-    color: #333;
-    letter-spacing: 0.3pt;
-    white-space: nowrap;
-  }
-  @media print {
-    html, body { width: 2.4in; height: 1.1in; }
-  }
-</style>
-</head>
-<body>
-<div class="label">
-  ${label ? `<div class="lbl-top">${label.replace(/</g,'&lt;')}</div>` : ''}
-  <div class="lbl-barcode"><img src="${svgData}" alt="barcode"></div>
-  <div class="lbl-bottom">(21)&nbsp;${tag.replace(/</g,'&lt;')}</div>
-</div>
-<script>
-  window.onload = function() {
-    window.print();
-    setTimeout(function(){ window.close(); }, 800);
-  };
-<\/script>
-</body>
-</html>`);
+
+  // QL-800 DK-11209 label = 62mm × 29mm (2.4" × 1.1")
+  // Use mm so the browser passes the exact page size to the printer driver.
+  // In the print dialog: Paper = "DK-11209", Margins = None, Scale = 100%
+  const esc = s => s.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  printWin.document.write('<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<title>Barcode \u2014 '
+    + esc(tag) + '</title>\n<style>\n'
+    + '  @page { size: 62mm 29mm; margin: 0; }\n'
+    + '  * { box-sizing: border-box; margin: 0; padding: 0; }\n'
+    + '  html, body {\n'
+    + '    width: 62mm; height: 29mm;\n'
+    + '    overflow: hidden; background: #fff;\n'
+    + '    -webkit-print-color-adjust: exact; print-color-adjust: exact;\n'
+    + '  }\n'
+    + '  .label {\n'
+    + '    width: 62mm; height: 29mm;\n'
+    + '    display: flex; flex-direction: column;\n'
+    + '    align-items: center; justify-content: center;\n'
+    + '    padding: 1.5mm 2mm; gap: 0.3mm;\n'
+    + '    font-family: "Courier New", Courier, monospace;\n'
+    + '    background: #fff;\n'
+    + '  }\n'
+    + '  .lbl-top {\n'
+    + '    font-size: 6pt; font-weight: 700; color: #000;\n'
+    + '    letter-spacing: 0.2pt; white-space: nowrap;\n'
+    + '    max-width: 58mm; overflow: hidden; text-overflow: ellipsis;\n'
+    + '    text-align: center; line-height: 1.2;\n'
+    + '  }\n'
+    + '  .lbl-barcode { width: 58mm; display: flex; justify-content: center; }\n'
+    + '  .lbl-barcode img { width: 58mm; height: 13mm; object-fit: fill; display: block; }\n'
+    + '  .lbl-bottom {\n'
+    + '    font-size: 6pt; color: #000; letter-spacing: 0.3pt;\n'
+    + '    white-space: nowrap; text-align: center; line-height: 1.2;\n'
+    + '  }\n'
+    + '  @media print { html, body { width: 62mm; height: 29mm; } .label { page-break-inside: avoid; } }\n'
+    + '</style>\n</head>\n<body>\n<div class="label">\n'
+    + (label ? '  <div class="lbl-top">' + esc(label) + '</div>\n' : '')
+    + '  <div class="lbl-barcode"><img src="' + svgData + '" alt="barcode"></div>\n'
+    + '  <div class="lbl-bottom">(21)\u00a0' + esc(tag) + '</div>\n'
+    + '</div>\n<script>\n'
+    + '  window.onload = function() {\n'
+    + '    setTimeout(function() {\n'
+    + '      window.print();\n'
+    + '      setTimeout(function(){ window.close(); }, 1000);\n'
+    + '    }, 150);\n'
+    + '  };\n'
+    + '<\/script>\n</body>\n</html>');
   printWin.document.close();
 }
-
 /* ── PRESENCE / WHO'S ONLINE ── */
 const PRESENCE_COL = 'presence';
 
@@ -5243,7 +5221,10 @@ _appEl.classList.remove('active');_appEl.style.display='';
         </div>
       </div>
       <div id="bcError" style="display:none;color:var(--red);font-size:12px;text-align:center;margin-bottom:8px;"></div>
-      <div style="font-size:11px;color:var(--text3);text-align:center;">Label size: <strong>2.4" &times; 1.1"</strong> &nbsp;&middot;&nbsp; Format: GS1-128 (Code 128 subset C)</div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;">
+        Label size: <strong>62 mm &times; 29 mm</strong> (2.4" &times; 1.1") &nbsp;&middot;&nbsp; Format: GS1-128 (Code 128)
+        <br><span style="font-size:10px;opacity:.75;">In print dialog &rarr; Paper: <strong>DK-11209</strong> &nbsp;&middot;&nbsp; Margins: <strong>None</strong> &nbsp;&middot;&nbsp; Scale: <strong>100%</strong></span>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeBarcodeModal()">Cancel</button>
