@@ -12,7 +12,7 @@
   img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com;
 ">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Laptop Inventory v1.0</title>
+<title>AssetVault — Laptop Inventory v1.1</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2444,7 +2444,7 @@ mark.gsr-highlight {
           <line x1="0" y1="20" x2="24" y2="20"/>
         </svg>
       </div>
-      <span class="sb-brand-name">Asset<span class="sb-brand-accent">Vault</span></span>
+      <span class="sb-brand-name">Asset<span class="sb-brand-accent">Vault</span><span style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:0.3px;margin-left:6px;opacity:.75;">v1.1</span></span>
     </div>
 
     <!-- Nav -->
@@ -4542,7 +4542,7 @@ function regenerateBarcode() {
       lineColor:   '#000000',
     });
     topEl.textContent = label || '';
-    botEl.textContent = '(21) ' + tag;
+    botEl.textContent = tag;
   } catch(e) {
     errEl.textContent = 'Cannot encode value — use alphanumeric characters only.';
     errEl.style.display = '';
@@ -4646,9 +4646,9 @@ function _renderLabelCanvas(tag, label, callback) {
     const bcX = (W - bcW) / 2;
     ctx.drawImage(img, bcX, barcodeY, bcW, barcodeH);
 
-    // Bottom: "(21) TAG" — 30px
-    ctx.font = '30px "Courier New", Courier, monospace';
-    ctx.fillText('(21)  ' + tag, W / 2, bottomY);
+    // Bottom: asset tag — 30px bold
+    ctx.font = 'bold 30px "Courier New", Courier, monospace';
+    ctx.fillText(tag, W / 2, bottomY);
 
     callback(canvas.toDataURL('image/png'));
   };
@@ -5304,21 +5304,13 @@ _appEl.classList.remove('active');_appEl.style.display='';
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeBarcodeModal()">Cancel</button>
-      <button class="btn" onclick="saveBarcodeLabel()" title="Download PNG for manual printing">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+      <button class="btn btn-primary" onclick="saveBarcodeLabel()" title="Download PNG — print via OS image viewer">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
         Save PNG
-      </button>
-      <button class="btn btn-primary" onclick="printBarcodeLabel()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
-          <polyline points="6 9 6 2 18 2 18 9"/>
-          <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
-          <rect x="6" y="14" width="12" height="8"/>
-        </svg>
-        Print Label
       </button>
     </div>
   </div>
@@ -5455,7 +5447,7 @@ _appEl.classList.remove('active');_appEl.style.display='';
   <div class="spinner"></div>
   <div class="loading-text" id="loadingText">Loading…</div>
 </div>
- 
+
 <!-- SPLASH SCREEN -->
 <div id="splashScreen">
   <div class="splash-logo">
