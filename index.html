@@ -2530,6 +2530,11 @@ mark.gsr-highlight {
         <h1 class="topbar-title" id="topBarTitle">Dashboard</h1>
       </div>
       <div class="topbar-right">
+        <!-- App link -->
+        <a href="asset-delivery-inventory_v2.html" class="btn btn-sm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;" title="Go to Delivery Inventory">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          <span class="btn-add-text">Delivery Inventory</span>
+        </a>
         <!-- Add Laptop -->
         <button class="btn btn-primary" id="btnAddLaptop" onclick="openAddModal()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -2891,6 +2896,9 @@ mark.gsr-highlight {
 </div>
 
 <!-- TOTP library removed in v24 — MFA disabled -->
+
+<!-- JsBarcode — GS1-128 / Code128 barcode generator -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
 <script type="module">
 // ── FIREBASE ──
@@ -4429,6 +4437,7 @@ function openViewModal(id){
   const ownerInit=(r.currentOwner||'?').trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('viewEditBtn').style.display = can('edit')?'inline-flex':'none';
   document.getElementById('viewDeleteBtn').style.display = can('delete')?'inline-flex':'none';
+  document.getElementById('viewBarcodeBtn').style.display = 'inline-flex';
   // Update modal header
   document.getElementById('viewModalTitle').textContent = r.currentOwner||'No Owner';
   document.getElementById('viewModalSub').textContent = `${r.brand||''} ${r.model||''} · ${r.assetTag||r.serialNumber||'No tag'}`;
@@ -4484,6 +4493,158 @@ function openEditFromView(){
 function openDeleteFromView(){
   document.getElementById('viewOverlay').classList.remove('open');
   openDeleteModal(viewId);
+}
+
+/* ── BARCODE (GS1-128) ── */
+function openBarcodeModal() {
+  const r = viewId ? records.find(x => x.id === viewId) : null;
+  document.getElementById('bcAssetTag').value = r?.assetTag || '';
+  document.getElementById('bcLabel').value    = [r?.brand, r?.model].filter(Boolean).join(' ') || '';
+  document.getElementById('bcError').style.display = 'none';
+  document.getElementById('barcodeOverlay').classList.add('open');
+  setTimeout(regenerateBarcode, 60);
+}
+
+function closeBarcodeModal() {
+  document.getElementById('barcodeOverlay').classList.remove('open');
+}
+
+function regenerateBarcode() {
+  const tag    = document.getElementById('bcAssetTag').value.trim();
+  const label  = document.getElementById('bcLabel').value.trim();
+  const errEl  = document.getElementById('bcError');
+  const svg    = document.getElementById('bcSvg');
+  const topEl  = document.getElementById('bcTopText');
+  const botEl  = document.getElementById('bcBottomText');
+
+  errEl.style.display = 'none';
+
+  if (!tag) {
+    svg.innerHTML = '';
+    topEl.textContent = '';
+    botEl.textContent = '';
+    return;
+  }
+
+  // GS1-128 uses Application Identifier (AI) 21 for Serial / Asset Reference
+  // Encode as: FNC1 + AI 21 + asset tag  →  "(21)" prefix visible, bars use CODE128-C/B
+  const gs1Value = tag;  // Raw value; we prepend "(21)" visually
+
+  try {
+    // JsBarcode CODE128 auto-optimises to subsets A/B/C (same as GS1-128 symbology)
+    JsBarcode(svg, gs1Value, {
+      format:      'CODE128',
+      width:       1.8,
+      height:      52,
+      displayValue: false,
+      margin:      0,
+      background:  '#ffffff',
+      lineColor:   '#000000',
+    });
+    topEl.textContent = label || '';
+    botEl.textContent = '(21) ' + tag;
+  } catch(e) {
+    errEl.textContent = 'Cannot encode value — use alphanumeric characters only.';
+    errEl.style.display = '';
+    svg.innerHTML = '';
+    topEl.textContent = '';
+    botEl.textContent = '';
+  }
+}
+
+function printBarcodeLabel() {
+  const tag   = document.getElementById('bcAssetTag').value.trim();
+  if (!tag) {
+    document.getElementById('bcError').textContent = 'Please enter an asset tag first.';
+    document.getElementById('bcError').style.display = '';
+    return;
+  }
+
+  const label = document.getElementById('bcLabel').value.trim();
+  const svgEl = document.getElementById('bcSvg');
+
+  // Serialize SVG to data-URL so print window is self-contained
+  const svgData = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(
+    new XMLSerializer().serializeToString(svgEl)
+  )));
+
+  const printWin = window.open('', '_blank', 'width=400,height=300');
+  printWin.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Barcode \u2014 ${tag}</title>
+<style>
+  @page {
+    size: 2.4in 1.1in;
+    margin: 0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 2.4in;
+    height: 1.1in;
+    overflow: hidden;
+    background: #fff;
+  }
+  .label {
+    width: 2.4in;
+    height: 1.1in;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5pt 8pt;
+    gap: 2pt;
+    font-family: 'Courier New', monospace;
+    background: #fff;
+  }
+  .lbl-top {
+    font-size: 7pt;
+    font-weight: bold;
+    color: #111;
+    letter-spacing: 0.3pt;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .lbl-barcode {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .lbl-barcode img {
+    width: 2.1in;
+    height: 42pt;
+    object-fit: fill;
+    display: block;
+  }
+  .lbl-bottom {
+    font-size: 7pt;
+    color: #333;
+    letter-spacing: 0.3pt;
+    white-space: nowrap;
+  }
+  @media print {
+    html, body { width: 2.4in; height: 1.1in; }
+  }
+</style>
+</head>
+<body>
+<div class="label">
+  ${label ? `<div class="lbl-top">${label.replace(/</g,'&lt;')}</div>` : ''}
+  <div class="lbl-barcode"><img src="${svgData}" alt="barcode"></div>
+  <div class="lbl-bottom">(21)&nbsp;${tag.replace(/</g,'&lt;')}</div>
+</div>
+<script>
+  window.onload = function() {
+    window.print();
+    setTimeout(function(){ window.close(); }, 800);
+  };
+<\/script>
+</body>
+</html>`);
+  printWin.document.close();
 }
 
 /* ── PRESENCE / WHO'S ONLINE ── */
@@ -4956,6 +5117,10 @@ window.clearAllFilters=clearAllFilters;
 window.openViewModal=openViewModal;
 window.openEditFromView=openEditFromView;
 window.openDeleteFromView=openDeleteFromView;
+window.openBarcodeModal=openBarcodeModal;
+window.closeBarcodeModal=closeBarcodeModal;
+window.regenerateBarcode=regenerateBarcode;
+window.printBarcodeLabel=printBarcodeLabel;
 window.loadPresence=loadPresence;
 window.submitForceChange=submitForceChange;
 window.addAuditEntryFS=addAuditEntryFS;
@@ -5005,6 +5170,12 @@ _appEl.classList.remove('active');_appEl.style.display='';
         <div style="font-size:12px;color:var(--text3);margin-top:3px;" id="viewModalSub"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-sm" id="viewBarcodeBtn" onclick="openBarcodeModal()" title="Print barcode label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <path d="M3 5v14M7 5v14M11 5v14M14 5v10M17 5v14M20 5v10"/>
+          </svg>
+          Barcode
+        </button>
         <button class="btn btn-sm" id="viewEditBtn" onclick="openEditFromView()" style="display:none">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Edit
@@ -5019,6 +5190,71 @@ _appEl.classList.remove('active');_appEl.style.display='';
       </div>
     </div>
     <div class="modal-body" id="viewModalBody">
+    </div>
+  </div>
+</div>
+
+<!-- BARCODE PRINT MODAL -->
+<div class="overlay" id="barcodeOverlay" onclick="if(event.target===this)closeBarcodeModal()">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <span class="modal-title">Print Barcode Label</span>
+      <button class="modal-close" onclick="closeBarcodeModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding-bottom:10px;">
+      <div style="display:flex;gap:12px;align-items:flex-end;margin-bottom:16px;">
+        <div class="fg" style="flex:1;margin:0;">
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:5px;">Asset Tag</label>
+          <input type="text" id="bcAssetTag" placeholder="e.g. LT-0001" oninput="regenerateBarcode()"
+            style="font-family:monospace;font-size:14px;">
+        </div>
+        <div class="fg" style="flex:1;margin:0;">
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:5px;">Brand / Model</label>
+          <input type="text" id="bcLabel" placeholder="e.g. Dell Latitude 5540" oninput="regenerateBarcode()"
+            style="font-size:13px;">
+        </div>
+      </div>
+
+      <!-- Preview label at exact print ratio -->
+      <div style="display:flex;justify-content:center;margin-bottom:14px;">
+        <div id="bcPreviewWrap" style="
+          width:345px; height:158px;
+          border:1.5px dashed var(--glass-border2);
+          border-radius:6px;
+          display:flex; align-items:center; justify-content:center;
+          background:var(--card-bg);
+          overflow:hidden;
+          position:relative;
+        ">
+          <!-- label is rendered inside here -->
+          <div id="bcLabelPreview" style="
+            width:100%; height:100%;
+            display:flex; flex-direction:column;
+            align-items:center; justify-content:center;
+            gap:3px; padding:8px 10px;
+            font-family: 'IBM Plex Mono', monospace;
+          ">
+            <div id="bcTopText" style="font-size:10px;font-weight:700;color:#111;letter-spacing:0.4px;white-space:nowrap;"></div>
+            <svg id="bcSvg" style="max-width:100%;"></svg>
+            <div id="bcBottomText" style="font-size:9px;color:#555;letter-spacing:0.3px;white-space:nowrap;"></div>
+          </div>
+        </div>
+      </div>
+      <div id="bcError" style="display:none;color:var(--red);font-size:12px;text-align:center;margin-bottom:8px;"></div>
+      <div style="font-size:11px;color:var(--text3);text-align:center;">Label size: <strong>2.4" &times; 1.1"</strong> &nbsp;&middot;&nbsp; Format: GS1-128 (Code 128 subset C)</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeBarcodeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="printBarcodeLabel()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round">
+          <polyline points="6 9 6 2 18 2 18 9"/>
+          <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        Print Label
+      </button>
     </div>
   </div>
 </div>
