@@ -2599,6 +2599,25 @@ mark.gsr-highlight {
 
     <!-- ══════════ INVENTORY VIEW ══════════ -->
     <div class="view" id="invView">
+      <!-- Overview filter bar -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap;">Overview</span>
+        <div style="position:relative;" id="ovSiteWrap">
+          <button id="ovSiteBtn" onclick="toggleOvSiteMenu(event)" style="
+            background:var(--card-bg);border:1.5px solid var(--glass-border2);border-radius:var(--radius);
+            padding:5px 10px;font-size:12px;color:var(--text);cursor:pointer;
+            min-width:120px;max-width:240px;display:inline-flex;align-items:center;gap:6px;line-height:1.4;
+            white-space:nowrap;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
+            <span id="ovSiteBtnLabel">All Sites</span>
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="margin-left:auto;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div id="ovSiteMenu" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:1000;
+            background:var(--card-bg);border:1.5px solid var(--glass-border2);border-radius:var(--radius);
+            box-shadow:var(--glass-shadow);padding:6px 0;min-width:180px;max-height:260px;overflow-y:auto;">
+          </div>
+        </div>
+      </div>
       <div class="stats-grid" id="statsGrid"></div>
 
       <div class="toolbar">
@@ -2982,7 +3001,7 @@ function can(action){
 
 let records=[], editId=null, deleteId=null, sortCol='dateAdded', sortDir=-1, currentUser=null;
 let activeStatusFilter = null;
-const activeFilters = {status:'', site:'', search:''};
+const activeFilters = {status:'', sites:[], search:''};
 
 const FIELDS=[
   {key:'brand',label:'Brand'},{key:'model',label:'Model'},
@@ -3284,8 +3303,10 @@ function badge(s, remarks){
   return span;
 }
 function renderStats(){
-  const c={total:records.length,Deployed:0,Spare:0,Repair:0,Docked:0,'End of Life':0,'For Return':0};
-  records.forEach(r=>{if(c[r.assetStatus]!==undefined)c[r.assetStatus]++;});
+  const ss = activeFilters.sites;
+  const src = ss.length ? records.filter(r => ss.includes(r.siteLocation)) : records;
+  const c={total:src.length,Deployed:0,Spare:0,Repair:0,Docked:0,'End of Life':0,'For Return':0};
+  src.forEach(r=>{if(c[r.assetStatus]!==undefined)c[r.assetStatus]++;});
   const svgTotal=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>`;
   const svgDeployed=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
   const svgSpare=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>`;
@@ -3312,9 +3333,15 @@ function renderStats(){
 }
 function updateSiteFilter(){
   const sites=[...new Set(records.map(r=>r.siteLocation).filter(Boolean))].sort();
-  const sel=document.getElementById('siteFilter'),cur=activeFilters.site||sel.value;
-  sel.innerHTML='<option value="">All Sites</option>'+sites.map(s=>`<option${s===cur?' selected':''}>${s}</option>`).join('');
-  if(cur) sel.value=cur;
+  const opts = '<option value="">All Sites</option>'+sites.map(s=>`<option>${s}</option>`).join('');
+  // main toolbar single-select
+  const sel=document.getElementById('siteFilter');
+  sel.innerHTML=opts;
+  if(activeFilters.sites.length===1) sel.value=activeFilters.sites[0];
+  // rebuild overview checkbox menu if open
+  const m=document.getElementById('ovSiteMenu');
+  if(m&&m.style.display!=='none') _buildOvSiteMenu();
+  _updateOvSiteBtn();
 }
 /* ── v17: Column visibility state ── */
 const DEFAULT_HIDDEN = new Set(['processor','ram','os']);
@@ -3465,9 +3492,9 @@ function renderHeader(){
 
 function renderTable(){
   const sf=activeFilters.status||document.getElementById('statusFilter').value||'';
-  const lf=activeFilters.site||document.getElementById('siteFilter').value||'';
+  const ss=activeFilters.sites;
   const q=(activeSpecFilter?'':(activeFilters.search||document.getElementById('searchInput').value||'')).toLowerCase().trim();
-  let f=records.filter(r=>(!sf||r.assetStatus===sf)&&(!lf||r.siteLocation===lf)&&
+  let f=records.filter(r=>(!sf||r.assetStatus===sf)&&(!ss.length||ss.includes(r.siteLocation))&&
     (!activeSpecFilter||(r.processor===(activeSpecFilter.processor||'')&&r.ram===(activeSpecFilter.ram||'')))&&
     (!q||[...FIELDS.map(x=>r[x.key]||''),fmtDate(r.dateAdded),fmtDate(r.dateModified)].some(v=>String(v).toLowerCase().includes(q))));
   f.sort((a,b)=>{
@@ -4385,29 +4412,95 @@ function onStatusFilter(){
   renderChips(); renderStats(); renderTable();
 }
 function onSiteFilter(){
-  activeFilters.site = document.getElementById('siteFilter').value;
-  renderChips(); renderTable();
+  const val = document.getElementById('siteFilter').value;
+  activeFilters.sites = val ? [val] : [];
+  _updateOvSiteBtn();
+  const m=document.getElementById('ovSiteMenu');
+  if(m&&m.style.display!=='none') _buildOvSiteMenu();
+  renderChips(); renderStats(); renderTable();
+}
+function toggleOvSiteMenu(e){
+  e && e.stopPropagation();
+  const m = document.getElementById('ovSiteMenu');
+  const willOpen = m.style.display === 'none';
+  m.style.display = willOpen ? 'block' : 'none';
+  if(willOpen){
+    _buildOvSiteMenu();
+    const closeHandler = function(ev){
+      if(!document.getElementById('ovSiteWrap')?.contains(ev.target)){
+        document.getElementById('ovSiteMenu').style.display='none';
+        document.removeEventListener('click', closeHandler);
+      }
+    };
+    setTimeout(()=>document.addEventListener('click', closeHandler), 0);
+  }
+}
+function _buildOvSiteMenu(){
+  const sites=[...new Set(records.map(r=>r.siteLocation).filter(Boolean))].sort();
+  const m = document.getElementById('ovSiteMenu');
+  m.innerHTML=
+    `<div style="padding:4px 10px 6px;border-bottom:1px solid var(--glass-border2);margin-bottom:4px;">
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);cursor:pointer;font-weight:600;">
+        <input type="checkbox" id="ovSiteAll" onchange="toggleOvSiteAll(this)" ${activeFilters.sites.length===0?'checked':''} style="accent-color:var(--accent);width:13px;height:13px;">
+        All Sites
+      </label>
+    </div>`+
+    sites.map(s=>`<div style="padding:3px 10px;">
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);cursor:pointer;">
+        <input type="checkbox" value="${s}" onchange="toggleOvSite(this)" ${activeFilters.sites.includes(s)?'checked':''} style="accent-color:var(--accent);width:13px;height:13px;">
+        ${s}
+      </label>
+    </div>`).join('');
+}
+function _updateOvSiteBtn(){
+  const lbl = document.getElementById('ovSiteBtnLabel');
+  if(!lbl) return;
+  const s = activeFilters.sites;
+  lbl.textContent = s.length===0 ? 'All Sites' : s.length===1 ? s[0] : s.length+' Sites';
+}
+function toggleOvSiteAll(cb){
+  activeFilters.sites = [];
+  document.querySelectorAll('#ovSiteMenu input[value]').forEach(i=>i.checked=false);
+  document.getElementById('siteFilter').value = '';
+  _updateOvSiteBtn();
+  renderChips(); renderStats(); renderTable();
+}
+function toggleOvSite(cb){
+  const site = cb.value;
+  if(cb.checked){ if(!activeFilters.sites.includes(site)) activeFilters.sites.push(site); }
+  else { activeFilters.sites = activeFilters.sites.filter(s=>s!==site); }
+  const allCb = document.getElementById('ovSiteAll');
+  if(allCb) allCb.checked = activeFilters.sites.length===0;
+  document.getElementById('siteFilter').value = activeFilters.sites.length===1 ? activeFilters.sites[0] : '';
+  _updateOvSiteBtn();
+  renderChips(); renderStats(); renderTable();
 }
 function removeFilter(type){
-  activeFilters[type]='';
-  if(type==='status'){document.getElementById('statusFilter').value='';activeStatusFilter=null;}
-  if(type==='site')  document.getElementById('siteFilter').value='';
-  if(type==='search'){document.getElementById('searchInput').value='';activeSpecFilter=null;}
+  if(type==='status'){activeFilters.status='';document.getElementById('statusFilter').value='';activeStatusFilter=null;}
+  else if(type==='site'){
+    activeFilters.sites=[];
+    document.getElementById('siteFilter').value='';
+    _updateOvSiteBtn();
+    const m=document.getElementById('ovSiteMenu');
+    if(m&&m.style.display!=='none') _buildOvSiteMenu();
+  }
+  else if(type==='search'){activeFilters.search='';document.getElementById('searchInput').value='';activeSpecFilter=null;}
   renderChips(); renderStats(); renderTable();
 }
 function clearAllFilters(){
-  activeFilters.status='';activeFilters.site='';activeFilters.search='';
+  activeFilters.status='';activeFilters.sites=[];activeFilters.search='';
   activeStatusFilter=null;
   activeSpecFilter=null;
   document.getElementById('statusFilter').value='';
   document.getElementById('siteFilter').value='';
+  _updateOvSiteBtn();
   document.getElementById('searchInput').value='';
   renderChips(); renderStats(); renderTable();
 }
 function renderChips(){
   const chips=[];
   if(activeFilters.status) chips.push({type:'status',label:'Status: '+activeFilters.status});
-  if(activeFilters.site)   chips.push({type:'site',  label:'Site: '+activeFilters.site});
+  if(activeFilters.sites.length) chips.push({type:'site', label:(activeFilters.sites.length===1?'Site: ':'Sites: ')+activeFilters.sites.join(', ')});
   if(activeFilters.search) chips.push({type:'search',label:'Search: "'+activeFilters.search+'"'});
   const row=document.getElementById('filterChipsRow');
   const container=document.getElementById('filterChips');
@@ -5332,6 +5425,9 @@ window.submitForceChange=submitForceChange;
 window.addAuditEntryFS=addAuditEntryFS;
 window.exportAuditLog=exportAuditLog;
 window.onStatusChange=onStatusChange;
+window.toggleOvSiteMenu=toggleOvSiteMenu;
+window.toggleOvSite=toggleOvSite;
+window.toggleOvSiteAll=toggleOvSiteAll;
 window.toggleCol=toggleCol;
 window.restoreDefaultCols=restoreDefaultCols;
 window.openOwnershipModal=openOwnershipModal;
