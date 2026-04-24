@@ -3,13 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23e8711a'/%3E%3Cpath d='M7 10h18M7 16h18M7 22h10' stroke='white' stroke-width='2.2' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='22' r='4' fill='%23f5a623'/%3E%3Cpath d='M22 22l1.5 1.5L26 20.5' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-<meta http-equiv="Content-Security-Policy" content="
-  default-src 'self';
-  script-src 'self' 'unsafe-inline';
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  font-src 'self' https://fonts.gstatic.com;
-  img-src 'self' data: blob:;
-">
+<!-- CSP removed: file:// origin treats 'self' as null, blocking inline scripts and fetch -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AssetVault — Delivery Inventory v2</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -488,22 +482,22 @@ body {
 /* ══════════════════════════════
    STATS — light mode white cards
 ══════════════════════════════ */
-.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:24px; }
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:8px; margin-bottom:14px; }
 .stat-card {
   background:var(--glass-bg);
   backdrop-filter:blur(20px) saturate(160%);
   -webkit-backdrop-filter:blur(20px) saturate(160%);
   border:1px solid var(--glass-border);
-  border-radius:var(--radius-lg);
-  padding:18px 20px;
+  border-radius:var(--radius);
+  padding:10px 14px;
   box-shadow:var(--glass-shadow-sm);
   transition:transform 0.2s,box-shadow 0.2s;
   cursor:pointer;
 }
 .stat-card:hover { transform:translateY(-2px); box-shadow:var(--glass-shadow); }
 .stat-card.stat-active { border-color:var(--accent); box-shadow:var(--glass-shadow),0 0 0 2px var(--accent-glow); }
-.stat-lbl { font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.7px; margin-bottom:10px; }
-.stat-val { font-size:30px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1; }
+.stat-lbl { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:4px; }
+.stat-val { font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1; }
 .sv-total    { color:var(--text); }
 .sv-received { color:var(--green); }
 .sv-pending  { color:var(--amber); }
@@ -546,6 +540,22 @@ body {
    TABLE
 ══════════════════════════════ */
 .count-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:12px; font-weight:500; color:var(--text3); }
+/* Asset register loading bar */
+.asset-load-bar { height:3px; border-radius:2px; background:var(--border); overflow:hidden; margin-bottom:14px; display:none; }
+.asset-load-bar.active { display:block; }
+.asset-load-bar-fill { height:100%; width:35%; background:var(--accent); border-radius:2px; animation:asset-bar-run 1.4s ease-in-out infinite; }
+@keyframes asset-bar-run { 0%{transform:translateX(-150%)} 100%{transform:translateX(380%)} }
+/* Skeleton shimmer */
+.sk { display:inline-block; border-radius:4px; height:12px; background:linear-gradient(90deg,var(--border) 25%,var(--hover) 50%,var(--border) 75%); background-size:400% 100%; animation:sk-shimmer 1.6s ease-in-out infinite; }
+@keyframes sk-shimmer { 0%{background-position:100% 0} 100%{background-position:-100% 0} }
+.asset-pagination { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; padding:10px 2px 4px; font-size:12px; color:var(--text2); }
+.asset-pagination .pg-info { color:var(--text3); font-size:11px; }
+.asset-pagination .pg-controls { display:flex; align-items:center; gap:4px; }
+.pg-btn { display:inline-flex; align-items:center; justify-content:center; min-width:30px; height:28px; padding:0 8px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:var(--text2); font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; }
+.pg-btn:hover:not(:disabled) { background:var(--accent); color:#fff; border-color:var(--accent); }
+.pg-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:700; }
+.pg-btn:disabled { opacity:0.35; cursor:not-allowed; }
+.pg-size-select { height:28px; padding:0 6px; border-radius:6px; border:1px solid var(--border); background:var(--card); color:var(--text2); font-size:12px; cursor:pointer; }
 .table-wrap {
   background:var(--glass-bg);
   backdrop-filter:blur(24px) saturate(160%);
@@ -726,84 +736,54 @@ mark.gsr-highlight {
 .um-summary-lbl { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; }
 .um-summary-val { font-size: 24px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
 
-.um-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
-}
-.um-card {
-  background: var(--card-bg);
-  border: 1px solid var(--sidebar-border);
-  border-radius: var(--radius-lg);
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: var(--card-shadow);
-  transition: box-shadow 0.18s, border-color 0.18s, transform 0.15s;
-  position: relative;
-  overflow: hidden;
-}
-[data-theme="dark"] .um-card {
+/* ══ USER LIST ══ */
+.users-list {
   background: var(--glass-bg);
-  border-color: var(--glass-border);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--glass-shadow-sm);
 }
-.um-card:hover { box-shadow: var(--glass-shadow-sm); transform: translateY(-2px); }
-.um-card-top { display: flex; align-items: flex-start; gap: 13px; }
-.um-avatar {
-  width: 46px; height: 46px; border-radius: 50%;
+.users-list-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  padding: 8px 16px;
+  background: var(--surface-tint);
+  border-bottom: 1px solid var(--glass-border2);
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.7px;
+}
+.user-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--glass-border2);
+  transition: background 0.12s;
+}
+.user-row:last-child { border-bottom: none; }
+.user-row:hover { background: var(--surface-tint); }
+.user-row.disabled-user { opacity: 0.5; }
+.user-row-identity { display: flex; align-items: center; gap: 10px; }
+.user-row-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
   display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 15px; color: #fff;
-  flex-shrink: 0;
-  position: relative;
+  font-size: 12px; font-weight: 800; color: #fff;
 }
-.um-avatar-status {
-  position: absolute; bottom: 0; right: 0;
-  width: 11px; height: 11px; border-radius: 50%;
-  border: 2px solid var(--card-bg);
+.user-row-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.user-row-username { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.user-row-cell { font-size: 12px; color: var(--text2); }
+.user-row-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.user-role-badge {
+  display: inline-block; padding: 2px 9px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
 }
-[data-theme="dark"] .um-avatar-status { border-color: var(--glass-bg); }
-.um-avatar-status.active  { background: var(--green); }
-.um-avatar-status.inactive{ background: var(--text3); }
-.um-info { flex: 1; min-width: 0; }
-.um-name { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.um-username { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.um-role-pill {
-  display: inline-block;
-  padding: 3px 9px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  margin-top: 6px;
-}
-.um-divider { height: 1px; background: var(--sidebar-border); margin: 0 -18px; }
-[data-theme="dark"] .um-divider { background: var(--glass-border2); }
-.um-footer { display: flex; align-items: center; justify-content: space-between; }
-.um-status-text { font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
-.um-actions { display: flex; gap: 6px; }
-.um-btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; border-radius: 8px;
-  border: 1px solid var(--sidebar-border);
-  background: transparent; cursor: pointer; color: var(--text2);
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-[data-theme="dark"] .um-btn { border-color: var(--glass-border); color: var(--text3); }
-.um-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
-.um-btn.danger:hover { background: var(--red); border-color: var(--red); color: #fff; }
-.um-btn.success:hover { background: var(--green); border-color: var(--green); color: #fff; }
-.um-stripe {
-  position: absolute; top: 0; left: 0;
-  width: 3px; height: 100%;
-  border-radius: 3px 0 0 3px;
-}
-.um-empty {
-  grid-column: 1 / -1;
-  text-align: center; padding: 60px 20px;
-  color: var(--text3); font-size: 13px;
-}
+.urb-superadmin { background: linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; }
+.urb-admin  { background: var(--amber-bg); color: var(--amber); }
+.urb-member { background: var(--blue-bg);  color: var(--blue); }
+.user-status-dot { display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px; }
+.um-empty { text-align: center; padding: 50px 20px; color: var(--text3); font-size: 13px; }
 
 /* ══════════════════════════════
    AUDIT LOG
@@ -1064,8 +1044,9 @@ mark.gsr-highlight {
 /* ══════════════════════════════
    SPLASH
 ══════════════════════════════ */
-#splashScreen { position:fixed; inset:0; z-index:10000; background:linear-gradient(135deg,#1e0f04 0%,#2d1504 50%,#1a0e04 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; transition:opacity 0.4s ease; }
+#splashScreen { position:fixed; inset:0; z-index:10000; background:linear-gradient(135deg,#1e0f04 0%,#2d1504 50%,#1a0e04 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; transition:opacity 0.4s ease; animation: splash-css-fallback 0.5s ease 4s forwards; }
 #splashScreen.fade-out { opacity:0; pointer-events:none; }
+@keyframes splash-css-fallback { to { opacity:0; pointer-events:none; visibility:hidden; } }
 .splash-logo { width:64px; height:64px; border-radius:18px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); display:flex; align-items:center; justify-content:center; margin-bottom:4px; }
 .splash-title { font-size:28px; font-weight:700; color:#fff; letter-spacing:-0.5px; }
 .splash-sub   { font-size:14px; color:rgba(255,255,255,0.55); margin-top:-12px; }
@@ -1140,8 +1121,8 @@ mark.gsr-highlight {
   #topBar { padding:0 14px; gap:8px; }
   .topbar-title { font-size:16px; }
   .main { padding:16px 14px; }
-  .stats-grid { grid-template-columns:repeat(3,1fr); gap:8px; }
-  .stat-val { font-size:24px; }
+  .stats-grid { grid-template-columns:repeat(3,1fr); gap:6px; }
+  .stat-val { font-size:18px; }
   .toolbar { flex-direction:column; gap:8px; }
   .toolbar .search-wrap { min-width:unset; width:100%; }
   .filter-select { width:100%; }
@@ -1388,7 +1369,7 @@ mark.gsr-highlight {
       </g>
     </svg>
   </div>
-  <div class="login-version">Delivery v2.0 · localStorage</div>
+  <div class="login-version">Delivery v2.0 · Turso</div>
   <div class="login-card">
     <div class="login-hero">
       <div class="login-logo">
@@ -1499,6 +1480,14 @@ mark.gsr-highlight {
           <polyline points="9 22 9 12 15 12 15 22"/>
         </svg>
         <span class="sb-item-label">Inventory</span>
+      </button>
+      <button class="sb-item" id="navAssets" onclick="switchView('assets')" title="Asset Register">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        <span class="sb-item-label">Asset Register</span>
       </button>
 
       <div class="sb-divider"></div>
@@ -1759,6 +1748,133 @@ mark.gsr-highlight {
     </main>
 
     <!-- ═════════════════════════════════════════════════════════════════ -->
+    <!-- ASSET REGISTER VIEW -->
+    <!-- ═════════════════════════════════════════════════════════════════ -->
+    <main class="main" id="assetsMain" style="display:none;">
+      <!-- Loading bar -->
+      <div class="asset-load-bar" id="assetLoadBar"><div class="asset-load-bar-fill"></div></div>
+
+      <!-- Stats -->
+      <div class="inv-stats-grid" id="assetStatsGrid"></div>
+
+      <!-- Toolbar -->
+      <div class="toolbar" style="flex-wrap:wrap;gap:6px;">
+        <div class="search-wrap">
+          <span class="search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
+          <input type="text" class="search-input" id="assetSearchInput" placeholder="Search asset tag, model, serial, custodian…" oninput="_assetPage=1;renderAssets()">
+        </div>
+        <select class="filter-select" id="assetStatusFilter" onchange="_assetPage=1;renderAssets()">
+          <option value="">All Status</option>
+          <option>Active</option>
+          <option>Deployed</option>
+          <option>Spare</option>
+          <option>Defective</option>
+          <option>Repair</option>
+          <option>Decommissioned</option>
+          <option>Lost</option>
+        </select>
+        <select class="filter-select" id="assetTypeFilter" onchange="_assetPage=1;renderAssets()">
+          <option value="">All Asset Types</option>
+          <option>Laptop</option>
+          <option>Desktop</option>
+          <option>Monitor</option>
+          <option>Printer</option>
+          <option>Keyboard</option>
+          <option>Mouse</option>
+          <option>Headset</option>
+          <option>Webcam</option>
+          <option>Docking Station</option>
+          <option>Network Switch</option>
+          <option>Access Point</option>
+          <option>UPS</option>
+          <option>Other</option>
+        </select>
+        <select class="filter-select" id="assetSiteFilter" onchange="_assetPage=1;renderAssets()">
+          <option value="">All Sites</option>
+        </select>
+        <!-- hidden CSV input -->
+        <input type="file" id="assetCSVInput" accept=".csv" style="display:none" onchange="handleAssetCSV(event)">
+        <button class="btn" onclick="exportAssetsCSV()" title="Export all assets as CSV">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
+          Export CSV
+        </button>
+        <button class="btn" onclick="document.getElementById('assetCSVInput').click()" title="Import from CSV">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="16 7 12 3 8 7"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
+          Import CSV
+        </button>
+        <button class="btn btn-primary" onclick="openAddAssetModal()" style="margin-left:auto;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Asset
+        </button>
+        <button class="btn btn-danger" onclick="deleteAllAssets()" title="Delete all asset records">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          Delete All
+        </button>
+      </div>
+
+      <!-- Count bar -->
+      <div class="count-bar">
+        <span id="assetRecordCount">0 assets</span>
+        <span style="font-size:11px;color:var(--text3);">Connected to Turso</span>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap" style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:2400px;">
+          <thead>
+            <tr>
+              <th onclick="sortAssets('site')">Site</th>
+              <th onclick="sortAssets('assetTag')">Asset Tag</th>
+              <th onclick="sortAssets('quantity')">Qty</th>
+              <th onclick="sortAssets('floor')">Floor</th>
+              <th onclick="sortAssets('assetType')">Asset Type</th>
+              <th onclick="sortAssets('deviceModel')">Device Model</th>
+              <th onclick="sortAssets('manufacturer')">Manufacturer</th>
+              <th onclick="sortAssets('serialNumber')">Service Tag / Serial #</th>
+              <th onclick="sortAssets('custodian')">Custodian</th>
+              <th onclick="sortAssets('assetValue')">Asset Value</th>
+              <th onclick="sortAssets('eol')">EOL</th>
+              <th onclick="sortAssets('assetAge')">Asset Age</th>
+              <th onclick="sortAssets('status')">Status</th>
+              <th onclick="sortAssets('hostname')">Hostname</th>
+              <th onclick="sortAssets('domainUserId')">Domain User ID</th>
+              <th onclick="sortAssets('cpuSpecs')">CPU Specs</th>
+              <th onclick="sortAssets('ramGb')">RAM (GB)</th>
+              <th onclick="sortAssets('hddGb')">HDD (GB)</th>
+              <th class="no-sort">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="assetsBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="asset-pagination" id="assetPagination" style="display:none;">
+        <span class="pg-info" id="assetPgInfo"></span>
+        <div class="pg-controls">
+          <button class="pg-btn" id="assetPgFirst"  onclick="goAssetPage(1)"                 title="First">«</button>
+          <button class="pg-btn" id="assetPgPrev"   onclick="goAssetPage(_assetPage-1)"      title="Previous">‹</button>
+          <span id="assetPgNumbers" style="display:flex;gap:4px;"></span>
+          <button class="pg-btn" id="assetPgNext"   onclick="goAssetPage(_assetPage+1)"      title="Next">›</button>
+          <button class="pg-btn" id="assetPgLast"   onclick="goAssetPage(_assetPageCount)"   title="Last">»</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:11px;color:var(--text3);">Rows</span>
+          <select class="pg-size-select" id="assetPageSize" onchange="setAssetPageSize(+this.value)">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+          </select>
+        </div>
+      </div>
+    </main>
+
+    <!-- ═════════════════════════════════════════════════════════════════ -->
     <!-- USERS MAIN -->
     <!-- ═════════════════════════════════════════════════════════════════ -->
     <main class="main" id="usersMain" style="display:none;">
@@ -1783,7 +1899,7 @@ mark.gsr-highlight {
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
         </select>
-        <button class="btn-primary" onclick="openUserModal()" style="margin-left:auto;">
+        <button class="btn btn-primary" onclick="openAddUserModal()" style="margin-left:auto;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
@@ -2009,6 +2125,146 @@ mark.gsr-highlight {
   </div>
 </div>
 
+<!-- ════════════════════════════════
+     FORCE CHANGE PASSWORD MODAL
+════════════════════════════════ -->
+<div class="overlay" id="forceChangePwOverlay" style="display:none;z-index:9999;">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <span class="modal-title">Change Password Required</span>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text2);font-size:13px;line-height:1.6;margin-bottom:16px;">
+        Your account requires a password change before you can continue.
+      </p>
+      <div class="form-grid">
+        <div class="fg full">
+          <label>New Password <span style="color:var(--red)">*</span></label>
+          <div style="position:relative;">
+            <input type="password" id="fcp_newPw" placeholder="Enter new password" autocomplete="new-password" style="padding-right:38px;" oninput="checkFcpStrength()">
+            <button type="button" onclick="togglePwVis('fcp_newPw',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);padding:0;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div id="fcp_strength" style="font-size:11px;margin-top:4px;"></div>
+        </div>
+        <div class="fg full">
+          <label>Confirm Password <span style="color:var(--red)">*</span></label>
+          <div style="position:relative;">
+            <input type="password" id="fcp_confirmPw" placeholder="Confirm new password" autocomplete="new-password" style="padding-right:38px;" onkeydown="if(event.key==='Enter')doForceChangePassword()">
+            <button type="button" onclick="togglePwVis('fcp_confirmPw',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);padding:0;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="fcp_error" style="display:none;color:var(--red);font-size:12px;font-weight:600;margin-top:10px;padding:8px 12px;background:var(--red-bg);border-radius:6px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="doForceChangePassword()" style="width:100%;">Set New Password &amp; Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     USER MANAGEMENT MODAL
+════════════════════════════════ -->
+<div class="overlay" id="userFormOverlay" onclick="if(event.target===this)document.getElementById('userFormOverlay').classList.remove('open')">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <span class="modal-title" id="userFormTitle">Add User</span>
+      <button class="modal-close" onclick="document.getElementById('userFormOverlay').classList.remove('open')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="fg"><label>Username</label><input type="text" id="uf_username" placeholder="e.g. jdoe" autocomplete="off"></div>
+        <div class="fg"><label>Display Name</label><input type="text" id="uf_displayName" placeholder="e.g. J. Doe" autocomplete="off"></div>
+        <div class="fg">
+          <label>Role</label>
+          <select id="uf_role">
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+            <option value="superadmin">Super Admin</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Status</label>
+          <select id="uf_active">
+            <option value="true">Active</option>
+            <option value="false">Disabled</option>
+          </select>
+        </div>
+        <div class="fg full"><label>Password <span style="color:var(--text3);font-style:italic;text-transform:none;font-weight:400;">(leave blank = Welcome@360!)</span></label><input type="password" id="uf_password" placeholder="Custom password (optional)" autocomplete="new-password"></div>
+        <div id="userFormError" class="fg full" style="display:none;color:var(--red);font-size:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('userFormOverlay').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUserForm()">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════════════ -->
+<!-- ASSET FORM MODAL -->
+<!-- ═════════════════════════════════════════════════════════════════ -->
+<div class="overlay" id="assetFormOverlay" onclick="if(event.target===this)document.getElementById('assetFormOverlay').classList.remove('open')">
+  <div class="modal" style="max-width:780px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-header">
+      <span class="modal-title" id="assetFormTitle">Add Asset</span>
+      <button class="modal-close" onclick="document.getElementById('assetFormOverlay').classList.remove('open')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div class="fg"><label>Site</label><input type="text" id="af_site" placeholder="e.g. EB2" autocomplete="off"></div>
+        <div class="fg"><label>Asset Tag</label><input type="text" id="af_assetTag" placeholder="e.g. AST-0001" autocomplete="off"></div>
+        <div class="fg"><label>Quantity</label><input type="number" id="af_quantity" placeholder="1" min="1" value="1"></div>
+        <div class="fg"><label>Floor</label><input type="text" id="af_floor" placeholder="e.g. 3F" autocomplete="off"></div>
+        <div class="fg">
+          <label>Asset Type</label>
+          <select id="af_assetType">
+            <option value="">— Select —</option>
+            <option>Laptop</option><option>Desktop</option><option>Monitor</option>
+            <option>Printer</option><option>Keyboard</option><option>Mouse</option>
+            <option>Headset</option><option>Webcam</option><option>Docking Station</option>
+            <option>Network Switch</option><option>Access Point</option><option>UPS</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fg"><label>Device Model</label><input type="text" id="af_deviceModel" placeholder="e.g. ThinkPad X1 Carbon" autocomplete="off"></div>
+        <div class="fg"><label>Manufacturer</label><input type="text" id="af_manufacturer" placeholder="e.g. Lenovo" autocomplete="off"></div>
+        <div class="fg"><label>Service Tag / Serial #</label><input type="text" id="af_serialNumber" placeholder="e.g. SVC-00123" autocomplete="off"></div>
+        <div class="fg"><label>Custodian</label><input type="text" id="af_custodian" placeholder="e.g. J. Dela Cruz" autocomplete="off"></div>
+        <div class="fg"><label>Asset Value</label><input type="text" id="af_assetValue" placeholder="e.g. 45000" autocomplete="off"></div>
+        <div class="fg"><label>EOL (End of Life)</label><input type="text" id="af_eol" placeholder="e.g. 2027-12-31" autocomplete="off"></div>
+        <div class="fg"><label>Asset Age</label><input type="text" id="af_assetAge" placeholder="e.g. 2 years" autocomplete="off"></div>
+        <div class="fg">
+          <label>Status</label>
+          <select id="af_status">
+            <option value="">— Select —</option>
+            <option>Active</option><option>Deployed</option><option>Spare</option>
+            <option>Defective</option><option>Repair</option><option>Decommissioned</option><option>Lost</option>
+          </select>
+        </div>
+        <div class="fg"><label>Hostname</label><input type="text" id="af_hostname" placeholder="e.g. PH-LT-0042" autocomplete="off"></div>
+        <div class="fg"><label>Domain User ID</label><input type="text" id="af_domainUserId" placeholder="e.g. jdelacruz" autocomplete="off"></div>
+        <div class="fg full"><label>CPU Specs</label><input type="text" id="af_cpuSpecs" placeholder="e.g. Intel Core i7-1165G7 @ 2.80GHz" autocomplete="off"></div>
+        <div class="fg"><label>RAM (GB)</label><input type="number" id="af_ramGb" placeholder="e.g. 16" min="0"></div>
+        <div class="fg"><label>Hard Drive Capacity (GB)</label><input type="number" id="af_hddGb" placeholder="e.g. 512" min="0"></div>
+        <div id="assetFormError" class="fg full" style="display:none;color:var(--red);font-size:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('assetFormOverlay').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAssetForm()">Save Asset</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast">
   <div class="toast-dot" id="toastDot"></div>
@@ -2016,7 +2272,128 @@ mark.gsr-highlight {
 </div>
 
 <script>
-// ── localStorage-only mode (Firebase will be wired later) ──
+// ── Turso (libSQL) database backend ──
+const TURSO_URL   = 'https://inventory-op360live.aws-ap-northeast-1.turso.io';
+const TURSO_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJleHAiOjE4MDg0MjkwMjMsImlhdCI6MTc3Njg5MzAyMywiaWQiOiIwMTlkYjcxMS1jNDAxLTdiZDgtODUyNy00MGUzYTEzMmM5MzkiLCJyaWQiOiIwMTY1NjhiOC03NjE0LTRjNjAtYWI3Zi0yZjY5YzQ3MDhjMTYifQ.-rLfhTh8wuECeovdGDgnduzA_WYtMC4L8JJZz-mRQ1nO6mCGAkYvS_YzR_CHAnogNFcLNow7RSRRebuDQfLxCA';
+
+async function tursoExec(sql, args = []) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 5000);
+  try {
+    const res = await fetch(TURSO_URL + '/v2/pipeline', {
+      method: 'POST',
+      signal: ctrl.signal,
+      headers: { 'Authorization': 'Bearer ' + TURSO_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requests: [
+        { type: 'execute', stmt: { sql, args: args.map(v => v === null ? {type:'null'} : {type:'text', value:String(v)}) } },
+        { type: 'close' }
+      ]})
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const r = json.results?.[0];
+    if (r?.type === 'error') throw new Error(r.error?.message);
+    return r?.response?.result || null;
+  } catch(e) { clearTimeout(timer); console.warn('[Turso]', e.message); return null; }
+}
+
+async function tursoBatch(stmts) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 5000);
+  try {
+    const res = await fetch(TURSO_URL + '/v2/pipeline', {
+      method: 'POST',
+      signal: ctrl.signal,
+      headers: { 'Authorization': 'Bearer ' + TURSO_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requests: [
+        ...stmts.map(s => ({ type:'execute', stmt:{ sql:s.sql, args:(s.args||[]).map(v => v===null?{type:'null'}:{type:'text',value:String(v)}) } })),
+        { type: 'close' }
+      ]})
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch(e) { clearTimeout(timer); console.warn('[Turso batch]', e.message); return null; }
+}
+
+async function tursoInit() {
+  // Non-blocking — called fire-and-forget from init()
+  await tursoBatch([
+    { sql: 'CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
+    { sql: 'CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, data TEXT NOT NULL)' },
+    { sql: 'CREATE TABLE IF NOT EXISTS inventory (ikey TEXT PRIMARY KEY, data TEXT NOT NULL)' },
+    { sql: 'CREATE TABLE IF NOT EXISTS audit (id TEXT PRIMARY KEY, ts TEXT NOT NULL, data TEXT NOT NULL)' },
+    { sql: 'CREATE TABLE IF NOT EXISTS assets (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
+  ]);
+}
+
+function setSyncStatus(msg, isError = false) {
+  const el = document.getElementById('lastSync');
+  if (el) { el.textContent = msg; el.style.color = isError ? 'var(--red)' : ''; }
+}
+
+async function tursoSyncAll() {
+  _assetSyncing = true;
+  _showAssetLoader(true);
+  setSyncStatus('Syncing…');
+  try {
+    // Fire all 5 queries in parallel — reduces worst-case from 50s to 10s
+    const [rRes, uRes, iRes, aRes, asRes] = await Promise.all([
+      tursoExec('SELECT data FROM records'),
+      tursoExec('SELECT data FROM users'),
+      tursoExec('SELECT ikey, data FROM inventory'),
+      tursoExec('SELECT data FROM audit ORDER BY ts DESC LIMIT 1000'),
+      tursoExec('SELECT data FROM assets'),
+    ]);
+
+    if (rRes) {
+      records = rRes.rows.map(row => JSON.parse(row[0].value));
+      localStorage.setItem(LS_DATA, JSON.stringify(records));
+    }
+    if (uRes) {
+      const tursoUsers = uRes.rows.map(row => JSON.parse(row[0].value));
+      const merged = [...tursoUsers];
+      for (const seed of SEEDED_USERS) {
+        if (!merged.find(u => u.username === seed.username)) {
+          merged.push({...seed});
+          tursoExec('INSERT OR IGNORE INTO users (username, data) VALUES (?, ?)', [seed.username, JSON.stringify(seed)]);
+        }
+      }
+      if (_usersCache) {
+        for (const local of _usersCache) {
+          if (!merged.find(u => u.username === local.username)) {
+            merged.push({...local});
+            tursoExec('INSERT OR IGNORE INTO users (username, data) VALUES (?, ?)', [local.username, JSON.stringify(local)]);
+          }
+        }
+      }
+      _usersCache = merged;
+      localStorage.setItem(LS_USERS, JSON.stringify(_usersCache));
+    }
+    if (iRes) {
+      invItems = {};
+      iRes.rows.forEach(row => { invItems[row[0].value] = JSON.parse(row[1].value); });
+      localStorage.setItem(LS_INV, JSON.stringify(invItems));
+    }
+    if (aRes) {
+      auditLogs = aRes.rows.map(row => JSON.parse(row[0].value));
+      localStorage.setItem(LS_AUDIT, JSON.stringify(auditLogs));
+    }
+    if (asRes) {
+      assetsDb = asRes.rows.map(row => JSON.parse(row[0].value));
+      _saveAssetsCache();
+    }
+    setSyncStatus('Synced · ' + new Date().toLocaleTimeString());
+    if (currentView) switchView(currentView);
+  } catch(e) {
+    setSyncStatus('Sync failed — using local data', true);
+    if (currentView) switchView(currentView); // still re-render with local data
+  } finally {
+    _assetSyncing = false;
+    _showAssetLoader(false);
+  }
+}
 
 const LS_DATA  = 'deliveryAssets_data';
 const LS_USERS = 'deliveryAssets_users';
@@ -2025,20 +2402,21 @@ const SESSION_KEY = 'deliveryAssets_session';
 const DEFAULT_PW  = 'ae33a34216f00d844796e3ab70b2aaedd30e8544b7e8f8fd105a03d7f7a7dbb5';
 
 const SEEDED_USERS = [
-  {username:'admin',    displayName:'Admin',      role:'admin',      passwordHash:'240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', mustChangePassword:false},
-  {username:'rcabil',   displayName:'R. Cabil',   role:'superadmin', passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'aalbia',   displayName:'A. Albia',   role:'superadmin', passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'cinuabia', displayName:'C. Inuabia', role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'cllanto',  displayName:'C. Llanto',  role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'jmalalay', displayName:'J. Malalay', role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'ipintor',  displayName:'I. Pintor',  role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'grosco',   displayName:'G. Rosco',   role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'wdacay',   displayName:'W. Dacay',   role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'kipogosa', displayName:'K. Ipogosa', role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'aninting', displayName:'A. Ninting', role:'admin',      passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'ritase',   displayName:'R. Itase',   role:'member',     passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'chrcastro',displayName:'C. Castro',  role:'member',     passwordHash:DEFAULT_PW, mustChangePassword:false},
-  {username:'jasoy',    displayName:'J. Asoy',    role:'member',     passwordHash:DEFAULT_PW, mustChangePassword:false},
+  // rcabil is the only active account on fresh install; others are disabled until activated by admin
+  {username:'rcabil',   displayName:'R. Cabil',   role:'superadmin', passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:true},
+  {username:'admin',    displayName:'Admin',      role:'admin',      passwordHash:'240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', mustChangePassword:false, active:false},
+  {username:'aalbia',   displayName:'A. Albia',   role:'superadmin', passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
+  {username:'cinuabia', displayName:'C. Inuabia', role:'admin',      passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
+  {username:'cllanto',  displayName:'C. Llanto',  role:'admin',      passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
+  {username:'jmalalay', displayName:'J. Malalay', role:'admin',      passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
+  {username:'ipintor',  displayName:'I. Pintor',  role:'admin',      passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
+  {username:'grosco',   displayName:'G. Rosco',   role:'admin',      passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
+  {username:'wdacay',   displayName:'W. Dacay',   role:'admin',      passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
+  {username:'kipogosa', displayName:'K. Ipogosa', role:'admin',      passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
+  {username:'aninting', displayName:'A. Ninting', role:'admin',      passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
+  {username:'ritase',   displayName:'R. Itase',   role:'member',     passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
+  {username:'chrcastro',displayName:'C. Castro',  role:'member',     passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
+  {username:'jasoy',    displayName:'J. Asoy',    role:'member',     passwordHash:DEFAULT_PW,  mustChangePassword:true,  active:false},
 ];
 
 // ── STATE ──
@@ -2098,11 +2476,11 @@ function loadTheme() {
 window.refreshData = function() {
   const icon = document.getElementById('refreshIcon');
   if (icon) icon.style.animation = 'spin 0.6s linear';
-  loadRecords();
-  syncInventoryFromRecords();
-  switchView(currentView || 'dashboard');
-  showToast('Data refreshed.');
-  setTimeout(() => { if (icon) icon.style.animation = ''; }, 700);
+  tursoSyncAll().then(() => {
+    syncInventoryFromRecords();
+    showToast('Data refreshed.');
+    setTimeout(() => { if (icon) icon.style.animation = ''; }, 700);
+  });
 };
 
 // ── USERS (localStorage) ──
@@ -2111,12 +2489,18 @@ function loadUsers() {
     const s = JSON.parse(localStorage.getItem(LS_USERS));
     if (Array.isArray(s) && s.length) {
       _usersCache = s;
-      // Merge in any seeded users not yet in localStorage
       let changed = false;
       SEEDED_USERS.forEach(seed => {
-        if (!_usersCache.find(u => u.username === seed.username)) {
+        const existing = _usersCache.find(u => u.username === seed.username);
+        if (!existing) {
           _usersCache.push({...seed});
           changed = true;
+        } else {
+          // Always enforce active status from seed so disabling seeds takes effect
+          if (existing.active !== seed.active) {
+            existing.active = seed.active;
+            changed = true;
+          }
         }
       });
       if (changed) localStorage.setItem(LS_USERS, JSON.stringify(_usersCache));
@@ -2128,11 +2512,36 @@ function loadUsers() {
 }
 function getUsers() { return _usersCache || SEEDED_USERS.map(u => ({...u})); }
 
-async function hashPassword(pw) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+/* Pure-JS SHA-256 fallback for non-secure contexts (file://) */
+function _sha256pure(msg) {
+  function n(x){return('00000000'+x.toString(16)).slice(-8);}
+  function r(v,a){return(v>>>a)|(v<<(32-a));}
+  var k=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  var h=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  var bytes=[];
+  for(var i=0;i<msg.length;i++){var c=msg.charCodeAt(i);if(c<128)bytes.push(c);else if(c<2048){bytes.push(0xc0|(c>>6));bytes.push(0x80|(c&63));}else{bytes.push(0xe0|(c>>12));bytes.push(0x80|((c>>6)&63));bytes.push(0x80|(c&63));}}
+  var l=bytes.length*8;bytes.push(0x80);
+  while(bytes.length%64!==56)bytes.push(0);
+  bytes.push(0,0,0,0,(l>>24)&255,(l>>16)&255,(l>>8)&255,l&255);
+  for(var chunk=0;chunk<bytes.length;chunk+=64){
+    var w=[];
+    for(var j=0;j<16;j++)w[j]=(bytes[chunk+j*4]<<24)|(bytes[chunk+j*4+1]<<16)|(bytes[chunk+j*4+2]<<8)|bytes[chunk+j*4+3];
+    for(var j=16;j<64;j++)w[j]=(r(w[j-2],17)^r(w[j-2],19)^(w[j-2]>>>10))+w[j-7]+(r(w[j-15],7)^r(w[j-15],18)^(w[j-15]>>>3))+w[j-16]|0;
+    var a=h[0],b=h[1],c=h[2],d=h[3],e=h[4],f=h[5],g=h[6],hh=h[7];
+    for(var j=0;j<64;j++){var t1=hh+(r(e,6)^r(e,11)^r(e,25))+(e&f^~e&g)+k[j]+w[j]|0;var t2=(r(a,2)^r(a,13)^r(a,22))+(a&b^a&c^b&c)|0;hh=g;g=f;f=e;e=d+t1|0;d=c;c=b;b=a;a=t1+t2|0;}
+    h=[h[0]+a|0,h[1]+b|0,h[2]+c|0,h[3]+d|0,h[4]+e|0,h[5]+f|0,h[6]+g|0,h[7]+hh|0];
+  }
+  return h.map(n).join('');
 }
-// NOTE: crypto.subtle requires a secure context (HTTPS or localhost).
+async function hashPassword(pw) {
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+    try {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    } catch(e) { /* fall through to pure-JS */ }
+  }
+  return _sha256pure(pw);
+}
 
 // ── LOGIN ──
 window.openPasswordStep = function() {
@@ -2170,6 +2579,18 @@ window.doLogin = async function() {
   currentUser = {...user};
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
   logAudit('Login', u);
+
+  if (user.mustChangePassword) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('fcp_newPw').value     = '';
+    document.getElementById('fcp_confirmPw').value = '';
+    document.getElementById('fcp_error').style.display  = 'none';
+    document.getElementById('fcp_strength').textContent = '';
+    document.getElementById('forceChangePwOverlay').style.display = 'flex';
+    setTimeout(() => document.getElementById('fcp_newPw').focus(), 80);
+    return;
+  }
+
   await showApp();
 };
 
@@ -2216,10 +2637,11 @@ async function showApp() {
   // Populate IT Tech dropdown
   populateTechDropdown();
 
-  // Load data
+  // Load data (local cache first, then sync from Turso)
   loadRecords();
   loadInventory();
   switchView('dashboard');
+  tursoSyncAll();
 }
 
 function populateTechDropdown() {
@@ -2235,13 +2657,13 @@ function populateTechDropdown() {
   });
 }
 
-// ── DATA (localStorage) ──
+// ── DATA (Turso + localStorage cache) ──
 function loadRecords() {
   try {
     const stored = JSON.parse(localStorage.getItem(LS_DATA));
     if (Array.isArray(stored)) records = stored;
   } catch {}
-  document.getElementById('lastSync').textContent = 'Loaded from local storage';
+  setSyncStatus(records.length ? 'Local cache · syncing…' : 'Syncing…');
 }
 
 function persistRecord(id, data) {
@@ -2251,6 +2673,9 @@ function persistRecord(id, data) {
   else records.push({ id, ...data });
   localStorage.setItem(LS_DATA, JSON.stringify(records));
   logAudit(isUpdate ? 'Update' : 'Create', `PO# ${data.po || id}`);
+  setSyncStatus('Saving…');
+  tursoExec('INSERT OR REPLACE INTO records (id, data) VALUES (?, ?)', [id, JSON.stringify({id, ...data})])
+    .then(r => setSyncStatus(r ? 'Saved · ' + new Date().toLocaleTimeString() : 'Save failed — local only', !r));
   return true;
 }
 
@@ -2259,6 +2684,9 @@ function removeRecord(id) {
   records = records.filter(r => r.id !== id);
   localStorage.setItem(LS_DATA, JSON.stringify(records));
   logAudit('Delete', `PO# ${rec?.po || id}`);
+  setSyncStatus('Saving…');
+  tursoExec('DELETE FROM records WHERE id = ?', [id])
+    .then(r => setSyncStatus(r ? 'Saved · ' + new Date().toLocaleTimeString() : 'Save failed — local only', !r));
   return true;
 }
 
@@ -2930,6 +3358,14 @@ function loadInventory() {
 
 function persistInventory() {
   localStorage.setItem(LS_INV, JSON.stringify(invItems));
+  const stmts = Object.entries(invItems).map(([key, val]) => ({
+    sql: 'INSERT OR REPLACE INTO inventory (ikey, data) VALUES (?, ?)',
+    args: [key, JSON.stringify(val)]
+  }));
+  if (stmts.length) {
+    setSyncStatus('Saving…');
+    tursoBatch(stmts).then(r => setSyncStatus(r ? 'Saved · ' + new Date().toLocaleTimeString() : 'Save failed — local only', !r));
+  }
 }
 
 // Build/sync inventory items from delivery records.
@@ -3233,16 +3669,30 @@ function loadAuditLog() {
 
 function logAudit(action, details = '') {
   const entry = {
-    id: Date.now(),
+    id: Date.now().toString(),
     timestamp: new Date().toISOString(),
     user: currentUser?.username || 'system',
     action,
     details
   };
   auditLogs.unshift(entry);
-  // Keep last 1000 entries
   if (auditLogs.length > 1000) auditLogs = auditLogs.slice(0, 1000);
   localStorage.setItem(LS_AUDIT, JSON.stringify(auditLogs));
+  tursoExec('INSERT OR IGNORE INTO audit (id, ts, data) VALUES (?, ?, ?)',
+    [entry.id, entry.timestamp, JSON.stringify(entry)]);
+}
+
+let _editingUsername = null;
+
+function roleBadgeClass(role) {
+  if (role === 'superadmin') return 'urb-superadmin';
+  if (role === 'admin')      return 'urb-admin';
+  return 'urb-member';
+}
+function roleLabel(role) {
+  if (role === 'superadmin') return 'Super Admin';
+  if (role === 'admin')      return 'Admin';
+  return 'Member';
 }
 
 function renderUsers() {
@@ -3252,7 +3702,7 @@ function renderUsers() {
   const sf = document.getElementById('userStatusFilter')?.value || '';
 
   const filtered = users.filter(u => {
-    const matchQ = !q || [u.username, u.displayName, u.email].some(v => (v||'').toLowerCase().includes(q));
+    const matchQ = !q || [u.username, u.displayName].some(v => (v||'').toLowerCase().includes(q));
     const matchR = !rf || u.role === rf;
     const matchS = !sf || (sf === 'active' ? u.active !== false : u.active === false);
     return matchQ && matchR && matchS;
@@ -3264,132 +3714,225 @@ function renderUsers() {
     return ro !== 0 ? ro : (a.username || '').localeCompare(b.username || '');
   });
 
-  const total      = users.length;
-  const activeCount= users.filter(u => u.active !== false).length;
-  const adminCount = users.filter(u => u.role === 'admin' || u.role === 'superadmin').length;
-  const memberCount= users.filter(u => u.role === 'member').length;
-
   document.getElementById('userRecordCount').textContent =
     filtered.length + ' user' + (filtered.length !== 1 ? 's' : '');
 
   const body = document.getElementById('userBody');
 
-  // Summary strip
-  const summaryHtml = `
-    <div class="um-summary">
-      <div class="um-summary-card">
-        <div class="um-summary-lbl">Total Users</div>
-        <div class="um-summary-val" style="color:var(--text);">${total}</div>
-      </div>
-      <div class="um-summary-card">
-        <div class="um-summary-lbl">Active</div>
-        <div class="um-summary-val" style="color:var(--green);">${activeCount}</div>
-      </div>
-      <div class="um-summary-card">
-        <div class="um-summary-lbl">Inactive</div>
-        <div class="um-summary-val" style="color:var(--text3);">${total - activeCount}</div>
-      </div>
-      <div class="um-summary-card">
-        <div class="um-summary-lbl">Admins</div>
-        <div class="um-summary-val" style="color:var(--accent);">${adminCount}</div>
-      </div>
-      <div class="um-summary-card">
-        <div class="um-summary-lbl">Members</div>
-        <div class="um-summary-val" style="color:var(--blue);">${memberCount}</div>
-      </div>
-    </div>`;
-
   if (!filtered.length) {
-    body.innerHTML = summaryHtml + `
-      <div class="um-grid">
-        <div class="um-empty">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.3;margin-bottom:10px;">
-            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-          </svg>
-          <div>No users found</div>
-        </div>
-      </div>`;
+    body.innerHTML = `<div class="um-empty">No users found</div>`;
     return;
   }
 
-  const roleConfig = {
-    superadmin: { label: 'Super Admin', color: 'var(--red)', bg: 'var(--red-bg)',   avatar: '#c94458' },
-    admin:      { label: 'Admin',       color: 'var(--accent)', bg: 'var(--amber-bg)', avatar: '#e8711a' },
-    member:     { label: 'Member',      color: 'var(--blue)',   bg: 'var(--blue-bg)', avatar: '#5b8fe8' },
-  };
-
-  const cards = filtered.map(u => {
-    const isActive = u.active !== false;
-    const rc = roleConfig[u.role] || roleConfig.member;
-    const initials = (u.displayName || u.username).slice(0, 2).toUpperCase();
-    const isSelf = currentUser?.username === u.username;
-    const isProtected = u.role === 'superadmin' && !['superadmin'].includes(currentUser?.role);
-
-    return `
-      <div class="um-card">
-        <div class="um-stripe" style="background:${rc.color};"></div>
-        <div class="um-card-top">
-          <div class="um-avatar" style="background:${rc.avatar};">
-            ${initials}
-            <span class="um-avatar-status ${isActive ? 'active' : 'inactive'}"></span>
+  body.innerHTML = `
+    <div class="users-list">
+      <div class="users-list-header">
+        <div>User</div><div>Role</div><div>Status</div><div></div>
+      </div>
+      ${filtered.map(u => {
+        const isActive = u.active !== false;
+        const name = u.displayName || u.username;
+        const init = name.slice(0, 2).toUpperCase();
+        const isSelf = currentUser?.username === u.username;
+        const isProtected = u.role === 'superadmin' && currentUser?.role !== 'superadmin';
+        return `<div class="user-row${!isActive ? ' disabled-user' : ''}">
+          <div class="user-row-identity">
+            <div class="user-row-avatar">${init}</div>
+            <div>
+              <div class="user-row-name">${esc(name)}${isSelf ? ' <span style="font-size:10px;color:var(--accent);">(you)</span>' : ''}</div>
+              <div class="user-row-username">@${esc(u.username)}</div>
+            </div>
           </div>
-          <div class="um-info">
-            <div class="um-name">${esc(u.displayName || u.username)}${isSelf ? ' <span style="font-size:10px;color:var(--accent);font-weight:500;">(you)</span>' : ''}</div>
-            <div class="um-username">@${esc(u.username)}</div>
-            <div class="um-role-pill" style="color:${rc.color};background:${rc.bg};">${rc.label}</div>
+          <div class="user-row-cell">
+            <span class="user-role-badge ${roleBadgeClass(u.role)}">${roleLabel(u.role)}</span>
           </div>
-        </div>
-        <div class="um-divider"></div>
-        <div class="um-footer">
-          <div class="um-status-text" style="color:${isActive ? 'var(--green)' : 'var(--text3)'};">
-            <span style="font-size:8px;">●</span>
-            ${isActive ? 'Active' : 'Inactive'}
+          <div class="user-row-cell">
+            <span><span class="user-status-dot" style="background:${isActive ? 'var(--green)' : 'var(--red)'}"></span>${isActive ? 'Active' : 'Disabled'}</span>
+            ${u.mustChangePassword ? '<br><span style="color:var(--amber);font-size:10px;font-weight:600;">⚠ Temp PW</span>' : ''}
           </div>
-          ${can('edit') && !isProtected ? `
-          <div class="um-actions">
-            <button class="um-btn" onclick="editUser('${u.username}')" title="Edit user">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-            </button>
-            <button class="um-btn ${isActive ? 'danger' : 'success'}" onclick="toggleUserStatus('${u.username}')" title="${isActive ? 'Deactivate user' : 'Activate user'}">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-                ${isActive
-                  ? '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'
-                  : '<polyline points="20 6 9 17 4 12"/>'}
-              </svg>
-            </button>
-          </div>` : `<div style="font-size:10px;color:var(--text3);">${isSelf ? 'Current session' : 'Protected'}</div>`}
-        </div>
-      </div>`;
-  }).join('');
-
-  body.innerHTML = summaryHtml + `<div class="um-grid">${cards}</div>`;
+          <div class="user-row-actions">
+            ${!isProtected ? `
+              <button class="btn btn-sm" onclick="openEditUserModal('${u.username}')" title="Edit">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+              </button>
+              <button class="btn btn-sm" onclick="resetUserPassword('${u.username}')" title="Reset password">🔑 Reset PW</button>
+              <button class="btn btn-sm${isActive ? ' btn-danger' : ''}" onclick="toggleUserActive('${u.username}',${isActive})">${isActive ? 'Disable' : 'Enable'}</button>
+            ` : '<span style="font-size:11px;color:var(--text3);">Protected</span>'}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
-window.openUserModal = function(username = null) {
-  // TODO: Implement user add/edit modal
-  showToast('User management modal - coming soon');
+window.openAddUserModal = function() {
+  _editingUsername = null;
+  document.getElementById('userFormTitle').textContent = 'Add User';
+  document.getElementById('uf_username').value = '';
+  document.getElementById('uf_username').disabled = false;
+  document.getElementById('uf_username').style.opacity = '';
+  document.getElementById('uf_displayName').value = '';
+  document.getElementById('uf_role').value = 'member';
+  document.getElementById('uf_active').value = 'true';
+  document.getElementById('uf_password').value = '';
+  document.getElementById('userFormError').style.display = 'none';
+  document.getElementById('userFormOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('uf_username').focus(), 80);
 };
 
-window.editUser = function(username) {
-  showToast('Edit user: ' + username + ' - coming soon');
-};
-
-window.toggleUserStatus = function(username) {
+window.openEditUserModal = function(username) {
   const users = getUsers();
-  const user = users.find(u => u.username === username);
-  if (!user) return;
-  
-  user.active = user.active === false ? true : false;
-  localStorage.setItem(LS_USERS, JSON.stringify(users));
-  _usersCache = users;
-  logAudit(user.active ? 'Activate User' : 'Deactivate User', username);
-  renderUsers();
-  showToast(`User ${username} ${user.active ? 'activated' : 'deactivated'}`);
+  const u = users.find(x => x.username === username);
+  if (!u) return;
+  _editingUsername = username;
+  document.getElementById('userFormTitle').textContent = 'Edit User';
+  document.getElementById('uf_username').value = u.username;
+  document.getElementById('uf_username').disabled = true;
+  document.getElementById('uf_username').style.opacity = '0.55';
+  document.getElementById('uf_displayName').value = u.displayName || '';
+  document.getElementById('uf_role').value = u.role || 'member';
+  document.getElementById('uf_active').value = u.active === false ? 'false' : 'true';
+  document.getElementById('uf_password').value = '';
+  document.getElementById('userFormError').style.display = 'none';
+  document.getElementById('userFormOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('uf_displayName').focus(), 80);
 };
+
+window.saveUserForm = async function() {
+  const errEl = document.getElementById('userFormError');
+  errEl.style.display = 'none';
+  const showErr = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
+
+  const uname       = document.getElementById('uf_username').value.trim().toLowerCase();
+  const displayName = document.getElementById('uf_displayName').value.trim();
+  const role        = document.getElementById('uf_role').value;
+  const active      = document.getElementById('uf_active').value === 'true';
+  const pw          = document.getElementById('uf_password').value;
+
+  if (!uname)       { showErr('Username is required.'); return; }
+  if (!displayName) { showErr('Display name is required.'); return; }
+  if (!/^[a-z0-9._-]+$/.test(uname)) { showErr('Username may only contain letters, numbers, dots, hyphens, underscores.'); return; }
+
+  const users = getUsers();
+
+  if (!_editingUsername) {
+    // Add mode
+    if (users.find(u => u.username === uname)) { showErr('Username already exists.'); return; }
+    const hash = pw ? await hashPassword(pw) : DEFAULT_PW;
+    const newUser = { username: uname, displayName, role, active: true, passwordHash: hash, mustChangePassword: !pw };
+    users.push(newUser);
+    _usersCache = users;
+    localStorage.setItem(LS_USERS, JSON.stringify(users));
+    logAudit('Add User', uname);
+    await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [uname, JSON.stringify(newUser)]);
+    showToast(`User @${uname} created.`);
+  } else {
+    // Edit mode
+    const idx = users.findIndex(u => u.username === _editingUsername);
+    if (idx < 0) { showErr('User not found.'); return; }
+    const user = users[idx];
+    user.displayName = displayName;
+    user.role        = role;
+    user.active      = active;
+    if (pw) user.passwordHash = await hashPassword(pw);
+    _usersCache = users;
+    localStorage.setItem(LS_USERS, JSON.stringify(users));
+    logAudit('Edit User', uname);
+    await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [uname, JSON.stringify(user)]);
+    if (_editingUsername === currentUser?.username) {
+      currentUser = {...user};
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+    }
+    showToast(`User @${uname} updated.`);
+  }
+
+  document.getElementById('userFormOverlay').classList.remove('open');
+  _editingUsername = null;
+  renderUsers();
+  populateTechDropdown();
+};
+
+window.resetUserPassword = async function(username) {
+  if (!confirm(`Reset password for @${username} to Welcome@360!?`)) return;
+  const users = getUsers();
+  const i = users.findIndex(u => u.username === username);
+  if (i > -1) { users[i].passwordHash = DEFAULT_PW; users[i].mustChangePassword = true; }
+  _usersCache = users;
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  logAudit('Reset Password', username);
+  await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [username, JSON.stringify(users[i])]);
+  showToast(`Password reset for @${username}.`);
+  renderUsers();
+};
+
+window.toggleUserActive = async function(username, currentlyActive) {
+  const users = getUsers();
+  const i = users.findIndex(u => u.username === username);
+  if (i > -1) users[i].active = !currentlyActive;
+  _usersCache = users;
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  logAudit(currentlyActive ? 'Deactivate User' : 'Activate User', username);
+  await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [username, JSON.stringify(users[i])]);
+  showToast(`Account ${currentlyActive ? 'disabled' : 'enabled'}.`);
+  renderUsers();
+};
+
+// ── FORCE CHANGE PASSWORD ──
+window.checkFcpStrength = function() {
+  const pw  = document.getElementById('fcp_newPw')?.value || '';
+  const el  = document.getElementById('fcp_strength');
+  if (!el) return;
+  let score = 0;
+  if (pw.length >= 8)        score++;
+  if (/[A-Z]/.test(pw))     score++;
+  if (/[0-9]/.test(pw))     score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  const colors = ['', 'var(--red)', '#e8911a', '#5b8fe8', 'var(--green)'];
+  el.textContent = pw.length ? 'Strength: ' + (labels[score] || 'Weak') : '';
+  el.style.color = colors[score] || 'var(--text3)';
+};
+
+window.doForceChangePassword = async function() {
+  const errEl   = document.getElementById('fcp_error');
+  errEl.style.display = 'none';
+  const showErr = msg => { errEl.textContent = msg; errEl.style.display = ''; };
+
+  const newPw  = document.getElementById('fcp_newPw').value;
+  const confPw = document.getElementById('fcp_confirmPw').value;
+  if (!newPw)            { showErr('Please enter a new password.'); return; }
+  if (newPw.length < 6)  { showErr('Password must be at least 6 characters.'); return; }
+  if (newPw !== confPw)  { showErr('Passwords do not match.'); return; }
+
+  const hash  = await hashPassword(newPw);
+  const users = getUsers();
+  const user  = users.find(u => u.username === currentUser.username);
+  if (!user) return;
+
+  user.passwordHash       = hash;
+  user.mustChangePassword = false;
+  _usersCache = users;
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [user.username, JSON.stringify(user)]);
+  logAudit('Change Password', user.username);
+
+  currentUser = {...user};
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+
+  document.getElementById('forceChangePwOverlay').style.display = 'none';
+  showToast('Password updated successfully.');
+  await showApp();
+};
+
+// ── SHARED PASSWORD VISIBILITY TOGGLE ──
+window.togglePwVis = function(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.style.opacity = inp.type === 'text' ? '1' : '0.45';
+};
+
+// (toggleUserStatus replaced by toggleUserActive — see above)
 
 // ── AUDIT LOG ──
 window.auditFilterQuick = function(key) {
@@ -3559,25 +4102,497 @@ window.clearAuditLog = function() {
   showToast('Audit log cleared');
 };
 
+// ════════════════════════════════
+// ASSET REGISTER
+// ════════════════════════════════
+const LS_ASSETS = 'deliveryAssets_assetsDb';
+let assetsDb = [];
+let _assetSortKey = 'assetTag';
+let _assetSortDir = 1;
+let _editingAssetId = null;
+let _assetPage = 1;
+let _assetPageSize = 50;
+let _assetPageCount = 1;
+let _assetSyncing = false;
+
+function loadAssets() {
+  try {
+    const s = JSON.parse(localStorage.getItem(LS_ASSETS));
+    if (Array.isArray(s)) assetsDb = s;
+  } catch {}
+}
+
+// Safe localStorage write — trims cache to 500 most recent if quota is exceeded
+function _saveAssetsCache() {
+  const MAX_CACHE = 500;
+  try {
+    localStorage.setItem(LS_ASSETS, JSON.stringify(assetsDb));
+  } catch(e) {
+    if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+      try {
+        // Keep only the most recent MAX_CACHE entries as local cache; Turso holds all data
+        const trimmed = assetsDb.slice(-MAX_CACHE);
+        localStorage.setItem(LS_ASSETS, JSON.stringify(trimmed));
+        console.warn(`[Assets] localStorage full — cached last ${MAX_CACHE} of ${assetsDb.length} records. Turso holds all data.`);
+      } catch { /* give up on caching — Turso is the source of truth */ }
+    }
+  }
+}
+
+async function _persistAsset(asset) {
+  const idx = assetsDb.findIndex(a => a.id === asset.id);
+  if (idx >= 0) assetsDb[idx] = asset; else assetsDb.push(asset);
+  _saveAssetsCache();
+  await tursoExec('INSERT OR REPLACE INTO assets (id, data) VALUES (?, ?)', [asset.id, JSON.stringify(asset)]);
+}
+
+async function _deleteAssetFromDb(id) {
+  assetsDb = assetsDb.filter(a => a.id !== id);
+  _saveAssetsCache();
+  await tursoExec('DELETE FROM assets WHERE id = ?', [id]);
+}
+
+function renderAssetStats() {
+  const all = assetsDb;
+  const total = all.length;
+  const counts = { Active:0, Deployed:0, Spare:0, Defective:0, Repair:0, Decommissioned:0, Lost:0 };
+  all.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
+  const cards = [
+    { label:'Total Assets',    val:total,                cls:'sv-total' },
+    { label:'Active',          val:counts.Active,        cls:'sv-received' },
+    { label:'Deployed',        val:counts.Deployed,      cls:'sv-received' },
+    { label:'Spare',           val:counts.Spare,         cls:'sv-partial' },
+    { label:'Defective',       val:counts.Defective,     cls:'sv-returned' },
+    { label:'Repair',          val:counts.Repair,        cls:'sv-pending' },
+    { label:'Decommissioned',  val:counts.Decommissioned,cls:'sv-cancelled' },
+  ];
+  document.getElementById('assetStatsGrid').innerHTML = cards.map(c => `
+    <div class="inv-stat-card"><div class="stat-lbl">${c.label}</div><div class="stat-val ${c.cls}">${c.val}</div></div>
+  `).join('');
+}
+
+function _buildAssetSiteOptions() {
+  const sites = [...new Set(assetsDb.map(a => a.site).filter(Boolean))].sort();
+  const sel = document.getElementById('assetSiteFilter');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Sites</option>' + sites.map(s => `<option${s===cur?' selected':''}>${esc(s)}</option>`).join('');
+}
+
+window.sortAssets = function(key) {
+  if (_assetSortKey === key) _assetSortDir *= -1;
+  else { _assetSortKey = key; _assetSortDir = 1; }
+  _assetPage = 1;
+  renderAssets();
+};
+
+function _showAssetLoader(show) {
+  const bar = document.getElementById('assetLoadBar');
+  if (bar) bar.classList.toggle('active', show);
+  // When loading starts with empty cache, clear stats so 0s don't flash
+  if (show && assetsDb.length === 0) {
+    const sg = document.getElementById('assetStatsGrid');
+    if (sg) sg.innerHTML = '';
+  }
+}
+
+function renderAssets() {
+  // Show skeleton while first sync is in progress with no local cache
+  if (_assetSyncing && assetsDb.length === 0) {
+    document.getElementById('assetRecordCount').textContent = 'Loading…';
+    const skW = [60,80,25,35,70,90,80,110,70,55,55,45,60,70,90,115,30,30,55];
+    document.getElementById('assetsBody').innerHTML = Array.from({length:12}, () =>
+      `<tr>${skW.map(w => `<td style="padding:9px 10px;"><span class="sk" style="width:${w}px;"></span></td>`).join('')}</tr>`
+    ).join('');
+    const pg = document.getElementById('assetPagination');
+    if (pg) pg.style.display = 'none';
+    return;
+  }
+  renderAssetStats();
+  _buildAssetSiteOptions();
+  const q  = (document.getElementById('assetSearchInput')?.value || '').toLowerCase();
+  const sf = document.getElementById('assetStatusFilter')?.value || '';
+  const tf = document.getElementById('assetTypeFilter')?.value  || '';
+  const si = document.getElementById('assetSiteFilter')?.value  || '';
+
+  const FIELDS = ['site','assetTag','floor','assetType','deviceModel','manufacturer',
+                  'serialNumber','custodian','assetValue','eol','assetAge',
+                  'status','hostname','domainUserId','cpuSpecs','ramGb','hddGb'];
+
+  let filtered = assetsDb.filter(a => {
+    if (sf && a.status !== sf) return false;
+    if (tf && a.assetType !== tf) return false;
+    if (si && a.site !== si) return false;
+    if (q && !FIELDS.some(f => (a[f]||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    const av = (a[_assetSortKey] || '').toString().toLowerCase();
+    const bv = (b[_assetSortKey] || '').toString().toLowerCase();
+    return av < bv ? -_assetSortDir : av > bv ? _assetSortDir : 0;
+  });
+
+  const total = filtered.length;
+  document.getElementById('assetRecordCount').textContent =
+    total + ' asset' + (total !== 1 ? 's' : '');
+
+  // Pagination
+  _assetPageCount = Math.max(1, Math.ceil(total / _assetPageSize));
+  if (_assetPage > _assetPageCount) _assetPage = _assetPageCount;
+  const start = (_assetPage - 1) * _assetPageSize;
+  const end   = Math.min(start + _assetPageSize, total);
+  const page  = filtered.slice(start, end);
+
+  _renderAssetPagination(total, start, end);
+
+  const statusColors = {
+    Active:'var(--green)', Deployed:'var(--accent)', Spare:'var(--amber)',
+    Defective:'var(--red)', Repair:'var(--amber)', Decommissioned:'var(--text3)', Lost:'var(--red)'
+  };
+
+  if (!total) {
+    document.getElementById('assetsBody').innerHTML =
+      `<tr><td colspan="19" style="text-align:center;padding:40px;color:var(--text3);">No assets found. Import a CSV or add an asset manually.</td></tr>`;
+    return;
+  }
+
+  document.getElementById('assetsBody').innerHTML = page.map(a => {
+    const sc = statusColors[a.status] || 'var(--text3)';
+    const td = v => `<td style="padding:7px 10px;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${esc(v||'')}">${esc(v||'—')}</td>`;
+    return `<tr>
+      ${td(a.site)}
+      ${td(a.assetTag)}
+      ${td(a.quantity)}
+      ${td(a.floor)}
+      ${td(a.assetType)}
+      ${td(a.deviceModel)}
+      ${td(a.manufacturer)}
+      ${td(a.serialNumber)}
+      ${td(a.custodian)}
+      ${td(a.assetValue)}
+      ${td(a.eol)}
+      ${td(a.assetAge)}
+      <td style="padding:7px 10px;white-space:nowrap;">
+        <span style="color:${sc};font-weight:700;font-size:11px;">${esc(a.status||'—')}</span>
+      </td>
+      ${td(a.hostname)}
+      ${td(a.domainUserId)}
+      ${td(a.cpuSpecs)}
+      ${td(a.ramGb)}
+      ${td(a.hddGb)}
+      <td style="padding:4px 8px;white-space:nowrap;">
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-sm" onclick="openEditAssetModal('${a.id}')">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteAsset('${a.id}')">Del</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function _renderAssetPagination(total, start, end) {
+  const pg = document.getElementById('assetPagination');
+  if (!pg) return;
+  if (total === 0) { pg.style.display = 'none'; return; }
+  pg.style.display = 'flex';
+
+  document.getElementById('assetPgInfo').textContent =
+    `Showing ${start + 1}–${end} of ${total}`;
+
+  document.getElementById('assetPgFirst').disabled = _assetPage <= 1;
+  document.getElementById('assetPgPrev').disabled  = _assetPage <= 1;
+  document.getElementById('assetPgNext').disabled  = _assetPage >= _assetPageCount;
+  document.getElementById('assetPgLast').disabled  = _assetPage >= _assetPageCount;
+
+  // Page number buttons — show up to 7 around current page
+  const nums = document.getElementById('assetPgNumbers');
+  const range = [], delta = 3;
+  for (let i = Math.max(1, _assetPage - delta); i <= Math.min(_assetPageCount, _assetPage + delta); i++) {
+    range.push(i);
+  }
+  nums.innerHTML = range.map(n =>
+    `<button class="pg-btn${n === _assetPage ? ' active' : ''}" onclick="goAssetPage(${n})">${n}</button>`
+  ).join('');
+
+  // Sync the rows-per-page dropdown
+  const sel = document.getElementById('assetPageSize');
+  if (sel) sel.value = String(_assetPageSize);
+}
+
+window.goAssetPage = function(n) {
+  n = Math.max(1, Math.min(n, _assetPageCount));
+  if (n === _assetPage) return;
+  _assetPage = n;
+  renderAssets();
+  // Scroll table into view
+  document.getElementById('assetsBody')?.closest('.table-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+};
+
+window.setAssetPageSize = function(size) {
+  _assetPageSize = size;
+  _assetPage = 1;
+  renderAssets();
+};
+
+window.openAddAssetModal = function() {
+  _editingAssetId = null;
+  document.getElementById('assetFormTitle').textContent = 'Add Asset';
+  ['site','assetTag','floor','deviceModel','manufacturer','serialNumber',
+   'custodian','assetValue','eol','assetAge','hostname','domainUserId','cpuSpecs'].forEach(f => {
+    const el = document.getElementById('af_' + f);
+    if (el) el.value = '';
+  });
+  document.getElementById('af_quantity').value = '1';
+  document.getElementById('af_ramGb').value = '';
+  document.getElementById('af_hddGb').value = '';
+  document.getElementById('af_assetType').value = '';
+  document.getElementById('af_status').value = '';
+  document.getElementById('assetFormError').style.display = 'none';
+  document.getElementById('assetFormOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('af_site').focus(), 80);
+};
+
+window.openEditAssetModal = function(id) {
+  const a = assetsDb.find(x => x.id === id);
+  if (!a) return;
+  _editingAssetId = id;
+  document.getElementById('assetFormTitle').textContent = 'Edit Asset';
+  const map = {
+    site:'af_site', assetTag:'af_assetTag', quantity:'af_quantity', floor:'af_floor',
+    assetType:'af_assetType', deviceModel:'af_deviceModel', manufacturer:'af_manufacturer',
+    serialNumber:'af_serialNumber', custodian:'af_custodian', assetValue:'af_assetValue',
+    eol:'af_eol', assetAge:'af_assetAge', status:'af_status', hostname:'af_hostname',
+    domainUserId:'af_domainUserId', cpuSpecs:'af_cpuSpecs', ramGb:'af_ramGb', hddGb:'af_hddGb'
+  };
+  Object.entries(map).forEach(([field, elId]) => {
+    const el = document.getElementById(elId);
+    if (el) el.value = a[field] ?? '';
+  });
+  document.getElementById('assetFormError').style.display = 'none';
+  document.getElementById('assetFormOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('af_site').focus(), 80);
+};
+
+window.saveAssetForm = async function() {
+  const errEl = document.getElementById('assetFormError');
+  errEl.style.display = 'none';
+  const get = id => document.getElementById(id)?.value?.trim() ?? '';
+  const asset = {
+    id:           _editingAssetId || ('ast_' + Date.now() + '_' + Math.random().toString(36).slice(2,7)),
+    site:         get('af_site'),
+    assetTag:     get('af_assetTag'),
+    quantity:     get('af_quantity') || '1',
+    floor:        get('af_floor'),
+    assetType:    get('af_assetType'),
+    deviceModel:  get('af_deviceModel'),
+    manufacturer: get('af_manufacturer'),
+    serialNumber: get('af_serialNumber'),
+    custodian:    get('af_custodian'),
+    assetValue:   get('af_assetValue'),
+    eol:          get('af_eol'),
+    assetAge:     get('af_assetAge'),
+    status:       get('af_status'),
+    hostname:     get('af_hostname'),
+    domainUserId: get('af_domainUserId'),
+    cpuSpecs:     get('af_cpuSpecs'),
+    ramGb:        get('af_ramGb'),
+    hddGb:        get('af_hddGb'),
+    updatedAt:    new Date().toISOString(),
+    updatedBy:    currentUser?.username || '',
+  };
+  try {
+    await _persistAsset(asset);
+    logAudit(_editingAssetId ? 'Edit Asset' : 'Add Asset', asset.assetTag || asset.id);
+    showToast(_editingAssetId ? 'Asset updated.' : 'Asset added.');
+    document.getElementById('assetFormOverlay').classList.remove('open');
+    _editingAssetId = null;
+    renderAssets();
+  } catch(e) {
+    errEl.textContent = 'Save failed: ' + (e?.message || String(e));
+    errEl.style.display = 'block';
+  }
+};
+
+window.deleteAsset = async function(id) {
+  const a = assetsDb.find(x => x.id === id);
+  if (!confirm('Delete asset "' + (a?.assetTag || id) + '"? This cannot be undone.')) return;
+  await _deleteAssetFromDb(id);
+  logAudit('Delete Asset', a?.assetTag || id);
+  showToast('Asset deleted.');
+  renderAssets();
+};
+
+// CSV header → field name mapping
+const ASSET_CSV_MAP = {
+  'site':                       'site',
+  'asset tag':                  'assetTag',
+  'quantity':                   'quantity',
+  'qty':                        'quantity',
+  'floor':                      'floor',
+  'asset type':                 'assetType',
+  'device model':               'deviceModel',
+  'manufacturer':               'manufacturer',
+  'service tag/serial number':  'serialNumber',
+  'service tag / serial number':'serialNumber',
+  'serial number':              'serialNumber',
+  'serial':                     'serialNumber',
+  'service tag':                'serialNumber',
+  'custodian':                  'custodian',
+  'asset value':                'assetValue',
+  'eol':                        'eol',
+  'end of life':                'eol',
+  'asset age':                  'assetAge',
+  'status':                     'status',
+  'hostname':                   'hostname',
+  'domain user id':             'domainUserId',
+  'domain user':                'domainUserId',
+  'cpu specs':                  'cpuSpecs',
+  'cpu':                        'cpuSpecs',
+  'ram (gb)':                   'ramGb',
+  'ram':                        'ramGb',
+  'hard drive capacity (gb)':   'hddGb',
+  'hard drive capacity':        'hddGb',
+  'hdd (gb)':                   'hddGb',
+  'hdd':                        'hddGb',
+  'storage (gb)':               'hddGb',
+};
+
+function _parseCSV(text) {
+  // Strip UTF-8 BOM if present
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  // Auto-detect delimiter from header row: tab > semicolon > comma
+  const header = lines.find(l => l.trim());
+  const delim = header && header.includes('\t') ? '\t'
+              : header && header.includes(';')  ? ';'
+              : ',';
+  const rows = [];
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const cols = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') {
+        if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+        else inQ = !inQ;
+      } else if (c === delim && !inQ) {
+        cols.push(cur); cur = '';
+      } else {
+        cur += c;
+      }
+    }
+    cols.push(cur);
+    rows.push(cols);
+  }
+  return rows;
+}
+
+window.handleAssetCSV = async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = ''; // reset so same file can be re-imported
+  const text = await file.text();
+  const rows = _parseCSV(text);
+  if (rows.length < 2) { showToast('CSV is empty or has no data rows.', true); return; }
+
+  // Map headers
+  const headers = rows[0].map(h => h.trim().toLowerCase());
+  const fieldMap = headers.map(h => ASSET_CSV_MAP[h] || null);
+  const unmapped = headers.filter((h, i) => !fieldMap[i]);
+  if (unmapped.length) console.warn('[Asset Import] Unmapped headers:', unmapped);
+
+  const now = new Date().toISOString();
+  const user = currentUser?.username || '';
+  const newAssets = [];
+
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (row.every(c => !c.trim())) continue; // skip blank rows
+    const asset = {
+      id: 'ast_' + Date.now() + '_' + r + '_' + Math.random().toString(36).slice(2,5),
+      updatedAt: now,
+      updatedBy: user,
+    };
+    fieldMap.forEach((field, i) => {
+      if (field) asset[field] = (row[i] || '').trim();
+    });
+    newAssets.push(asset);
+  }
+
+  if (!newAssets.length) { showToast('No valid rows found in CSV.'); return; }
+
+  // Batch insert to Turso
+  const stmts = newAssets.map(a => ({
+    sql: 'INSERT OR REPLACE INTO assets (id, data) VALUES (?, ?)',
+    args: [a.id, JSON.stringify(a)]
+  }));
+  assetsDb.push(...newAssets);
+  _saveAssetsCache();
+  await tursoBatch(stmts);
+  logAudit('Import Assets CSV', newAssets.length + ' rows from ' + file.name);
+  showToast(newAssets.length + ' assets imported from ' + file.name + '.');
+  renderAssets();
+};
+
+window.deleteAllAssets = async function() {
+  if (!assetsDb.length) { showToast('No assets to delete.'); return; }
+  if (!confirm(`Delete ALL ${assetsDb.length} asset records? This cannot be undone.`)) return;
+  assetsDb = [];
+  _saveAssetsCache();
+  logAudit('Delete All Assets', 'All asset register records cleared');
+  await tursoExec('DELETE FROM assets');
+  renderAssets();
+  showToast('All asset records deleted.');
+};
+
+window.exportAssetsCSV = function() {
+  const headers = [
+    'Site','Asset Tag','Quantity','Floor','Asset Type','Device Model','Manufacturer',
+    'Service Tag/Serial Number','Custodian','Asset Value','EOL','Asset Age','Status',
+    'Hostname','Domain User ID','CPU Specs','RAM (GB)','Hard Drive Capacity (GB)'
+  ];
+  const fields = [
+    'site','assetTag','quantity','floor','assetType','deviceModel','manufacturer',
+    'serialNumber','custodian','assetValue','eol','assetAge','status',
+    'hostname','domainUserId','cpuSpecs','ramGb','hddGb'
+  ];
+  const escape = v => '"' + String(v||'').replace(/"/g,'""') + '"';
+  const rows = [headers.map(escape).join(',')];
+  assetsDb.forEach(a => {
+    rows.push(fields.map(f => escape(a[f]||'')).join(','));
+  });
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'asset-register-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
 // ── VIEW SWITCHER ──
 window.switchView = function(view) {
   currentView = view;
   const dash = document.getElementById('dashboardMain');
   const dm   = document.getElementById('deliveriesMain');
   const im   = document.getElementById('inventoryMain');
+  const asm  = document.getElementById('assetsMain');
   const um   = document.getElementById('usersMain');
   const am   = document.getElementById('auditMain');
   const ndb  = document.getElementById('navDashboard');
   const nd   = document.getElementById('navDeliveries');
   const ni   = document.getElementById('navInventory');
+  const nas  = document.getElementById('navAssets');
   const nu   = document.getElementById('navUsers');
   const na   = document.getElementById('navAudit');
   const addBtn = document.getElementById('btnAddDelivery');
   const title  = document.getElementById('topbarTitle');
 
   // Hide all, deactivate all nav
-  [dash, dm, im, um, am].forEach(el => { if (el) el.style.display = 'none'; });
-  [ndb, nd, ni, nu, na].forEach(el => { if (el) el.classList.remove('active'); });
+  [dash, dm, im, asm, um, am].forEach(el => { if (el) el.style.display = 'none'; });
+  [ndb, nd, ni, nas, nu, na].forEach(el => { if (el) el.classList.remove('active'); });
   if (addBtn) addBtn.style.display = 'none';
 
   if (view === 'dashboard') {
@@ -3594,6 +4609,11 @@ window.switchView = function(view) {
     syncInventoryFromRecords();
     renderInvStats();
     renderInventory();
+  } else if (view === 'assets') {
+    asm.style.display = '';
+    if (nas) nas.classList.add('active');
+    if (title) title.textContent = 'Asset Register';
+    renderAssets();
   } else if (view === 'users') {
     um.style.display = '';
     if (nu) nu.classList.add('active');
@@ -3616,27 +4636,41 @@ window.switchView = function(view) {
 
 // ── INIT ──
 (async function init() {
-  loadTheme();
   const splash = document.getElementById('splashScreen');
-  document.getElementById('splashMsg').textContent = 'Loading users…';
 
-  loadUsers();
-  loadAuditLog();
-
-  if (checkSession()) {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('splashMsg').textContent = 'Loading records…';
-    await showApp();
-  } else {
-    document.getElementById('loginScreen').style.display = 'flex';
-  }
-
-  setTimeout(() => {
-    if (splash) {
+  // Hard fallback: remove splash after 3s no matter what
+  const splashKill = setTimeout(() => {
+    if (splash && splash.parentNode) {
       splash.classList.add('fade-out');
-      setTimeout(() => splash.remove(), 450);
+      setTimeout(() => { if (splash.parentNode) splash.remove(); }, 450);
     }
-  }, 600);
+  }, 3000);
+
+  try {
+    loadTheme();
+    tursoInit(); // fire-and-forget — tables created in background; local cache loads immediately
+
+    loadUsers();
+    loadAuditLog();
+    loadAssets();
+
+    if (checkSession()) {
+      document.getElementById('loginScreen').style.display = 'none';
+      showApp();
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
+    }
+  } catch(e) {
+    console.error('[init]', e);
+  } finally {
+    clearTimeout(splashKill);
+    setTimeout(() => {
+      if (splash && splash.parentNode) {
+        splash.classList.add('fade-out');
+        setTimeout(() => { if (splash.parentNode) splash.remove(); }, 450);
+      }
+    }, 600);
+  }
 })();
 
 // ── SIDEBAR GLOBAL SEARCH ──
