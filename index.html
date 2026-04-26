@@ -515,92 +515,133 @@ body {
 }
 .topbar-search-input::placeholder { color: var(--text3); }
 
-/* ── LOGIN BACKGROUND ── */
+/* ── LOGIN SCREEN — SPLIT PANEL (login26 style) ── */
 #loginScreen {
-  min-height: 100vh; display: flex; align-items: center;
-  justify-content: center; padding: 24px;
+  min-height: 100vh; display: flex; flex-direction: row;
   position: relative; overflow: hidden;
-  background: linear-gradient(135deg, #2d1f40 0%, #3d1f35 50%, #1f2d40 100%);
+  background: #f7f8fc;
 }
-/* Hide login & app during splash; JS will reveal the correct one */
 #loginScreen.splash-hidden { display: none !important; }
-.login-bg-canvas {
-  position: absolute; inset: 0; z-index: 0;
-  pointer-events: none; overflow: hidden;
-}
-.login-card { position: relative; z-index: 1; }
+.login-bg-canvas { display: none; }
+
+/* Version badge */
 .login-version {
-  position: absolute; bottom: 20px; right: 24px; z-index: 2;
-  font-size: 11px; color: rgba(255,255,255,0.25); font-weight: 500;
-  font-family: monospace;
+  position: fixed; bottom: 18px; right: 22px; z-index: 10;
+  font-size: 11px; color: rgba(100,80,140,0.40); font-weight: 500;
+  font-family: monospace; pointer-events: none;
 }
 
-
-.login-card {
-  width: 100%; max-width: 420px; min-width: 0;
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--glass-shadow), 0 0 0 0.5px var(--glass-border2) inset;
-  overflow: hidden;
+/* ── LEFT DECORATIVE PANEL ── */
+.login-left {
+  width: 44%; min-height: 100vh; flex-shrink: 0;
+  background: linear-gradient(150deg, #5e2d91 0%, #9b6dcc 55%, #d47cb0 100%);
+  display: flex; flex-direction: column;
+  padding: 60px 52px;
+  position: relative; overflow: hidden;
 }
-
-.login-hero {
-  padding: 36px 36px 28px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-  position: relative;
-  overflow: hidden;
+.login-left-deco1 {
+  position: absolute; top: -100px; right: -100px;
+  width: 380px; height: 380px; border-radius: 50%;
+  background: rgba(255,255,255,0.07); pointer-events: none;
 }
-.login-hero::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 60%);
+.login-left-deco2 {
+  position: absolute; bottom: -130px; left: -80px;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: rgba(255,255,255,0.055); pointer-events: none;
 }
-.login-hero::after {
-  content: '';
-  position: absolute; bottom: -30px; right: -30px;
-  width: 120px; height: 120px; border-radius: 50%;
-  background: rgba(255,255,255,0.08);
+.login-left-deco3 {
+  position: absolute; top: 38%; right: -50px;
+  width: 180px; height: 180px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.10); pointer-events: none;
 }
-.login-logo {
-  display: flex; align-items: center; gap: 12px;
-  position: relative; z-index: 1;
+.login-left-deco4 {
+  position: absolute; top: 18%; left: -30px;
+  width: 100px; height: 100px; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.08); pointer-events: none;
 }
-.login-logo-icon {
-  width: 44px; height: 44px; border-radius: 12px;
-  background: rgba(255,255,255,0.22);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.35);
+.login-left-brand {
+  display: flex; align-items: center; gap: 14px;
+  position: relative; z-index: 1; margin-bottom: 56px; flex-shrink: 0;
+}
+.login-left-logo-icon {
+  width: 52px; height: 52px; border-radius: 16px;
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.30);
   display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px); flex-shrink: 0;
 }
-.login-brand {
-  font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px;
+.login-left-brand-name {
+  font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -0.6px;
 }
-.login-sub {
-  font-size: 13px; color: rgba(255,255,255,0.72);
-  margin-top: 6px; position: relative; z-index: 1;
+.login-left-brand-sub {
+  font-size: 12px; color: rgba(255,255,255,0.62);
+  font-weight: 500; margin-top: 2px; letter-spacing: 0.2px;
+}
+.login-left-content {
+  position: relative; z-index: 1; flex: 1;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.login-left-headline {
+  font-size: 34px; font-weight: 800; color: #fff;
+  line-height: 1.18; letter-spacing: -1px;
+  margin-bottom: 18px; max-width: 320px;
+}
+.login-left-tagline {
+  font-size: 14px; color: rgba(255,255,255,0.70);
+  line-height: 1.70; max-width: 300px; margin-bottom: 48px;
+}
+.login-left-illustration {
+  width: 100%; max-width: 340px; opacity: 0.90;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.20));
+}
+.login-left-dots {
+  display: flex; gap: 8px; align-items: center; margin-top: 40px;
+}
+.login-left-dots span {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.28);
+}
+.login-left-dots span.active {
+  background: rgba(255,255,255,0.92); width: 24px; border-radius: 4px;
 }
 
-.login-body {
-  padding: 28px 32px 24px;
-  display: flex; flex-direction: column; gap: 16px;
+/* ── RIGHT FORM PANEL ── */
+.login-right {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 60px 48px; background: #f7f8fc; min-height: 100vh;
+  position: relative;
 }
-
+[data-theme="dark"] #loginScreen { background: #110d1c; }
+[data-theme="dark"] .login-right { background: #110d1c; }
+[data-theme="dark"] .login-left {
+  background: linear-gradient(150deg, #3d1a66 0%, #7b4daa 55%, #a85888 100%);
+}
+.login-form-wrap { width: 100%; max-width: 400px; }
+.login-form-title {
+  font-size: 28px; font-weight: 800; color: var(--text);
+  letter-spacing: -0.8px; margin-bottom: 8px;
+}
+.login-form-sub {
+  font-size: 14px; color: var(--text3); margin-bottom: 36px; line-height: 1.5;
+}
+.login-body { display: flex; flex-direction: column; gap: 16px; }
 .field-wrap { display: flex; flex-direction: column; gap: 7px; }
 .field-label {
-  font-size: 12px; font-weight: 600; color: var(--text2); /* works on glass-bg-deep */
+  font-size: 12px; font-weight: 600; color: var(--text2);
   text-transform: uppercase; letter-spacing: 0.6px;
 }
 .field-input {
-  background: var(--surface-tint);
-  border: 1px solid var(--glass-border);
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
   border-radius: var(--radius);
-  padding: 12px 16px;
+  padding: 13px 16px;
   color: var(--text); font-size: 15px; outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
   width: 100%;
+}
+[data-theme="dark"] .field-input {
+  background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12);
 }
 .field-input:focus {
   border-color: var(--accent);
@@ -608,51 +649,41 @@ body {
 }
 .field-input::placeholder { color: var(--text3); }
 
-
-
-/* ── v22 Login — GitHub style ── */
+/* ── Login steps ── */
 .login-step { display: flex; flex-direction: column; gap: 14px; }
 .login-divider {
   display: flex; align-items: center; gap: 10px;
   font-size: 11px; font-weight: 600; color: var(--text3);
-  text-transform: uppercase; letter-spacing: 0.5px;
-  margin: 10px 0;
+  text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0;
 }
 .login-divider::before, .login-divider::after {
-  content:''; flex:1; height:1px; background: var(--glass-border2);
+  content:''; flex:1; height:1px; background: #e5e7eb;
 }
+[data-theme="dark"] .login-divider::before,
+[data-theme="dark"] .login-divider::after { background: rgba(255,255,255,0.10); }
 
-/* GitHub-style social buttons */
+/* Continue with Password button */
 .btn-social {
-  width: 100%;
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 16px;
-  background: var(--glass-bg-hover);
-  border: 1.5px solid var(--glass-border);
-  border-radius: var(--radius);
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  padding: 13px 18px; background: #fff;
+  border: 1.5px solid #e5e7eb; border-radius: var(--radius);
   cursor: pointer; transition: all 0.18s;
   font-family: inherit; font-size: 14px; font-weight: 600;
   color: var(--text); text-align: left;
 }
+[data-theme="dark"] .btn-social {
+  background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12);
+}
 .btn-social:hover {
-  background: var(--glass-bg-deep);
-  border-color: var(--glass-border);
-  box-shadow: var(--glass-shadow-sm);
+  border-color: var(--accent);
+  box-shadow: 0 2px 12px var(--accent-glow);
   transform: translateY(-1px);
 }
 .btn-social:active { transform: scale(0.99); box-shadow: none; }
-.btn-social-icon {
-  width: 22px; height: 22px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-}
+.btn-social-icon { width: 22px; height: 22px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .btn-social-text { flex: 1; }
-.btn-social-arrow {
-  font-size: 14px; color: var(--text3);
-  transition: transform 0.15s, color 0.15s;
-}
+.btn-social-arrow { font-size: 14px; color: var(--text3); transition: transform 0.15s, color 0.15s; }
 .btn-social:hover .btn-social-arrow { transform: translateX(3px); color: var(--accent); }
-/* Google specific */
-.btn-social.google:hover { border-color: #4285f4; }
 
 /* Password sub-step (slides in) */
 .login-pw-step {
@@ -671,22 +702,19 @@ body {
   padding: 0; transition: color 0.15s; align-self: flex-start;
 }
 .btn-back-login:hover { color: var(--accent); }
-/* Google link modal */
 .google-link-info {
   font-size: 12px; color: var(--text3); line-height: 1.5;
-  background: var(--surface-tint); border-radius: var(--radius);
+  background: rgba(155,109,204,0.08); border-radius: var(--radius);
   padding: 10px 14px; margin-bottom: 4px;
 }
-
 .btn-signin {
-  width: 100%; padding: 13px;
+  width: 100%; padding: 14px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   border: none; border-radius: var(--radius);
-  color: #fff; font-size: 15px; font-weight: 600;
+  color: #fff; font-size: 15px; font-weight: 700;
   cursor: pointer; letter-spacing: 0.2px;
-  box-shadow: 0 4px 16px var(--accent-glow);
-  transition: opacity 0.2s, transform 0.1s;
-  margin-top: 4px;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  transition: opacity 0.2s, transform 0.1s; margin-top: 4px;
 }
 .btn-signin:hover { opacity: 0.90; }
 .btn-signin:active { transform: scale(0.98); }
@@ -703,11 +731,12 @@ body {
 }
 
 .login-footer {
-  border-top: 1px solid var(--glass-border2);
-  padding: 16px 32px 24px;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px; margin-top: 28px;
   display: flex; align-items: center; justify-content: space-between;
   flex-wrap: wrap; gap: 10px;
 }
+[data-theme="dark"] .login-footer { border-top-color: rgba(255,255,255,0.10); }
 .csv-hint { font-size: 12px; color: var(--text3); }
 .csv-loaded {
   font-size: 12px; color: var(--green);
@@ -721,11 +750,11 @@ body {
 .btn-load {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 12px; font-weight: 600; color: var(--accent);
-  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  background: rgba(155,109,204,0.08); border: 1px solid rgba(155,109,204,0.20);
   border-radius: 10px; padding: 7px 13px; cursor: pointer;
   transition: background 0.15s;
 }
-.btn-load:hover { background: var(--glass-bg-hover); }
+.btn-load:hover { background: rgba(155,109,204,0.14); }
 
 /* ════════════════════════════════
    APP SCREEN
@@ -761,7 +790,6 @@ body {
   background: var(--glass-border); position: relative; transition: background 0.2s;
 }
 [data-theme="dark"] .pill-track { background: var(--accent); }
-[data-theme="dark"] .login-card { background: rgba(15,15,30,0.92); }
 .pill-knob {
   position: absolute; top: 2px; left: 2px;
   width: 14px; height: 14px; border-radius: 50%;
@@ -2291,11 +2319,14 @@ mark.gsr-highlight {
 
   /* OTP digits: smaller */
 
-  /* Login card: full width */
-  .login-card { border-radius: var(--radius-lg); }
-  .login-hero { padding: 24px 22px 20px; }
-  .login-body { padding: 20px 22px 18px; }
-  .login-footer { padding: 14px 22px 20px; }
+  /* Login split: stack vertically on mobile */
+  #loginScreen { flex-direction: column; }
+  .login-left { width: 100%; min-height: auto; padding: 28px 24px 24px; }
+  .login-left-brand { margin-bottom: 0; }
+  .login-left-content { display: none; }
+  .login-right { padding: 32px 24px 40px; min-height: auto; }
+  .login-form-title { font-size: 22px; }
+  .login-form-sub { margin-bottom: 24px; }
 
   /* Toast: full width bottom */
   .toast { bottom: 0; right: 0; left: 0; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
@@ -2329,97 +2360,140 @@ mark.gsr-highlight {
      LOGIN SCREEN
 ════════════════════════════════ -->
 <div id="loginScreen">
-  <div class="login-bg-canvas">
-    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
-          <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(99,179,237,0.07)" stroke-width="1"/>
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grid)"/>
-      <!-- Floating laptop icons -->
-      <g opacity="0.06" stroke="rgba(147,197,253,1)" stroke-width="1.5" fill="none">
-        <g transform="translate(8%,12%)"><rect x="0" y="0" width="28" height="18" rx="2"/><line x1="-3" y1="19" x2="31" y2="19"/></g>
-        <g transform="translate(85%,8%)"><rect x="0" y="0" width="28" height="18" rx="2"/><line x1="-3" y1="19" x2="31" y2="19"/></g>
-        <g transform="translate(5%,72%)"><rect x="0" y="0" width="22" height="14" rx="2"/><line x1="-2" y1="15" x2="24" y2="15"/></g>
-        <g transform="translate(88%,75%)"><rect x="0" y="0" width="22" height="14" rx="2"/><line x1="-2" y1="15" x2="24" y2="15"/></g>
-        <g transform="translate(45%,5%)"><rect x="0" y="0" width="20" height="13" rx="2"/><line x1="-2" y1="14" x2="22" y2="14"/></g>
-        <g transform="translate(48%,85%)"><rect x="0" y="0" width="20" height="13" rx="2"/><line x1="-2" y1="14" x2="22" y2="14"/></g>
-        <g transform="translate(20%,42%)"><rect x="0" y="0" width="18" height="12" rx="2"/><line x1="-2" y1="13" x2="20" y2="13"/></g>
-        <g transform="translate(75%,40%)"><rect x="0" y="0" width="18" height="12" rx="2"/><line x1="-2" y1="13" x2="20" y2="13"/></g>
-      </g>
-      <!-- Circuit lines -->
-      <g opacity="0.05" stroke="rgba(147,197,253,1)" stroke-width="1" fill="none">
-        <polyline points="0,200 120,200 120,350 280,350"/>
-        <polyline points="100%,300 80%,300 80%,150 60%,150"/>
-        <polyline points="0,500 200,500 200,420 350,420 350,500"/>
-        <circle cx="120" cy="200" r="3" fill="rgba(147,197,253,0.4)"/>
-        <circle cx="120" cy="350" r="3" fill="rgba(147,197,253,0.4)"/>
-        <circle cx="280" cy="350" r="5" fill="rgba(147,197,253,0.3)" stroke-width="2"/>
-        <circle cx="200" cy="500" r="3" fill="rgba(147,197,253,0.4)"/>
-        <circle cx="350" cy="420" r="4" fill="rgba(147,197,253,0.35)"/>
-      </g>
-    </svg>
+
+  <!-- LEFT DECORATIVE PANEL -->
+  <div class="login-left">
+    <div class="login-left-deco1"></div>
+    <div class="login-left-deco2"></div>
+    <div class="login-left-deco3"></div>
+    <div class="login-left-deco4"></div>
+
+    <!-- Brand -->
+    <div class="login-left-brand">
+      <div class="login-left-logo-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="4" width="20" height="13" rx="2" stroke="white" stroke-width="1.8" fill="none"/>
+          <path d="M8 17v1a2 2 0 002 2h4a2 2 0 002-2v-1" stroke="white" stroke-width="1.8"/>
+          <line x1="0" y1="19" x2="24" y2="19" stroke="white" stroke-width="1.8"/>
+        </svg>
+      </div>
+      <div>
+        <div class="login-left-brand-name">AssetVault</div>
+        <div class="login-left-brand-sub">Laptop Asset Inventory</div>
+      </div>
+    </div>
+
+    <!-- Headline + illustration -->
+    <div class="login-left-content">
+      <h1 class="login-left-headline">Manage every asset,<br>effortlessly.</h1>
+      <p class="login-left-tagline">Centralized laptop tracking for your IT department. Real-time status, deployment history, and full inventory — all in one place.</p>
+
+      <!-- SVG illustration -->
+      <svg class="login-left-illustration" viewBox="0 0 340 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Laptop body -->
+        <rect x="90" y="38" width="160" height="102" rx="9" fill="rgba(255,255,255,0.13)" stroke="rgba(255,255,255,0.38)" stroke-width="2"/>
+        <!-- Screen area -->
+        <rect x="100" y="48" width="140" height="84" rx="5" fill="rgba(255,255,255,0.09)"/>
+        <!-- Screen header bar -->
+        <rect x="100" y="48" width="140" height="16" rx="4" fill="rgba(255,255,255,0.14)"/>
+        <!-- Traffic light dots -->
+        <circle cx="111" cy="56" r="3" fill="rgba(255,255,255,0.40)"/>
+        <circle cx="121" cy="56" r="3" fill="rgba(255,255,255,0.30)"/>
+        <circle cx="131" cy="56" r="3" fill="rgba(255,255,255,0.25)"/>
+        <!-- Screen content lines -->
+        <rect x="108" y="72" width="55" height="5" rx="2.5" fill="rgba(255,255,255,0.40)"/>
+        <rect x="108" y="83" width="38" height="4" rx="2" fill="rgba(255,255,255,0.22)"/>
+        <rect x="108" y="93" width="72" height="4" rx="2" fill="rgba(255,255,255,0.16)"/>
+        <rect x="108" y="103" width="60" height="4" rx="2" fill="rgba(255,255,255,0.14)"/>
+        <rect x="108" y="113" width="44" height="4" rx="2" fill="rgba(255,255,255,0.12)"/>
+        <!-- Chart bars -->
+        <rect x="176" y="84" width="14" height="28" rx="3" fill="rgba(255,255,255,0.30)"/>
+        <rect x="194" y="74" width="14" height="38" rx="3" fill="rgba(255,255,255,0.22)"/>
+        <rect x="212" y="80" width="14" height="32" rx="3" fill="rgba(255,255,255,0.27)"/>
+        <!-- Base -->
+        <path d="M68 143 L78 140 L262 140 L272 143 L280 150 L60 150 Z" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
+        <!-- Touchpad -->
+        <rect x="148" y="144" width="44" height="3" rx="1.5" fill="rgba(255,255,255,0.20)"/>
+        <!-- Status card: Active -->
+        <rect x="22" y="50" width="62" height="30" rx="8" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.24)" stroke-width="1.5"/>
+        <circle cx="36" cy="65" r="5" fill="rgba(95,212,168,0.85)"/>
+        <rect x="45" y="61" width="30" height="5" rx="2.5" fill="rgba(255,255,255,0.45)"/>
+        <rect x="45" y="70" width="20" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
+        <!-- Status card: Repair -->
+        <rect x="256" y="50" width="62" height="30" rx="8" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.24)" stroke-width="1.5"/>
+        <circle cx="270" cy="65" r="5" fill="rgba(240,176,112,0.85)"/>
+        <rect x="279" y="61" width="30" height="5" rx="2.5" fill="rgba(255,255,255,0.45)"/>
+        <rect x="279" y="70" width="20" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
+        <!-- Floating count card -->
+        <rect x="260" y="100" width="70" height="46" rx="9" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>
+        <rect x="270" y="111" width="22" height="22" rx="6" fill="rgba(255,255,255,0.18)"/>
+        <rect x="296" y="114" width="26" height="6" rx="3" fill="rgba(255,255,255,0.48)"/>
+        <rect x="296" y="125" width="18" height="5" rx="2.5" fill="rgba(255,255,255,0.26)"/>
+        <!-- Small laptop card -->
+        <rect x="10" y="105" width="58" height="40" rx="8" fill="rgba(255,255,255,0.10)" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+        <rect x="20" y="115" width="38" height="22" rx="4" fill="rgba(255,255,255,0.10)"/>
+        <rect x="24" y="119" width="20" height="3" rx="1.5" fill="rgba(255,255,255,0.35)"/>
+        <rect x="24" y="125" width="14" height="3" rx="1.5" fill="rgba(255,255,255,0.20)"/>
+        <line x1="17" y1="138" x2="51" y2="138" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>
+      </svg>
+
+      <div class="login-left-dots">
+        <span class="active"></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
   </div>
-  <div class="login-version">v1.0</div>
-  <div class="login-card">
-    <div class="login-hero">
-      <div class="login-logo">
-        <div class="login-logo-icon">
-          <!-- laptop icon -->
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="2" y="4" width="20" height="13" rx="2" stroke="white" stroke-width="1.8" fill="none"/>
-            <path d="M8 17v1a2 2 0 002 2h4a2 2 0 002-2v-1" stroke="white" stroke-width="1.8"/>
-            <line x1="0" y1="19" x2="24" y2="19" stroke="white" stroke-width="1.8"/>
-          </svg>
-        </div>
-        <span class="login-brand">AssetVault</span>
-      </div>
-      <div class="login-sub">Laptop Asset Inventory</div>
-    </div>
-    <div class="login-body">
-      <!-- Step 1: Choose method -->
-      <div class="login-step" id="loginStep1">
-        <div class="field-wrap">
-          <label class="field-label">Username</label>
-          <input type="text" class="field-input" id="loginUser"
-            placeholder="Enter your username"
-            autocomplete="username">
-        </div>
-        <!-- Password -->
-        <button class="btn-social password-mfa" onclick="openPasswordStep()">
-          <span class="btn-social-icon">🔐</span>
-          <span class="btn-social-text">Continue with Password</span>
-          <span class="btn-social-arrow">→</span>
-        </button>
-        <div class="login-error" id="loginError" style="margin-top:10px;"></div>
-      </div>
 
-      <!-- Step 2: Password + MFA -->
-      <div class="login-pw-step" id="loginStep2">
-        <button class="btn-back-login" onclick="closePasswordStep()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-          Back
-        </button>
-        <div style="font-size:13px;color:var(--text2);font-weight:600;padding:4px 0 2px;">
-          Signing in as <span id="loginUserConfirm" style="color:var(--accent)"></span>
+  <!-- RIGHT FORM PANEL -->
+  <div class="login-right">
+    <div class="login-version">v1.0</div>
+    <div class="login-form-wrap">
+      <h2 class="login-form-title">Login to account</h2>
+      <p class="login-form-sub">Access your IT asset management dashboard.</p>
+
+      <div class="login-body">
+        <!-- Step 1: Username -->
+        <div class="login-step" id="loginStep1">
+          <div class="field-wrap">
+            <label class="field-label">Username</label>
+            <input type="text" class="field-input" id="loginUser"
+              placeholder="Enter your username"
+              autocomplete="username">
+          </div>
+          <button class="btn-social password-mfa" onclick="openPasswordStep()">
+            <span class="btn-social-icon">🔐</span>
+            <span class="btn-social-text">Continue with Password</span>
+            <span class="btn-social-arrow">→</span>
+          </button>
+          <div class="login-error" id="loginError" style="margin-top:10px;"></div>
         </div>
-        <div class="field-wrap">
-          <label class="field-label">Password</label>
-          <input type="password" class="field-input" id="loginPass"
-            placeholder="Enter your password"
-            autocomplete="current-password"
-            onkeydown="if(event.key==='Enter')doLogin()">
+
+        <!-- Step 2: Password -->
+        <div class="login-pw-step" id="loginStep2">
+          <button class="btn-back-login" onclick="closePasswordStep()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+          </button>
+          <div style="font-size:13px;color:var(--text2);font-weight:600;padding:4px 0 2px;">
+            Signing in as <span id="loginUserConfirm" style="color:var(--accent)"></span>
+          </div>
+          <div class="field-wrap">
+            <label class="field-label">Password</label>
+            <input type="password" class="field-input" id="loginPass"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              onkeydown="if(event.key==='Enter')doLogin()">
+          </div>
+          <div class="login-error" id="loginError2"></div>
+          <button class="btn-signin" onclick="doLogin()">Sign in →</button>
         </div>
-        <div class="login-error" id="loginError2"></div>
-        <button class="btn-signin" onclick="doLogin()">Continue →</button>
       </div>
 
-
-    </div>
-    <div class="login-footer">
-      <div class="csv-hint" style="font-size:12px;color:var(--text3);">AssetVault · IT Department</div>
-      <div style="font-size:11px;color:var(--text3);">Contact your IT admin for access</div>
+      <div class="login-footer">
+        <div class="csv-hint">AssetVault · IT Department</div>
+        <div style="font-size:11px;color:var(--text3);">Contact your IT admin for access</div>
+      </div>
     </div>
   </div>
 </div>
