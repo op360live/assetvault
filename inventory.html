@@ -1563,7 +1563,7 @@ mark.gsr-highlight {
 
   <!-- RIGHT FORM PANEL -->
   <div class="login-right">
-    <div class="login-version">Delivery v2.1 · Turso</div>
+    <div class="login-version">Delivery v2.5 · Turso</div>
     <div class="login-form-wrap">
       <h2 class="login-form-title">Login to account</h2>
       <p class="login-form-sub">Access your IT asset delivery dashboard.</p>
@@ -2509,6 +2509,7 @@ mark.gsr-highlight {
 const TURSO_URL   = 'https://turso-proxy.rcabil-op360.workers.dev';
 const TURSO_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJleHAiOjE4MDg0MjkwMjMsImlhdCI6MTc3Njg5MzAyMywiaWQiOiIwMTlkYjcxMS1jNDAxLTdiZDgtODUyNy00MGUzYTEzMmM5MzkiLCJyaWQiOiIwMTY1NjhiOC03NjE0LTRjNjAtYWI3Zi0yZjY5YzQ3MDhjMTYifQ.-rLfhTh8wuECeovdGDgnduzA_WYtMC4L8JJZz-mRQ1nO6mCGAkYvS_YzR_CHAnogNFcLNow7RSRRebuDQfLxCA';
 
+// Standard exec — 5s timeout, for small queries
 async function tursoExec(sql, args = []) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 5000);
@@ -2529,6 +2530,49 @@ async function tursoExec(sql, args = []) {
     if (r?.type === 'error') throw new Error(r.error?.message);
     return r?.response?.result || null;
   } catch(e) { clearTimeout(timer); console.warn('[Turso]', e.message); return null; }
+}
+
+// Long exec — 60s timeout, for large result sets
+async function tursoExecLong(sql, args = []) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 60000);
+  try {
+    const res = await fetch(TURSO_URL + '/v2/pipeline', {
+      method: 'POST',
+      signal: ctrl.signal,
+      headers: { 'Authorization': 'Bearer ' + TURSO_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requests: [
+        { type: 'execute', stmt: { sql, args: args.map(v => v === null ? {type:'null'} : {type:'text', value:String(v)}) } },
+        { type: 'close' }
+      ]})
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const r = json.results?.[0];
+    if (r?.type === 'error') throw new Error(r.error?.message);
+    return r?.response?.result || null;
+  } catch(e) { clearTimeout(timer); console.warn('[Turso long]', e.message); return null; }
+}
+
+// Fetch all assets in chunks to handle large datasets (30k+)
+async function tursoFetchAllAssets() {
+  const CHUNK = 5000;
+  let offset = 0;
+  let all = [];
+  while (true) {
+    setSyncStatus(`Syncing assets… (${all.length.toLocaleString()} loaded)`);
+    const res = await tursoExecLong(
+      'SELECT data FROM assets LIMIT ? OFFSET ?',
+      [CHUNK, offset]
+    );
+    if (!res || !res.rows || res.rows.length === 0) break;
+    const chunk = res.rows.map(row => JSON.parse(row[0].value));
+    all = all.concat(chunk);
+    if (chunk.length < CHUNK) break; // last page
+    offset += CHUNK;
+  }
+  return all;
 }
 
 async function tursoBatch(stmts) {
@@ -2598,7 +2642,7 @@ async function tursoSyncAll() {
       tursoExec('SELECT data FROM users'),
       tursoExec('SELECT ikey, data FROM inventory'),
       tursoExec('SELECT data FROM audit ORDER BY ts DESC LIMIT 1000'),
-      tursoExec('SELECT data FROM assets'),
+      tursoFetchAllAssets(),
     ]);
 
     if (rRes) {
@@ -2634,8 +2678,8 @@ async function tursoSyncAll() {
       auditLogs = aRes.rows.map(row => JSON.parse(row[0].value));
       localStorage.setItem(LS_AUDIT, JSON.stringify(auditLogs));
     }
-    if (asRes) {
-      assetsDb = asRes.rows.map(row => JSON.parse(row[0].value));
+    if (asRes && Array.isArray(asRes)) {
+      assetsDb = asRes;
       _saveAssetsCache();
     }
     // If all queries returned null, the network is down but no exception was thrown
@@ -4469,27 +4513,17 @@ let _assetTypeFilters   = new Set(); // pill multi-filter: selected asset types
 let _assetTypeVisible   = false;     // show By Asset Type section only after a main card is clicked
 
 function loadAssets() {
-  try {
-    const s = JSON.parse(localStorage.getItem(LS_ASSETS));
-    if (Array.isArray(s)) assetsDb = s;
-  } catch {}
+  // With large datasets localStorage can't hold all records.
+  // Clear any stale partial cache — Turso is the source of truth.
+  // assetsDb will be populated in-memory after tursoSyncAll() completes.
+  try { localStorage.removeItem(LS_ASSETS); } catch {}
+  assetsDb = [];
 }
 
-// Safe localStorage write — trims cache to 500 most recent if quota is exceeded
+// Assets are too large for localStorage — keep in-memory only, Turso is source of truth
 function _saveAssetsCache() {
-  const MAX_CACHE = 500;
-  try {
-    localStorage.setItem(LS_ASSETS, JSON.stringify(assetsDb));
-  } catch(e) {
-    if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-      try {
-        // Keep only the most recent MAX_CACHE entries as local cache; Turso holds all data
-        const trimmed = assetsDb.slice(-MAX_CACHE);
-        localStorage.setItem(LS_ASSETS, JSON.stringify(trimmed));
-        console.warn(`[Assets] localStorage full — cached last ${MAX_CACHE} of ${assetsDb.length} records. Turso holds all data.`);
-      } catch { /* give up on caching — Turso is the source of truth */ }
-    }
-  }
+  // No-op: do not attempt to cache the full assets dataset in localStorage.
+  // All reads/writes go through tursoExec() directly.
 }
 
 async function _persistAsset(asset) {
