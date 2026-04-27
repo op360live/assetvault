@@ -2506,7 +2506,7 @@ mark.gsr-highlight {
 
 <script>
 // ── Turso (libSQL) database backend ──
-const TURSO_URL   = 'https://inventory-op360live.aws-ap-northeast-1.turso.io';
+const TURSO_URL   = 'https://turso-proxy.rcabil-op360.workers.dev';
 const TURSO_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJleHAiOjE4MDg0MjkwMjMsImlhdCI6MTc3Njg5MzAyMywiaWQiOiIwMTlkYjcxMS1jNDAxLTdiZDgtODUyNy00MGUzYTEzMmM5MzkiLCJyaWQiOiIwMTY1NjhiOC03NjE0LTRjNjAtYWI3Zi0yZjY5YzQ3MDhjMTYifQ.-rLfhTh8wuECeovdGDgnduzA_WYtMC4L8JJZz-mRQ1nO6mCGAkYvS_YzR_CHAnogNFcLNow7RSRRebuDQfLxCA';
 
 async function tursoExec(sql, args = []) {
@@ -2845,6 +2845,16 @@ window.doLogin = async function() {
   const p = document.getElementById('loginPass').value;
   if (!u || !p) { showLoginErr('Please enter your password.', 'loginError2'); return; }
   loadUsers();
+  // Always try to pull the latest user record from Turso before checking active/password
+  try {
+    const uRes = await tursoExec('SELECT data FROM users WHERE username = ?', [u.toLowerCase()]);
+    if (uRes && uRes.rows && uRes.rows.length) {
+      const fresh = JSON.parse(uRes.rows[0][0].value);
+      const idx = (_usersCache || []).findIndex(x => x.username.toLowerCase() === u.toLowerCase());
+      if (idx >= 0) _usersCache[idx] = fresh; else (_usersCache = _usersCache || []).push(fresh);
+      localStorage.setItem(LS_USERS, JSON.stringify(_usersCache));
+    }
+  } catch(e) { /* offline — fall through to local cache */ }
   const users = getUsers();
   const hash  = await hashPassword(p);
   const user  = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.passwordHash === hash);
