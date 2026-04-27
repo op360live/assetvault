@@ -1563,7 +1563,7 @@ mark.gsr-highlight {
 
   <!-- RIGHT FORM PANEL -->
   <div class="login-right">
-    <div class="login-version">Delivery v2.5 · Turso</div>
+    <div class="login-version">Delivery v2.1 · Turso</div>
     <div class="login-form-wrap">
       <h2 class="login-form-title">Login to account</h2>
       <p class="login-form-sub">Access your IT asset delivery dashboard.</p>
@@ -2504,6 +2504,22 @@ mark.gsr-highlight {
   <span id="toastMsg"></span>
 </div>
 
+<!-- IMPORT PROGRESS OVERLAY -->
+<div id="importProgressOverlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);align-items:center;justify-content:center;">
+  <div style="background:var(--card-bg);border:1px solid var(--glass-border2);border-radius:18px;padding:36px 40px;min-width:380px;max-width:480px;box-shadow:0 24px 80px rgba(0,0,0,0.4);">
+    <div style="font-size:18px;font-weight:700;margin-bottom:6px;" id="importProgressTitle">Importing Assets…</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:24px;" id="importProgressSub">Preparing…</div>
+    <div style="background:var(--surface-tint);border-radius:99px;height:10px;overflow:hidden;margin-bottom:12px;">
+      <div id="importProgressBar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width 0.3s ease;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span id="importProgressCount" style="font-size:12px;color:var(--text3);">0 / 0</span>
+      <span id="importProgressPct" style="font-size:13px;font-weight:700;color:var(--accent);">0%</span>
+    </div>
+    <div id="importProgressError" style="display:none;margin-top:16px;padding:10px 14px;background:var(--red-bg);color:var(--red);border-radius:8px;font-size:12px;"></div>
+  </div>
+</div>
+
 <script>
 // ── Turso (libSQL) database backend ──
 const TURSO_URL   = 'https://turso-proxy.rcabil-op360.workers.dev';
@@ -2592,6 +2608,26 @@ async function tursoBatch(stmts) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     return await res.json();
   } catch(e) { clearTimeout(timer); console.warn('[Turso batch]', e.message); return null; }
+}
+
+// Long-timeout batch — 60s, used for large import chunks
+async function tursoBatchLong(stmts) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 60000);
+  try {
+    const res = await fetch(TURSO_URL + '/v2/pipeline', {
+      method: 'POST',
+      signal: ctrl.signal,
+      headers: { 'Authorization': 'Bearer ' + TURSO_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requests: [
+        ...stmts.map(s => ({ type:'execute', stmt:{ sql:s.sql, args:(s.args||[]).map(v => v===null?{type:'null'}:{type:'text',value:String(v)}) } })),
+        { type: 'close' }
+      ]})
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch(e) { clearTimeout(timer); console.warn('[Turso batch long]', e.message); return null; }
 }
 
 async function tursoInit() {
@@ -5271,16 +5307,50 @@ window.handleAssetCSV = async function(e) {
 
   if (!newAssets.length) { showToast('No valid rows found in CSV.'); return; }
 
-  // Batch insert to Turso
-  const stmts = newAssets.map(a => ({
-    sql: 'INSERT OR REPLACE INTO assets (id, data) VALUES (?, ?)',
-    args: [a.id, JSON.stringify(a)]
-  }));
+  // ── Show progress overlay ──
+  const overlay  = document.getElementById('importProgressOverlay');
+  const bar      = document.getElementById('importProgressBar');
+  const sub      = document.getElementById('importProgressSub');
+  const countEl  = document.getElementById('importProgressCount');
+  const pctEl    = document.getElementById('importProgressPct');
+  const errEl    = document.getElementById('importProgressError');
+  errEl.style.display = 'none';
+  overlay.style.display = 'flex';
+  bar.style.width = '0%';
+  pctEl.textContent = '0%';
+  countEl.textContent = `0 / ${newAssets.length.toLocaleString()}`;
+  sub.textContent = `Uploading to database… (${newAssets.length.toLocaleString()} rows)`;
+
+  // ── Chunked upload — 500 rows per batch ──
+  const CHUNK = 500;
+  let uploaded = 0;
+  let errors = 0;
+  for (let i = 0; i < newAssets.length; i += CHUNK) {
+    const chunk = newAssets.slice(i, i + CHUNK);
+    const stmts = chunk.map(a => ({
+      sql: 'INSERT OR REPLACE INTO assets (id, data) VALUES (?, ?)',
+      args: [a.id, JSON.stringify(a)]
+    }));
+    const result = await tursoBatchLong(stmts);
+    if (!result) errors++;
+    uploaded += chunk.length;
+    const pct = Math.round((uploaded / newAssets.length) * 100);
+    bar.style.width = pct + '%';
+    pctEl.textContent = pct + '%';
+    countEl.textContent = `${uploaded.toLocaleString()} / ${newAssets.length.toLocaleString()}`;
+    sub.textContent = `Batch ${Math.ceil((i + CHUNK) / CHUNK)} of ${Math.ceil(newAssets.length / CHUNK)} uploaded…`;
+  }
+
+  // ── Done ──
+  overlay.style.display = 'none';
   assetsDb.push(...newAssets);
   _saveAssetsCache();
-  await tursoBatch(stmts);
   logAudit('Import Assets CSV', newAssets.length + ' rows from ' + file.name);
-  showToast(newAssets.length + ' assets imported from ' + file.name + '.');
+  if (errors > 0) {
+    showToast(`Import done with ${errors} failed batch(es). Check connection.`, true);
+  } else {
+    showToast(newAssets.length.toLocaleString() + ' assets imported from ' + file.name + '.');
+  }
   renderAssets();
 };
 
