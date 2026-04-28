@@ -5517,9 +5517,9 @@ window.onGlobalSearchKey = function(e) {
     if (q) {
       document.getElementById('globalSearchResults').classList.remove('open');
       document.getElementById('globalSearchInput').value = '';
-      switchView('deliveries');
-      const bar = document.getElementById('searchInput');
-      if (bar) { bar.value = q; renderTable(); }
+      switchView('assets');
+      const bar = document.getElementById('assetSearchInput');
+      if (bar) { bar.value = q; renderAssets(); }
     }
   }
 };
