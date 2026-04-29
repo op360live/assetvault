@@ -2731,14 +2731,7 @@ async function tursoSyncAll() {
           tursoExec('INSERT OR IGNORE INTO users (username, data) VALUES (?, ?)', [seed.username, JSON.stringify(seed)]);
         }
       }
-      if (_usersCache) {
-        for (const local of _usersCache) {
-          if (!merged.find(u => u.username === local.username)) {
-            merged.push({...local});
-            tursoExec('INSERT OR IGNORE INTO users (username, data) VALUES (?, ?)', [local.username, JSON.stringify(local)]);
-          }
-        }
-      }
+      // Turso is source of truth — do NOT push local-cache-only users back
       _usersCache = merged;
       localStorage.setItem(LS_USERS, JSON.stringify(_usersCache));
     }
