@@ -2187,7 +2187,25 @@ function fmtDate(d) {
 ══════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', async function() {
   loadTheme();
-  tursoInit();
+  await tursoInit();
+
+  loadUsers();
+  // Sync users from Turso so deleted users are purged from local cache
+  try {
+    const uRes = await tursoExec('SELECT data FROM users');
+    if (uRes && uRes.rows && uRes.rows.length) {
+      const tursoUsers = uRes.rows.map(row => JSON.parse(row[0].value));
+      const merged = [...tursoUsers];
+      for (const seed of SEEDED_USERS) {
+        if (!merged.find(u => u.username === seed.username)) {
+          merged.push({...seed});
+          tursoExec('INSERT OR IGNORE INTO users (username, data) VALUES (?, ?)', [seed.username, JSON.stringify(seed)]);
+        }
+      }
+      _usersCache = merged;
+      localStorage.setItem(LS_USERS, JSON.stringify(_usersCache));
+    }
+  } catch(e) { /* offline — keep existing local cache */ }
 
   setTimeout(() => {
     document.getElementById('splashScreen').classList.add('fade-out');
