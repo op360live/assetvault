@@ -3349,12 +3349,13 @@ async function doLogin(){
     return;
   }
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
   showApp();
 }
 
 async function doLogout(){
   await stopPresence();
-  sessionStorage.removeItem(SESSION_KEY); currentUser = null;
+  sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem('assetvault_session'); currentUser = null;
   const as = document.getElementById('appScreen');
   as.classList.remove('active'); as.style.display = '';
   const ls = document.getElementById('loginScreen');
@@ -3369,6 +3370,10 @@ function checkSession(){
   try {
     const s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
     if (s && s.username) { currentUser = s; return true; }
+  } catch {}
+  try {
+    const s = JSON.parse(localStorage.getItem('assetvault_session'));
+    if (s && s.username) { currentUser = s; sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); return true; }
   } catch {}
   return false;
 }
@@ -4659,6 +4664,7 @@ window.doForceChangePassword = async function() {
   addAuditEntryFS('edit','Changed password (first login)','');
   currentUser = {...user};
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
   document.getElementById('forceChangePwOverlay').classList.remove('open');
   showToast('Password updated successfully.');
   await showApp();
@@ -4712,6 +4718,7 @@ async function saveProfile(){
   await saveUsers(users);
   currentUser=users[i];
   sessionStorage.setItem(SESSION_KEY,JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
   const newName=currentUser.displayName||currentUser.username;
   document.getElementById('userNameDisplay').textContent=newName;
   document.getElementById('userAvatar').textContent=newName.slice(0,2).toUpperCase();
