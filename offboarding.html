@@ -394,9 +394,10 @@ body {
 [data-theme="dark"] #loginScreen { background: #110d1c; }
 [data-theme="dark"] .login-right { background: #110d1c; }
 [data-theme="dark"] .login-left { background: linear-gradient(150deg, #7a1a2a 0%, #b03a4a 55%, #c05a70 100%); }
-.login-form-wrap { width: 100%; max-width: 400px; }
-.login-form-title { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.8px; margin-bottom: 8px; }
-.login-form-sub { font-size: 14px; color: var(--text3); margin-bottom: 36px; line-height: 1.5; }
+.login-form-wrap { width: 100%; max-width: 420px; background: #fff; border-radius: 12px; padding: 48px 44px; box-shadow: 0 32px 80px rgba(80,40,140,0.13), 0 8px 28px rgba(0,0,0,0.07); }
+[data-theme="dark"] .login-form-wrap { background: #251a3a; border: 1px solid rgba(155,109,204,0.20); box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 24px 60px rgba(0,0,0,0.50), 0 0 40px rgba(120,60,200,0.12); }
+.login-form-title { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.8px; margin-bottom: 8px; text-align: center; }
+.login-form-sub { font-size: 14px; color: var(--text3); margin-bottom: 36px; line-height: 1.5; text-align: center; }
 .login-body { display: flex; flex-direction: column; gap: 16px; }
 .field-wrap { display: flex; flex-direction: column; gap: 7px; }
 .field-label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; }
@@ -428,8 +429,21 @@ body {
 .login-error.show { display: block; }
 @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
 
-.login-footer { border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-[data-theme="dark"] .login-footer { border-top-color: rgba(255,255,255,0.10); }
+.login-app-nav { margin-top: 24px; }
+.login-app-nav-divider { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.login-app-nav-divider::before, .login-app-nav-divider::after { content: ''; flex: 1; height: 1px; background: #c8c8d0; }
+[data-theme="dark"] .login-app-nav-divider::before, [data-theme="dark"] .login-app-nav-divider::after { background: rgba(255,255,255,0.18); }
+.login-app-nav-divider span { font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: 0.10em; white-space: nowrap; }
+.login-app-nav-links { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.login-app-nav-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  color: var(--text2); background: var(--card); border: 1px solid var(--border);
+  text-decoration: none; transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.login-app-nav-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.login-footer { border-top: 1px solid rgba(0,0,0,0.07); padding-top: 20px; margin-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+[data-theme="dark"] .login-footer { border-top-color: rgba(255,255,255,0.08); }
 
 /* ══════════════════════════════
    GLASS MIXIN
@@ -748,6 +762,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(
   .acct-btn { padding:4px 8px 4px 4px; }
 }
 @media (max-width: 480px) {
+  .login-form-wrap { padding: 32px 24px; border-radius: 8px; }
   .stats-grid { grid-template-columns:repeat(2,1fr); }
   .overlay { padding:8px; align-items:flex-end; }
   .modal { border-radius:var(--radius-xl) var(--radius-xl) 0 0; max-height:96vh; border-bottom:none; }
@@ -823,6 +838,20 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(
           </div>
           <div class="login-error" id="loginError2"></div>
           <button class="btn-signin" onclick="doLogin()">Sign In →</button>
+        </div>
+      </div>
+
+      <div class="login-app-nav">
+        <div class="login-app-nav-divider"><span>SWITCH TO</span></div>
+        <div class="login-app-nav-links">
+          <a class="login-app-nav-btn" href="laptop-asset-inventory_v1.0.html">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="19" x2="24" y2="19"/></svg>
+            Laptop Inventory
+          </a>
+          <a class="login-app-nav-btn" href="asset register.html">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+            Asset Register
+          </a>
         </div>
       </div>
 
