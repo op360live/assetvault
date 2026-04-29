@@ -1654,20 +1654,6 @@ mark.gsr-highlight {
         </svg>
         <span class="sb-item-label">Dashboard</span>
       </button>
-      <button class="sb-item" id="navDeliveries" onclick="switchView('deliveries')" title="Deliveries">
-        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="7" width="20" height="14" rx="2"/>
-          <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
-        </svg>
-        <span class="sb-item-label">Deliveries</span>
-      </button>
-      <button class="sb-item" id="navInventory" onclick="switchView('inventory')" title="Inventory">
-        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-        <span class="sb-item-label">Inventory</span>
-      </button>
       <button class="sb-item" id="navAssets" onclick="switchView('assets')" title="Asset Register">
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="3" width="20" height="14" rx="2"/>
@@ -1675,6 +1661,20 @@ mark.gsr-highlight {
           <line x1="12" y1="17" x2="12" y2="21"/>
         </svg>
         <span class="sb-item-label">Asset Register</span>
+      </button>
+      <button class="sb-item" id="navInventory" onclick="switchView('inventory')" title="PO Inventory">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span class="sb-item-label">PO Inventory</span>
+      </button>
+      <button class="sb-item" id="navDeliveries" onclick="switchView('deliveries')" title="Deliveries">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+        </svg>
+        <span class="sb-item-label">Deliveries</span>
       </button>
 
       <div class="sb-divider"></div>
@@ -2014,6 +2014,23 @@ mark.gsr-highlight {
         </select>
         <select class="filter-select" id="assetSiteFilter" onchange="_assetSiteFilters.clear();_updateAssetSiteBtn();_assetPage=1;renderAssets()">
           <option value="">All Sites</option>
+          <option>DMD</option>
+          <option>EB2</option>
+          <option>EB3</option>
+          <option>ET</option>
+          <option>SDP</option>
+          <option>WFH</option>
+        </select>
+        <select class="filter-select" id="assetEolFilter" onchange="_assetPage=1;renderAssets()">
+          <option value="">All EOL</option>
+          <option value="YES">EOL: Yes</option>
+          <option value="NO">EOL: No</option>
+        </select>
+        <select class="filter-select" id="assetValueFilter" onchange="_assetPage=1;renderAssets()">
+          <option value="">All Asset Value</option>
+          <option value="LOW">Value: Low</option>
+          <option value="MEDIUM">Value: Medium</option>
+          <option value="HIGH">Value: High</option>
         </select>
         <!-- hidden CSV input -->
         <input type="file" id="assetCSVInput" accept=".csv" style="display:none" onchange="handleAssetCSV(event)">
@@ -2452,7 +2469,7 @@ mark.gsr-highlight {
     </div>
     <div class="modal-body">
       <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px;">
-        <div class="fg"><label>Site</label><input type="text" id="af_site" placeholder="e.g. EB2" autocomplete="off"></div>
+        <div class="fg"><label>Site</label><select id="af_site"><option value="">— Select —</option><option>DMD</option><option>EB2</option><option>EB3</option><option>ET</option><option>SDP</option><option>WFH</option></select></div>
         <div class="fg"><label>Asset Tag</label><input type="text" id="af_assetTag" placeholder="e.g. AST-0001" autocomplete="off"></div>
         <div class="fg"><label>Quantity</label><input type="number" id="af_quantity" placeholder="1" min="1" value="1"></div>
         <div class="fg"><label>Floor</label><input type="text" id="af_floor" placeholder="e.g. 3F" autocomplete="off"></div>
@@ -2471,8 +2488,8 @@ mark.gsr-highlight {
         <div class="fg"><label>Manufacturer</label><input type="text" id="af_manufacturer" placeholder="e.g. Lenovo" autocomplete="off"></div>
         <div class="fg"><label>Service Tag / Serial #</label><input type="text" id="af_serialNumber" placeholder="e.g. SVC-00123" autocomplete="off"></div>
         <div class="fg"><label>Custodian</label><input type="text" id="af_custodian" placeholder="e.g. J. Dela Cruz" autocomplete="off"></div>
-        <div class="fg"><label>Asset Value</label><input type="text" id="af_assetValue" placeholder="e.g. 45000" autocomplete="off"></div>
-        <div class="fg"><label>EOL (End of Life)</label><input type="text" id="af_eol" placeholder="e.g. 2027-12-31" autocomplete="off"></div>
+        <div class="fg"><label>Asset Value</label><select id="af_assetValue"><option value="">— Select —</option><option>LOW</option><option>MEDIUM</option><option>HIGH</option></select></div>
+        <div class="fg"><label>EOL (End of Life)</label><select id="af_eol"><option value="">— Select —</option><option>YES</option><option>NO</option></select></div>
         <div class="fg"><label>Asset Age</label><input type="text" id="af_assetAge" placeholder="e.g. 2 years" autocomplete="off"></div>
         <div class="fg">
           <label>Status</label>
@@ -4781,6 +4798,10 @@ window.clearAllAssetFilters = function() {
   if (siSel) siSel.value = '';
   const tfSel = document.getElementById('assetTypeFilter');
   if (tfSel) tfSel.value = '';
+  const efSel = document.getElementById('assetEolFilter');
+  if (efSel) efSel.value = '';
+  const vfSel = document.getElementById('assetValueFilter');
+  if (vfSel) vfSel.value = '';
   const srch = document.getElementById('assetSearchInput');
   if (srch) srch.value = '';
   _updateAssetSiteBtn();
@@ -4806,6 +4827,10 @@ function _renderAssetFilterChips() {
   if (tf && _assetTypeFilters.size === 0) chips.push({ key:'type', label: 'Type: ' + tf });
   const sf = document.getElementById('assetStatusFilter')?.value;
   if (sf && !_assetStatusFilters.size) chips.push({ key:'statusdrop', label: 'Status: ' + sf });
+  const ef = document.getElementById('assetEolFilter')?.value;
+  if (ef) chips.push({ key:'eol', label: 'EOL: ' + ef });
+  const vf = document.getElementById('assetValueFilter')?.value;
+  if (vf) chips.push({ key:'assetvalue', label: 'Value: ' + vf });
   const q = document.getElementById('assetSearchInput')?.value?.trim();
   if (q) chips.push({ key:'search', label: 'Search: "' + q + '"' });
 
@@ -4824,6 +4849,8 @@ window._removeAssetFilter = function(key) {
   if (key === 'statusdrop') { document.getElementById('assetStatusFilter').value = ''; }
   if (key === 'typeset')    { _assetTypeFilters.clear(); document.getElementById('assetTypeFilter').value = ''; }
   if (key === 'type')       { document.getElementById('assetTypeFilter').value = ''; }
+  if (key === 'eol')        { document.getElementById('assetEolFilter').value = ''; }
+  if (key === 'assetvalue') { document.getElementById('assetValueFilter').value = ''; }
   if (key === 'search')     { document.getElementById('assetSearchInput').value = ''; }
   _assetPage = 1;
   renderAssets();
@@ -4925,11 +4952,24 @@ function renderAssets(skipStats) {
   // Stale-cache path: stats shimmer, table still shows local data
   if (!skipStats) renderAssetStats(); // shows shimmer on values when _assetSyncing=true
   _renderAssetFilterChips();
-  _buildAssetSiteOptions();
   const q  = (document.getElementById('assetSearchInput')?.value || '').toLowerCase();
   const sf = document.getElementById('assetStatusFilter')?.value || '';
   const tf = document.getElementById('assetTypeFilter')?.value  || '';
   const si = document.getElementById('assetSiteFilter')?.value  || '';
+  const ef = document.getElementById('assetEolFilter')?.value   || '';
+  const vf = document.getElementById('assetValueFilter')?.value || '';
+
+  // Asset Value — handles both string labels (LOW/MEDIUM/HIGH) and legacy numeric values
+  const VALUE_LOW = 20000, VALUE_HIGH = 50000;
+  function _valueRange(a) {
+    const raw = (a.assetValue || '').toString().trim().toUpperCase();
+    if (raw === 'LOW' || raw === 'MEDIUM' || raw === 'HIGH') return raw;
+    const v = parseFloat(raw.replace(/[^0-9.]/g, ''));
+    if (isNaN(v)) return '';
+    if (v < VALUE_LOW)  return 'LOW';
+    if (v >= VALUE_HIGH) return 'HIGH';
+    return 'MEDIUM';
+  }
 
   const FIELDS = ['site','assetTag','floor','assetType','deviceModel','manufacturer',
                   'serialNumber','custodian','assetValue','eol','assetAge',
@@ -4938,7 +4978,13 @@ function renderAssets(skipStats) {
   let filtered = assetsDb.filter(a => {
     if (sf && a.status !== sf) return false;
     if (tf && a.assetType !== tf) return false;
-    if (si && a.site !== si) return false;
+    if (si && (a.site||'').trim() !== si) return false;
+    if (ef) {
+      const eolVal = (a.eol || '').trim().toUpperCase();
+      if (ef === 'YES' && eolVal !== 'YES') return false;
+      if (ef === 'NO'  && eolVal === 'YES') return false;
+    }
+    if (vf && _valueRange(a) !== vf) return false;
     if (_assetStatusFilters.size > 0 && !_assetStatusFilters.has(a.status)) return false;
     if (_assetSiteFilters.size > 0 && !_assetSiteFilters.has((a.site||'').trim())) return false;
     if (_assetTypeFilters.size > 0 && !_assetTypeFilters.has((a.assetType||'').trim())) return false;
