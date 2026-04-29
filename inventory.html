@@ -2994,6 +2994,7 @@ window.doLogin = async function() {
   }
 
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
   await showApp();
 };
 
@@ -3001,6 +3002,7 @@ window.doLogout = function() {
   const username = currentUser?.username || 'unknown';
   logAudit('Logout', username);
   sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem('assetvault_session');
   currentUser = null;
   document.getElementById('appScreen').classList.remove('active');
   document.getElementById('loginScreen').style.display = 'flex';
@@ -3013,6 +3015,10 @@ function checkSession() {
   try {
     const s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
     if (s && s.username) { currentUser = s; return true; }
+  } catch {}
+  try {
+    const s = JSON.parse(localStorage.getItem('assetvault_session'));
+    if (s && s.username) { currentUser = s; sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); return true; }
   } catch {}
   return false;
 }
@@ -4308,6 +4314,7 @@ window.saveUserForm = async function() {
     if (_editingUsername === currentUser?.username) {
       currentUser = {...user};
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+      localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
     }
     showToast(`User @${uname} updated.`);
   }
@@ -4384,6 +4391,7 @@ window.doForceChangePassword = async function() {
 
   currentUser = {...user};
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
 
   document.getElementById('forceChangePwOverlay').classList.remove('open');
   showToast('Password updated successfully.');
