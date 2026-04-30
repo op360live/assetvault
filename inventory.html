@@ -126,8 +126,7 @@ body {
   position: sticky;
   top: 0;
   height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   z-index: 50;
   transition: width 0.22s cubic-bezier(.4,0,.2,1), background 0.3s, border-color 0.3s;
 }
@@ -948,6 +947,93 @@ mark.gsr-highlight {
   white-space: nowrap;
 }
 .al-details { color: var(--text2); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.al-changes { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+.al-change-row { display: flex; align-items: baseline; gap: 6px; font-size: 11px; }
+.al-change-field { font-weight: 700; color: var(--text2); min-width: 120px; flex-shrink: 0; }
+.al-change-old { color: var(--red); text-decoration: line-through; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.al-change-arrow { color: var(--text3); flex-shrink: 0; }
+.al-change-new { color: var(--green); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.al-change-val { color: var(--text2); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.al-pagination {
+  display: flex; align-items: center; gap: 4px;
+  padding: 12px 16px; flex-wrap: wrap;
+  border-top: 1px solid var(--sidebar-border);
+  background: var(--card-bg);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+[data-theme="dark"] .al-pagination {
+  border-top-color: var(--glass-border2);
+  background: var(--glass-bg);
+}
+.al-pg-btn {
+  padding: 4px 10px; border-radius: 6px; border: 1px solid var(--sidebar-border);
+  background: var(--search-bg); color: var(--text2);
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+}
+.al-pg-btn:hover:not(:disabled) { background: var(--accent); color: #fff; border-color: var(--accent); }
+.al-pg-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
+.al-pg-btn:disabled { opacity: 0.4; cursor: default; }
+.al-pg-ellipsis { padding: 4px 6px; color: var(--text3); font-size: 12px; }
+.al-pg-info { margin-left: auto; font-size: 11px; color: var(--text3); }
+
+/* ══════════════════════════════
+   SESSION TIMEOUT WARNING
+══════════════════════════════ */
+#sessionWarnOverlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center;
+}
+#sessionWarnOverlay.open { display: flex; }
+.session-warn-box {
+  background: var(--card-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  padding: 36px 40px 28px;
+  max-width: 400px; width: 90%;
+  text-align: center;
+  animation: fadeInUp 0.25s ease;
+}
+[data-theme="dark"] .session-warn-box {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+.session-warn-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--amber-bg); color: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 24px;
+}
+.session-warn-title {
+  font-size: 17px; font-weight: 700; color: var(--text);
+  margin-bottom: 8px;
+}
+.session-warn-msg {
+  font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.5;
+}
+#sessionCountdown {
+  font-size: 28px; font-weight: 800; color: var(--red);
+  display: block; margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.session-warn-btns { display: flex; gap: 10px; justify-content: center; }
+.session-warn-btns .btn-stay {
+  padding: 9px 24px; border-radius: 8px;
+  background: var(--accent); color: #fff;
+  border: none; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.session-warn-btns .btn-stay:hover { opacity: 0.85; }
+.session-warn-btns .btn-logout-now {
+  padding: 9px 20px; border-radius: 8px;
+  background: transparent; color: var(--text3);
+  border: 1px solid var(--sidebar-border);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+}
+.session-warn-btns .btn-logout-now:hover { color: var(--red); border-color: var(--red); }
 
 /* ══════════════════════════════
    DASHBOARD
@@ -1735,7 +1821,7 @@ mark.gsr-highlight {
       <div class="sb-divider"></div>
       <div class="sb-section-label">IT Tools</div>
 
-      <button class="sb-item" onclick="exportCSV()" title="Export CSV">
+      <button class="sb-item" onclick="exportAssetsCSV()" title="Export CSV">
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="8 17 12 21 16 17"/>
           <line x1="12" y1="12" x2="12" y2="21"/>
@@ -1743,12 +1829,13 @@ mark.gsr-highlight {
         </svg>
         <span class="sb-item-label">Export CSV</span>
       </button>
-      <button class="sb-item" onclick="refreshData()" title="Refresh Data">
-        <svg class="sb-item-icon" id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="23 4 23 10 17 10"/>
-          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      <button class="sb-item" id="btnImportCSV" onclick="document.getElementById('assetCSVInput').click()" title="Import CSV">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 7 12 3 8 7"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+          <path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/>
         </svg>
-        <span class="sb-item-label">Refresh</span>
+        <span class="sb-item-label">Import CSV</span>
       </button>
 
       <div class="sb-divider"></div>
@@ -1791,6 +1878,7 @@ mark.gsr-highlight {
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 16l4-4-4-4"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/></svg>
         <span class="sb-item-label">Offboarding</span>
       </a>
+    </nav>
 
     <!-- Footer: theme toggle -->
     <div class="sb-footer">
@@ -2101,21 +2189,9 @@ mark.gsr-highlight {
         </select>
         <!-- hidden CSV input -->
         <input type="file" id="assetCSVInput" accept=".csv" style="display:none" onchange="handleAssetCSV(event)">
-        <button class="btn" onclick="exportAssetsCSV()" title="Export all assets as CSV">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
-          Export CSV
-        </button>
-        <button class="btn" id="btnImportCSV" onclick="document.getElementById('assetCSVInput').click()" title="Import from CSV">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="16 7 12 3 8 7"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
-          Import CSV
-        </button>
         <button class="btn btn-primary" onclick="openAddAssetModal()" style="margin-left:auto;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Add Asset
-        </button>
-        <button class="btn btn-danger" id="btnDeleteAllAssets" onclick="deleteAllAssets()" title="Delete all asset records">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-          Delete All
         </button>
       </div>
 
@@ -2237,9 +2313,9 @@ mark.gsr-highlight {
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
           </span>
-          <input type="text" class="search-input" id="auditSearchInput" placeholder="Search action, user, details…" oninput="renderAudit()">
+          <input type="text" class="search-input" id="auditSearchInput" placeholder="Search action, user, details…" oninput="auditPage=1;renderAudit()">
         </div>
-        <select class="filter-select" id="auditActionFilter" onchange="renderAudit()">
+        <select class="filter-select" id="auditActionFilter" onchange="auditPage=1;renderAudit()">
           <option value="">All Actions</option>
           <option>Login</option>
           <option>Logout</option>
@@ -2248,16 +2324,15 @@ mark.gsr-highlight {
           <option>Delete</option>
           <option>Export</option>
         </select>
-        <select class="filter-select" id="auditUserFilter" onchange="renderAudit()">
+        <select class="filter-select" id="auditUserFilter" onchange="auditPage=1;renderAudit()">
           <option value="">All Users</option>
         </select>
-        <input type="date" class="filter-select" id="auditDateFilter" onchange="renderAudit()" style="width:auto;">
+        <input type="date" class="filter-select" id="auditDateFilter" onchange="auditPage=1;renderAudit()" style="width:auto;">
       </div>
 
       <!-- Count bar -->
       <div class="count-bar">
         <span id="auditRecordCount">0 logs</span>
-        <button class="btn-sm" onclick="clearAuditLog()" style="margin-left:auto;padding:4px 10px;font-size:11px;">Clear Log</button>
       </div>
 
       <!-- Audit Table -->
@@ -2513,6 +2588,30 @@ mark.gsr-highlight {
     <div class="modal-footer">
       <button class="btn" onclick="document.getElementById('userFormOverlay').classList.remove('open')">Cancel</button>
       <button class="btn btn-primary" onclick="saveUserForm()">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════════════ -->
+<!-- SESSION TIMEOUT WARNING MODAL -->
+<!-- ═════════════════════════════════════════════════════════════════ -->
+<div id="sessionWarnOverlay">
+  <div class="session-warn-box">
+    <div class="session-warn-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <div class="session-warn-title">Session Expiring Soon</div>
+    <div class="session-warn-msg">
+      You've been inactive for a while.<br>
+      Auto-logout in <span id="sessionCountdown">02:00</span>
+    </div>
+    <div class="session-warn-btns">
+      <button class="btn-stay" onclick="extendSession()">Stay Logged In</button>
+      <button class="btn-logout-now" onclick="doLogout()">Logout Now</button>
     </div>
   </div>
 </div>
@@ -3154,15 +3253,46 @@ async function loadPresence() {
     }
   } catch(e) {}
 }
-let _presenceTimer, _inactivityTimer;
-const INACTIVITY_MS = 30 * 60 * 1000;
+let _presenceTimer, _inactivityTimer, _warnTimer, _countdownInterval;
+const INACTIVITY_MS  = 30 * 60 * 1000;  // 30 min total idle
+const WARN_BEFORE_MS =  2 * 60 * 1000;  // show warning 2 min before logout
+
+function _showSessionWarning() {
+  const overlay = document.getElementById('sessionWarnOverlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  let remaining = Math.round(WARN_BEFORE_MS / 1000);
+  function updateCountdown() {
+    const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+    const s = (remaining % 60).toString().padStart(2, '0');
+    const el = document.getElementById('sessionCountdown');
+    if (el) el.textContent = m + ':' + s;
+    if (remaining <= 0) { clearInterval(_countdownInterval); doLogout(); }
+    remaining--;
+  }
+  updateCountdown();
+  _countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+function _hideSessionWarning() {
+  const overlay = document.getElementById('sessionWarnOverlay');
+  if (overlay) overlay.classList.remove('open');
+  clearInterval(_countdownInterval);
+}
+
+window.extendSession = function() {
+  _hideSessionWarning();
+  _resetInactivityTimer();
+};
+
 function _resetInactivityTimer() {
   clearTimeout(_inactivityTimer);
-  _inactivityTimer = setTimeout(async () => {
-    showToast('Session expired due to inactivity. Logging out…', true);
-    await new Promise(r => setTimeout(r, 2000));
-    doLogout();
-  }, INACTIVITY_MS);
+  clearTimeout(_warnTimer);
+  _hideSessionWarning();
+  _warnTimer = setTimeout(() => {
+    _showSessionWarning();
+    _inactivityTimer = setTimeout(() => { doLogout(); }, WARN_BEFORE_MS);
+  }, INACTIVITY_MS - WARN_BEFORE_MS);
 }
 function startPresenceHeartbeat() {
   setPresence(true);
@@ -3175,6 +3305,9 @@ function startPresenceHeartbeat() {
 function stopPresence() {
   clearInterval(_presenceTimer);
   clearTimeout(_inactivityTimer);
+  clearTimeout(_warnTimer);
+  clearInterval(_countdownInterval);
+  _hideSessionWarning();
   ['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev =>
     document.removeEventListener(ev, _resetInactivityTimer)
   );
@@ -4236,6 +4369,8 @@ window.togglePoCard = function(id) {
 // ── USERS MANAGEMENT ──
 const LS_AUDIT = 'deliveryAssets_audit';
 let auditLogs = [];
+let auditPage = 1;
+const AUDIT_PAGE_SIZE = 25;
 
 function loadAuditLog() {
   try {
@@ -4548,7 +4683,8 @@ window.auditFilterQuick = function(key) {
   renderAudit();
 };
 
-function renderAudit() {
+function renderAudit(resetPage) {
+  if (resetPage) auditPage = 1;
   loadAuditLog();
   const q  = (document.getElementById('auditSearchInput')?.value || '').toLowerCase();
   const af = document.getElementById('auditActionFilter')?.value || '';
@@ -4643,7 +4779,36 @@ function renderAudit() {
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
-  const rows = filtered.map((log, i) => {
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filtered.length / AUDIT_PAGE_SIZE));
+  if (auditPage > totalPages) auditPage = totalPages;
+  const pageStart = (auditPage - 1) * AUDIT_PAGE_SIZE;
+  const paginated = filtered.slice(pageStart, pageStart + AUDIT_PAGE_SIZE);
+
+  function paginationHtml() {
+    if (totalPages <= 1) return '';
+    const pages = [];
+    for (let p = 1; p <= totalPages; p++) {
+      if (p === 1 || p === totalPages || Math.abs(p - auditPage) <= 2) {
+        pages.push(p);
+      } else if (pages[pages.length - 1] !== '...') {
+        pages.push('...');
+      }
+    }
+    const btns = pages.map(p =>
+      p === '...'
+        ? `<span class="al-pg-ellipsis">…</span>`
+        : `<button class="al-pg-btn${p === auditPage ? ' active' : ''}" onclick="goAuditPage(${p})">${p}</button>`
+    ).join('');
+    return `<div class="al-pagination">
+      <button class="al-pg-btn" onclick="goAuditPage(${auditPage - 1})" ${auditPage === 1 ? 'disabled' : ''}>‹ Prev</button>
+      ${btns}
+      <button class="al-pg-btn" onclick="goAuditPage(${auditPage + 1})" ${auditPage === totalPages ? 'disabled' : ''}>Next ›</button>
+      <span class="al-pg-info">${pageStart + 1}–${Math.min(pageStart + AUDIT_PAGE_SIZE, filtered.length)} of ${filtered.length}</span>
+    </div>`;
+  }
+
+  const rows = paginated.map((log, i) => {
     const date = new Date(log.timestamp);
     const timeStr = date.toLocaleString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric',
@@ -4669,6 +4834,12 @@ function renderAudit() {
         </td>
         <td class="al-td">
           <div class="al-details" title="${esc(log.details || '')}">${esc(log.details || '—')}</div>
+          ${log.changes && log.changes.length ? `<div class="al-changes">
+            ${log.changes.map(c => c.old !== undefined
+              ? `<div class="al-change-row"><span class="al-change-field">${esc(c.field)}</span><span class="al-change-old">${esc(c.old)}</span><span class="al-change-arrow">→</span><span class="al-change-new">${esc(c.new)}</span></div>`
+              : `<div class="al-change-row"><span class="al-change-field">${esc(c.field)}</span><span class="al-change-val">${esc(c.val)}</span></div>`
+            ).join('')}
+          </div>` : ''}
         </td>
       </tr>`;
   }).join('');
@@ -4686,7 +4857,14 @@ function renderAudit() {
         </thead>
         <tbody>${rows}</tbody>
       </table>
-    </div>`;
+    </div>
+    ${paginationHtml()}`;
+}
+
+function goAuditPage(p) {
+  auditPage = Math.max(1, p);
+  renderAudit();
+  document.getElementById('auditBody')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 window.clearAuditLog = function() {
@@ -5424,8 +5602,47 @@ window.saveAssetForm = async function() {
     updatedBy:    currentUser?.username || '',
   };
   try {
+    const prevAsset = _editingAssetId ? assetsDb.find(a => a.id === _editingAssetId) : null;
     await _persistAsset(asset);
-    logAudit(_editingAssetId ? 'Edit Asset' : 'Add Asset', asset.assetTag || asset.id);
+
+    // Build change details
+    const FIELD_LABELS = {
+      site:'Site', assetTag:'Asset Tag', quantity:'Quantity', floor:'Floor',
+      assetType:'Asset Type', deviceModel:'Device Model', manufacturer:'Manufacturer',
+      serialNumber:'Serial #', custodian:'Custodian', assetValue:'Asset Value',
+      eol:'EOL', assetAge:'Asset Age', status:'Status', hostname:'Hostname',
+      domainUserId:'Domain User ID', cpuSpecs:'CPU Specs', ramGb:'RAM (GB)', hddGb:'HDD (GB)'
+    };
+    let changes = [];
+    if (prevAsset) {
+      Object.keys(FIELD_LABELS).forEach(k => {
+        const oldVal = (prevAsset[k] ?? '').toString().trim();
+        const newVal = (asset[k] ?? '').toString().trim();
+        if (oldVal !== newVal) changes.push({ field: FIELD_LABELS[k], old: oldVal || '—', new: newVal || '—' });
+      });
+    } else {
+      changes = Object.keys(FIELD_LABELS)
+        .filter(k => asset[k])
+        .map(k => ({ field: FIELD_LABELS[k], val: asset[k] }));
+    }
+
+    const detailStr = prevAsset
+      ? (asset.assetTag || asset.id) + ' — ' + changes.length + ' field(s) changed'
+      : (asset.assetTag || asset.id);
+    const entry = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      user: currentUser?.username || 'system',
+      action: _editingAssetId ? 'Edit Asset' : 'Add Asset',
+      details: detailStr,
+      changes
+    };
+    auditLogs.unshift(entry);
+    if (auditLogs.length > 1000) auditLogs = auditLogs.slice(0, 1000);
+    localStorage.setItem(LS_AUDIT, JSON.stringify(auditLogs));
+    tursoExec('INSERT OR IGNORE INTO audit (id, ts, data) VALUES (?, ?, ?)',
+      [entry.id, entry.timestamp, JSON.stringify(entry)]);
+
     showToast(_editingAssetId ? 'Asset updated.' : 'Asset added.');
     document.getElementById('assetFormOverlay').classList.remove('open');
     _editingAssetId = null;
