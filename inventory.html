@@ -5642,7 +5642,7 @@ function renderGlobalResults(query) {
   const q = query.toLowerCase();
 
   // ── Asset Register hits ──
-  const ASSET_FIELDS = ['serialNumber','assetTag','deviceModel','manufacturer','custodian','hostname','domainUserId'];
+  const ASSET_FIELDS = ['id','serialNumber','assetTag','deviceModel','manufacturer','custodian','hostname','domainUserId','assetType','site','floor','status','assetAge','assetValue','cpuSpecs'];
   const assetHits = assetsDb.filter(a =>
     ASSET_FIELDS.some(f => (a[f] || '').toLowerCase().includes(q))
   ).slice(0, 6);
@@ -5687,10 +5687,11 @@ function renderGlobalResults(query) {
     html += `<div class="gsr-section-label">Asset Register (${assetHits.length})</div>`;
     html += assetHits.map(a => {
       const assetStatuses = ['Deployed','Spare','Docked','For Repair','For Disposal'];
+      const line2 = [a.assetType, a.deviceModel, a.site, a.custodian].filter(Boolean).map(esc).join(' &middot; ');
       return `<div class="gsr-serial-item">
         <div style="flex:1;min-width:0;cursor:pointer" onclick="goToAsset('${a.id}')" title="Open in Asset Register">
           <div class="gsr-serial-num">${hl(a.serialNumber || a.assetTag || '—')}</div>
-          <div class="gsr-serial-po">${esc(a.assetTag||'—')} &middot; ${esc(a.assetType||'—')} &middot; ${esc(a.deviceModel||'—')}${a.custodian ? ' &middot; ' + esc(a.custodian) : ''}</div>
+          <div class="gsr-serial-po">${line2 || '—'}</div>
         </div>
         <select class="gsr-status-select" data-assetid="${a.id}"
           onchange="quickUpdateAssetStatus('${a.id}',this.value)">
