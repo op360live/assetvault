@@ -192,6 +192,8 @@ body {
 #sidebar.collapsed .sb-theme-row > .icon-sun,
 #sidebar.collapsed .sb-theme-row > .icon-moon,
 #sidebar.collapsed .sb-theme-row > .pill-label,
+#sidebar.collapsed .sb-online-label,
+#sidebar.collapsed .sb-online-list,
 #sidebar.collapsed .sb-divider { display: none; }
 
 #sidebar.collapsed .sb-item {
@@ -301,6 +303,30 @@ body {
 .sb-item.active .sb-item-icon { opacity: 1; }
 .sb-divider { height: 1px; background: var(--sidebar-border, #f0f2f5); margin: 6px 4px; }
 [data-theme="dark"] .sb-divider { background: var(--glass-border2); }
+
+/* Sidebar online users section */
+.sb-online-list { display: flex; flex-direction: column; gap: 1px; padding: 2px 0 6px; }
+.sb-online-row { display: flex; align-items: center; gap: 9px; padding: 7px 12px; border-radius: 10px; }
+.sb-online-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.sb-online-info { flex: 1; min-width: 0; }
+.sb-online-name { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-online-role { font-size: 10px; color: var(--text3); }
+.sb-online-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(61,180,140,0.25);
+  animation: pulse-dot 2s ease infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(61,180,140,0.25); }
+  50%       { box-shadow: 0 0 0 5px rgba(61,180,140,0.08); }
+}
+.sb-online-empty { font-size: 11px; color: var(--text3); padding: 4px 12px; font-style: italic; }
 
 .sb-footer {
   padding: 10px 12px 14px;
@@ -1726,14 +1752,6 @@ mark.gsr-highlight {
       </button>
 
       <div class="sb-divider"></div>
-      <div class="sb-section-label">Inventory</div>
-
-      <a href="https://op360live.github.io/assetvault/" target="_blank" rel="noopener noreferrer" class="sb-item" title="Laptop Vault" style="text-decoration:none;">
-        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>
-        <span class="sb-item-label">Laptop Vault</span>
-      </a>
-
-      <div class="sb-divider"></div>
       <div class="sb-section-label">Admin</div>
 
       <button class="sb-item" id="navUsers" onclick="switchView('users')" title="User Management">
@@ -1755,6 +1773,12 @@ mark.gsr-highlight {
         </svg>
         <span class="sb-item-label">Audit Log</span>
       </button>
+
+      <div class="sb-divider"></div>
+      <div class="sb-section-label sb-online-label">Online Users</div>
+      <div id="sidebarOnlineList" class="sb-online-list">
+        <div class="sb-online-empty">Loading…</div>
+      </div>
 
       <div class="sb-divider"></div>
       <div class="sb-section-label">Related Apps</div>
@@ -2707,6 +2731,7 @@ async function tursoInit() {
     { sql: 'CREATE TABLE IF NOT EXISTS inventory (ikey TEXT PRIMARY KEY, data TEXT NOT NULL)' },
     { sql: 'CREATE TABLE IF NOT EXISTS audit (id TEXT PRIMARY KEY, ts TEXT NOT NULL, data TEXT NOT NULL)' },
     { sql: 'CREATE TABLE IF NOT EXISTS assets (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
+    { sql: 'CREATE TABLE IF NOT EXISTS presence (username TEXT PRIMARY KEY, data TEXT NOT NULL)' },
   ]);
 }
 
@@ -3026,6 +3051,7 @@ window.doLogin = async function() {
 window.doLogout = function() {
   const username = currentUser?.username || 'unknown';
   logAudit('Logout', username);
+  stopPresence();
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('assetvault_session');
   currentUser = null;
@@ -3083,6 +3109,76 @@ async function showApp() {
   loadInventory();
   switchView('dashboard');
   tursoSyncAll();
+  startPresenceHeartbeat();
+  loadPresence();
+  setInterval(loadPresence, 60000);
+}
+
+async function setPresence(online) {
+  if (!currentUser) return;
+  try {
+    if (online) {
+      const data = JSON.stringify({username: currentUser.username, displayName: currentUser.displayName || currentUser.username, role: currentUser.role, lastSeen: new Date().toISOString(), online: true});
+      await tursoExec('INSERT OR REPLACE INTO presence (username, data) VALUES (?, ?)', [currentUser.username, data]);
+    } else {
+      await tursoExec('DELETE FROM presence WHERE username = ?', [currentUser.username]);
+    }
+  } catch(e) {}
+}
+async function loadPresence() {
+  try {
+    const res = await tursoExec('SELECT data FROM presence');
+    const now = Date.now();
+    const online = (res?.rows || [])
+      .map(r => { try { return JSON.parse(r[0].value); } catch { return null; } }).filter(Boolean)
+      .filter(p => (now - new Date(p.lastSeen).getTime()) < 15 * 60 * 1000)
+      .sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
+    const sbEl = document.getElementById('sidebarOnlineList');
+    if (sbEl) {
+      if (!online.length) {
+        sbEl.innerHTML = '<div class="sb-online-empty">No active users.</div>';
+      } else {
+        sbEl.innerHTML = online.map(p => {
+          const isActive = (now - new Date(p.lastSeen).getTime()) < 5 * 60 * 1000;
+          const roleDisp = p.role === 'superadmin' ? 'Super Admin' : p.role === 'admin' ? 'Admin' : 'Member';
+          return `<div class="sb-online-row">
+            <div class="sb-online-avatar">${(p.displayName || p.username).slice(0, 2).toUpperCase()}</div>
+            <div class="sb-online-info">
+              <div class="sb-online-name">${p.displayName || p.username}</div>
+              <div class="sb-online-role">${roleDisp}</div>
+            </div>
+            ${isActive ? '<div class="sb-online-dot"></div>' : ''}
+          </div>`;
+        }).join('');
+      }
+    }
+  } catch(e) {}
+}
+let _presenceTimer, _inactivityTimer;
+const INACTIVITY_MS = 30 * 60 * 1000;
+function _resetInactivityTimer() {
+  clearTimeout(_inactivityTimer);
+  _inactivityTimer = setTimeout(async () => {
+    showToast('Session expired due to inactivity. Logging out…', true);
+    await new Promise(r => setTimeout(r, 2000));
+    doLogout();
+  }, INACTIVITY_MS);
+}
+function startPresenceHeartbeat() {
+  setPresence(true);
+  _presenceTimer = setInterval(() => setPresence(true), 3 * 60 * 1000);
+  _resetInactivityTimer();
+  ['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev =>
+    document.addEventListener(ev, _resetInactivityTimer, {passive: true})
+  );
+}
+function stopPresence() {
+  clearInterval(_presenceTimer);
+  clearTimeout(_inactivityTimer);
+  ['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev =>
+    document.removeEventListener(ev, _resetInactivityTimer)
+  );
+  setPresence(false);
 }
 
 function populateTechDropdown() {
