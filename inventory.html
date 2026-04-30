@@ -1886,18 +1886,19 @@ mark.gsr-highlight {
         </select>
         <select class="filter-select" id="typeFilter" onchange="renderTable()">
           <option value="">All Asset Types</option>
-          <option>Laptop</option>
-          <option>Desktop</option>
-          <option>Monitor</option>
-          <option>Printer</option>
-          <option>Keyboard</option>
-          <option>Mouse</option>
-          <option>Headset</option>
-          <option>Webcam</option>
-          <option>Docking Station</option>
-          <option>Network Switch</option>
           <option>Access Point</option>
+          <option>Desktop</option>
+          <option>Docking Station</option>
+          <option>Headset</option>
+          <option>Keyboard</option>
+          <option>Laptop</option>
+          <option>Monitor</option>
+          <option>Mouse</option>
+          <option>Network Switch</option>
+          <option>Printer</option>
           <option>UPS</option>
+          <option>Webcam</option>
+          <option>YubiKey</option>
           <option>Other</option>
         </select>
       </div>
@@ -1959,18 +1960,19 @@ mark.gsr-highlight {
         </select>
         <select class="filter-select" id="invTypeFilter" onchange="renderInventory()">
           <option value="">All Asset Types</option>
-          <option>Laptop</option>
-          <option>Desktop</option>
-          <option>Monitor</option>
-          <option>Printer</option>
-          <option>Keyboard</option>
-          <option>Mouse</option>
-          <option>Headset</option>
-          <option>Webcam</option>
-          <option>Docking Station</option>
-          <option>Network Switch</option>
           <option>Access Point</option>
+          <option>Desktop</option>
+          <option>Docking Station</option>
+          <option>Headset</option>
+          <option>Keyboard</option>
+          <option>Laptop</option>
+          <option>Monitor</option>
+          <option>Mouse</option>
+          <option>Network Switch</option>
+          <option>Printer</option>
           <option>UPS</option>
+          <option>Webcam</option>
+          <option>YubiKey</option>
           <option>Other</option>
         </select>
       </div>
@@ -2038,18 +2040,19 @@ mark.gsr-highlight {
         </select>
         <select class="filter-select" id="assetTypeFilter" onchange="_assetPage=1;renderAssets()">
           <option value="">All Asset Types</option>
-          <option>Laptop</option>
-          <option>Desktop</option>
-          <option>Monitor</option>
-          <option>Printer</option>
-          <option>Keyboard</option>
-          <option>Mouse</option>
-          <option>Headset</option>
-          <option>Webcam</option>
-          <option>Docking Station</option>
-          <option>Network Switch</option>
           <option>Access Point</option>
+          <option>Desktop</option>
+          <option>Docking Station</option>
+          <option>Headset</option>
+          <option>Keyboard</option>
+          <option>Laptop</option>
+          <option>Monitor</option>
+          <option>Mouse</option>
+          <option>Network Switch</option>
+          <option>Printer</option>
           <option>UPS</option>
+          <option>Webcam</option>
+          <option>YubiKey</option>
           <option>Other</option>
         </select>
         <select class="filter-select" id="assetSiteFilter" onchange="_assetSiteFilters.clear();_updateAssetSiteBtn();_assetPage=1;renderAssets()">
@@ -2295,18 +2298,19 @@ mark.gsr-highlight {
           <label>Asset Type placeholder (unused)</label>
           <select id="f_assetType">
             <option value="">Select Asset Type</option>
-            <option>Laptop</option>
-            <option>Desktop</option>
-            <option>Monitor</option>
-            <option>Printer</option>
-            <option>Keyboard</option>
-            <option>Mouse</option>
-            <option>Headset</option>
-            <option>Webcam</option>
-            <option>Docking Station</option>
-            <option>Network Switch</option>
             <option>Access Point</option>
+            <option>Desktop</option>
+            <option>Docking Station</option>
+            <option>Headset</option>
+            <option>Keyboard</option>
+            <option>Laptop</option>
+            <option>Monitor</option>
+            <option>Mouse</option>
+            <option>Network Switch</option>
+            <option>Printer</option>
             <option>UPS</option>
+            <option>Webcam</option>
+            <option>YubiKey</option>
             <option>Other</option>
           </select>
         </div>
@@ -2515,13 +2519,13 @@ mark.gsr-highlight {
         <div class="fg"><label>Floor</label><input type="text" id="af_floor" placeholder="e.g. 3F" autocomplete="off"></div>
         <div class="fg">
           <label>Asset Type</label>
-          <select id="af_assetType">
+          <select id="af_assetType" onchange="togglePcFields()">
             <option value="">— Select —</option>
-            <option>Laptop</option><option>Desktop</option><option>Monitor</option>
-            <option>Printer</option><option>Keyboard</option><option>Mouse</option>
-            <option>Headset</option><option>Webcam</option><option>Docking Station</option>
-            <option>Network Switch</option><option>Access Point</option><option>UPS</option>
-            <option>Other</option>
+            <option>Access Point</option><option>Desktop</option><option>Docking Station</option>
+            <option>Headset</option><option>Keyboard</option><option>Laptop</option>
+            <option>Monitor</option><option>Mouse</option><option>Network Switch</option>
+            <option>Printer</option><option>UPS</option><option>Webcam</option>
+            <option>YubiKey</option><option>Other</option>
           </select>
         </div>
         <div class="fg"><label>Device Model</label><input type="text" id="af_deviceModel" placeholder="e.g. ThinkPad X1 Carbon" autocomplete="off"></div>
@@ -2539,11 +2543,11 @@ mark.gsr-highlight {
             <option>For Repair</option><option>For Disposal</option>
           </select>
         </div>
-        <div class="fg"><label>Hostname</label><input type="text" id="af_hostname" placeholder="e.g. PH-LT-0042" autocomplete="off"></div>
-        <div class="fg"><label>Domain User ID</label><input type="text" id="af_domainUserId" placeholder="e.g. jdelacruz" autocomplete="off"></div>
-        <div class="fg full"><label>CPU Specs</label><input type="text" id="af_cpuSpecs" placeholder="e.g. Intel Core i7-1165G7 @ 2.80GHz" autocomplete="off"></div>
-        <div class="fg"><label>RAM (GB)</label><input type="number" id="af_ramGb" placeholder="e.g. 16" min="0"></div>
-        <div class="fg"><label>Hard Drive Capacity (GB)</label><input type="number" id="af_hddGb" placeholder="e.g. 512" min="0"></div>
+        <div class="fg" id="fg_hostname" style="display:none"><label>Hostname</label><input type="text" id="af_hostname" placeholder="e.g. PH-LT-0042" autocomplete="off"></div>
+        <div class="fg" id="fg_domainUserId" style="display:none"><label>Domain User ID</label><input type="text" id="af_domainUserId" placeholder="e.g. jdelacruz" autocomplete="off"></div>
+        <div class="fg full" id="fg_cpuSpecs" style="display:none"><label>CPU Specs</label><input type="text" id="af_cpuSpecs" placeholder="e.g. Intel Core i7-1165G7 @ 2.80GHz" autocomplete="off"></div>
+        <div class="fg" id="fg_ramGb" style="display:none"><label>RAM (GB)</label><input type="number" id="af_ramGb" placeholder="e.g. 16" min="0"></div>
+        <div class="fg" id="fg_hddGb" style="display:none"><label>Hard Drive Capacity (GB)</label><input type="number" id="af_hddGb" placeholder="e.g. 512" min="0"></div>
         <div id="assetFormError" class="fg full" style="display:none;color:var(--red);font-size:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;"></div>
       </div>
     </div>
@@ -3420,7 +3424,7 @@ function clearForm() {
 }
 
 // ── ITEM ROW HELPERS ──
-const ASSET_TYPES_LIST = ['Laptop','Desktop','Monitor','Printer','Keyboard','Mouse','Headset','Webcam','Docking Station','Network Switch','Access Point','UPS','Other'];
+const ASSET_TYPES_LIST = ['Access Point','Desktop','Docking Station','Headset','Keyboard','Laptop','Monitor','Mouse','Network Switch','Printer','UPS','Webcam','YubiKey','Other'];
 const ASSET_BRANDS_LIST = ['Acer','Apple','Asus','Canon','Cisco','Dell','Epson','HP','Lenovo','Logitech','Microsoft','MSI','Samsung','TP-Link','Ubiquiti','Other'];
 
 function _typeOpts(sel) {
@@ -5149,6 +5153,15 @@ window.setAssetPageSize = function(size) {
   renderAssets();
 };
 
+function togglePcFields() {
+  const type = (document.getElementById('af_assetType').value || '').toLowerCase();
+  const show = type === 'laptop' || type === 'desktop';
+  ['fg_hostname','fg_domainUserId','fg_cpuSpecs','fg_ramGb','fg_hddGb'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = show ? '' : 'none';
+  });
+}
+
 window.openAddAssetModal = function() {
   _editingAssetId = null;
   document.getElementById('assetFormTitle').textContent = 'Add Asset';
@@ -5169,6 +5182,7 @@ window.openAddAssetModal = function() {
   document.getElementById('af_assetType').value = '';
   document.getElementById('af_status').value = '';
   document.getElementById('assetFormError').style.display = 'none';
+  togglePcFields();
   document.getElementById('assetFormOverlay').classList.add('open');
   setTimeout(() => document.getElementById('af_site').focus(), 80);
 };
@@ -5248,6 +5262,7 @@ window.openEditAssetModal = function(id) {
   document.getElementById('assetHeaderDeleteBtn').style.display = 'none';
   document.getElementById('assetHeaderDeleteSep').style.display = 'none';
   document.getElementById('assetFormOverlay').querySelector('.form-grid').classList.remove('asset-view-mode');
+  togglePcFields();
   // ensure overlay is open (may already be open when switching from view mode)
   document.getElementById('assetFormOverlay').classList.add('open');
   setTimeout(() => document.getElementById('af_site').focus(), 80);
