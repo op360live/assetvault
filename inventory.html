@@ -5272,6 +5272,38 @@ window.saveAssetForm = async function() {
   const errEl = document.getElementById('assetFormError');
   errEl.style.display = 'none';
   const get = id => document.getElementById(id)?.value?.trim() ?? '';
+
+  // ── Validation ──
+  const required = [
+    { id: 'af_site',         label: 'Site' },
+    { id: 'af_assetTag',     label: 'Asset Tag' },
+    { id: 'af_assetType',    label: 'Asset Type' },
+    { id: 'af_deviceModel',  label: 'Device Model' },
+    { id: 'af_manufacturer', label: 'Manufacturer' },
+    { id: 'af_serialNumber', label: 'Service Tag / Serial #' },
+    { id: 'af_custodian',    label: 'Custodian' },
+    { id: 'af_assetValue',   label: 'Asset Value' },
+    { id: 'af_eol',          label: 'EOL (End of Life)' },
+    { id: 'af_assetAge',     label: 'Asset Age' },
+    { id: 'af_status',       label: 'Status' },
+  ];
+  const isPc = ['laptop','desktop'].includes(get('af_assetType').toLowerCase());
+  if (isPc) {
+    required.push(
+      { id: 'af_hostname',     label: 'Hostname' },
+      { id: 'af_domainUserId', label: 'Domain User ID' },
+      { id: 'af_cpuSpecs',     label: 'CPU Specs' },
+      { id: 'af_ramGb',        label: 'RAM (GB)' },
+      { id: 'af_hddGb',        label: 'Hard Drive Capacity (GB)' }
+    );
+  }
+  const missing = required.filter(f => !get(f.id));
+  if (missing.length) {
+    errEl.textContent = 'Please fill in: ' + missing.map(f => f.label).join(', ');
+    errEl.style.display = 'block';
+    document.getElementById(missing[0].id)?.focus();
+    return;
+  }
   const asset = {
     id:           _editingAssetId || ('ast_' + Date.now() + '_' + Math.random().toString(36).slice(2,7)),
     site:         get('af_site'),
