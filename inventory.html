@@ -3551,7 +3551,7 @@ function renderTable() {
         + (serialParts.length > 3 ? ` <span style="font-size:11px;color:var(--text3)">+${serialParts.length - 3} more</span>` : '')
       : '<span style="color:var(--text3);font-size:12px;">—</span>';
     const canEdit = can('edit');
-    const canDel  = can('delete') || currentUser?.role === 'superadmin';
+    const canDel  = currentUser?.role === 'superadmin' || currentUser?.role === 'admin';
     return `<tr>
       <td class="mono">${esc(r.po||'—')}</td>
       <td class="date-cell">${r.deliveryDate ? fmtDate(r.deliveryDate) : '—'}</td>
