@@ -2660,7 +2660,7 @@ async function setPresence(online) {
   if (!currentUser) return;
   try {
     if (online) {
-      const data = JSON.stringify({ username: currentUser.username, displayName: currentUser.displayName || currentUser.username, role: currentUser.role, avatar: currentUser.avatar || null, lastSeen: new Date().toISOString(), online: true });
+      const data = JSON.stringify({ username: currentUser.username, displayName: currentUser.displayName || currentUser.username, role: currentUser.role, page: 'Offboarding', avatar: currentUser.avatar || null, lastSeen: new Date().toISOString(), online: true });
       await tursoExec('INSERT OR REPLACE INTO presence (username, data) VALUES (?, ?)', [currentUser.username, data]);
     } else {
       await tursoExec('DELETE FROM presence WHERE username = ?', [currentUser.username]);
@@ -2688,7 +2688,7 @@ async function loadPresence() {
             <div class="sb-online-avatar" style="${p.avatar ? `background-image:url('${p.avatar}');background-size:cover;background-position:center;` : ''} ">${p.avatar ? '' : (p.displayName || p.username).slice(0, 2).toUpperCase()}</div>
             <div class="sb-online-info">
               <div class="sb-online-name">${p.displayName || p.username}</div>
-              <div class="sb-online-role">${roleLabel(p.role)}</div>
+              <div class="sb-online-role">${p.page||roleLabel(p.role)}</div>
             </div>
             ${isActive ? '<div class="sb-online-dot"></div>' : ''}
           </div>`;
