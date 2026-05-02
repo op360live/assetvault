@@ -126,8 +126,7 @@ body {
   position: sticky;
   top: 0;
   height: 100vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   z-index: 50;
   transition: width 0.22s cubic-bezier(.4,0,.2,1), background 0.3s, border-color 0.3s;
 }
@@ -192,6 +191,8 @@ body {
 #sidebar.collapsed .sb-theme-row > .icon-sun,
 #sidebar.collapsed .sb-theme-row > .icon-moon,
 #sidebar.collapsed .sb-theme-row > .pill-label,
+#sidebar.collapsed .sb-online-label,
+#sidebar.collapsed .sb-online-list,
 #sidebar.collapsed .sb-divider { display: none; }
 
 #sidebar.collapsed .sb-item {
@@ -301,6 +302,31 @@ body {
 .sb-item.active .sb-item-icon { opacity: 1; }
 .sb-divider { height: 1px; background: var(--sidebar-border, #f0f2f5); margin: 6px 4px; }
 [data-theme="dark"] .sb-divider { background: var(--glass-border2); }
+
+/* Sidebar online users section */
+.sb-online-list { display: flex; flex-direction: column; gap: 1px; padding: 2px 0 6px; }
+.sb-online-row { display: flex; align-items: center; gap: 9px; padding: 7px 12px; border-radius: 10px; }
+.sb-online-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+  overflow: hidden;
+}
+.sb-online-info { flex: 1; min-width: 0; }
+.sb-online-name { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-online-role { font-size: 10px; color: var(--text3); }
+.sb-online-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(61,180,140,0.25);
+  animation: pulse-dot 2s ease infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(61,180,140,0.25); }
+  50%       { box-shadow: 0 0 0 5px rgba(61,180,140,0.08); }
+}
+.sb-online-empty { font-size: 11px; color: var(--text3); padding: 4px 12px; font-style: italic; }
 
 .sb-footer {
   padding: 10px 12px 14px;
@@ -503,7 +529,15 @@ body {
 .acct-dd-item:hover { background:var(--surface-tint); color:var(--text); }
 .acct-dd-item.danger { color:var(--red); }
 .acct-dd-item.danger:hover { background:var(--red-bg); }
-.avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; }
+.avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; overflow:hidden; }
+.avatar-xl { width:64px; height:64px; font-size:20px; font-weight:700; }
+/* Account Settings Modal */
+.acct-settings-tabs { display:flex; border-bottom:1px solid var(--glass-border2); padding:0 16px; gap:2px; }
+.acct-stab { display:flex; align-items:center; gap:6px; padding:10px 14px; font-size:12px; font-weight:600; color:var(--text3); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:color 0.15s, border-color 0.15s; margin-bottom:-1px; }
+.acct-stab:hover { color:var(--text); }
+.acct-stab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.acct-avatar-row { display:flex; align-items:center; gap:18px; padding:4px 0; }
+.acct-avatar-preview { position:relative; flex-shrink:0; }
 .chip-name { font-size:13px; font-weight:600; color:var(--text); }
 .chip-role { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-top:1px; }
 
@@ -922,6 +956,93 @@ mark.gsr-highlight {
   white-space: nowrap;
 }
 .al-details { color: var(--text2); max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.al-changes { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+.al-change-row { display: flex; align-items: baseline; gap: 6px; font-size: 11px; }
+.al-change-field { font-weight: 700; color: var(--text2); min-width: 120px; flex-shrink: 0; }
+.al-change-old { color: var(--red); text-decoration: line-through; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.al-change-arrow { color: var(--text3); flex-shrink: 0; }
+.al-change-new { color: var(--green); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.al-change-val { color: var(--text2); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.al-pagination {
+  display: flex; align-items: center; gap: 4px;
+  padding: 12px 16px; flex-wrap: wrap;
+  border-top: 1px solid var(--sidebar-border);
+  background: var(--card-bg);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+[data-theme="dark"] .al-pagination {
+  border-top-color: var(--glass-border2);
+  background: var(--glass-bg);
+}
+.al-pg-btn {
+  padding: 4px 10px; border-radius: 6px; border: 1px solid var(--sidebar-border);
+  background: var(--search-bg); color: var(--text2);
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+}
+.al-pg-btn:hover:not(:disabled) { background: var(--accent); color: #fff; border-color: var(--accent); }
+.al-pg-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
+.al-pg-btn:disabled { opacity: 0.4; cursor: default; }
+.al-pg-ellipsis { padding: 4px 6px; color: var(--text3); font-size: 12px; }
+.al-pg-info { margin-left: auto; font-size: 11px; color: var(--text3); }
+
+/* ══════════════════════════════
+   SESSION TIMEOUT WARNING
+══════════════════════════════ */
+#sessionWarnOverlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center;
+}
+#sessionWarnOverlay.open { display: flex; }
+.session-warn-box {
+  background: var(--card-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  padding: 36px 40px 28px;
+  max-width: 400px; width: 90%;
+  text-align: center;
+  animation: fadeInUp 0.25s ease;
+}
+[data-theme="dark"] .session-warn-box {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+.session-warn-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--amber-bg); color: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 24px;
+}
+.session-warn-title {
+  font-size: 17px; font-weight: 700; color: var(--text);
+  margin-bottom: 8px;
+}
+.session-warn-msg {
+  font-size: 13px; color: var(--text2); margin-bottom: 24px; line-height: 1.5;
+}
+#sessionCountdown {
+  font-size: 28px; font-weight: 800; color: var(--red);
+  display: block; margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.session-warn-btns { display: flex; gap: 10px; justify-content: center; }
+.session-warn-btns .btn-stay {
+  padding: 9px 24px; border-radius: 8px;
+  background: var(--accent); color: #fff;
+  border: none; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.session-warn-btns .btn-stay:hover { opacity: 0.85; }
+.session-warn-btns .btn-logout-now {
+  padding: 9px 20px; border-radius: 8px;
+  background: transparent; color: var(--text3);
+  border: 1px solid var(--sidebar-border);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+}
+.session-warn-btns .btn-logout-now:hover { color: var(--red); border-color: var(--red); }
 
 /* ══════════════════════════════
    DASHBOARD
@@ -1594,6 +1715,11 @@ mark.gsr-highlight {
             <span class="btn-social-text">Continue with Password</span>
             <span class="btn-social-arrow">→</span>
           </button>
+          <button class="btn-social" onclick="openPinStep()" style="margin-top:8px;">
+            <span class="btn-social-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="8" cy="13" r="1.5" fill="currentColor"/><circle cx="12" cy="13" r="1.5" fill="currentColor"/><circle cx="16" cy="13" r="1.5" fill="currentColor"/><path d="M8 6V4a4 4 0 0 1 8 0v2"/></svg></span>
+            <span class="btn-social-text">Continue with PIN</span>
+            <span class="btn-social-arrow">→</span>
+          </button>
           <div class="login-error" id="loginError"></div>
         </div>
         <div class="login-pw-step" id="loginStep2">
@@ -1610,6 +1736,21 @@ mark.gsr-highlight {
           </div>
           <div class="login-error" id="loginError2"></div>
           <button class="btn-signin" onclick="doLogin()">Sign In →</button>
+        </div>
+        <div class="login-pw-step" id="loginStep3">
+          <button class="btn-back-login" onclick="closePinStep()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+          </button>
+          <div style="font-size:13px;color:var(--text2);font-weight:600;padding:4px 0 2px;">
+            Signing in as <span id="loginUserConfirmPin" style="color:var(--accent)"></span>
+          </div>
+          <div class="field-wrap">
+            <label class="field-label">PIN</label>
+            <input type="password" inputmode="numeric" class="field-input" id="loginPin" placeholder="Enter your PIN" autocomplete="off" maxlength="20" oninput="this.value=this.value.replace(/[^0-9]/g,'')" onkeydown="if(event.key==='Enter')doLoginWithPin()">
+          </div>
+          <div class="login-error" id="loginError3"></div>
+          <button class="btn-signin" onclick="doLoginWithPin()">Sign In →</button>
         </div>
       </div>
 
@@ -1709,7 +1850,7 @@ mark.gsr-highlight {
       <div class="sb-divider"></div>
       <div class="sb-section-label">IT Tools</div>
 
-      <button class="sb-item" onclick="exportCSV()" title="Export CSV">
+      <button class="sb-item" onclick="exportAssetsCSV()" title="Export CSV">
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="8 17 12 21 16 17"/>
           <line x1="12" y1="12" x2="12" y2="21"/>
@@ -1717,21 +1858,14 @@ mark.gsr-highlight {
         </svg>
         <span class="sb-item-label">Export CSV</span>
       </button>
-      <button class="sb-item" onclick="refreshData()" title="Refresh Data">
-        <svg class="sb-item-icon" id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="23 4 23 10 17 10"/>
-          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      <button class="sb-item" id="btnImportCSV" onclick="document.getElementById('assetCSVInput').click()" title="Import CSV">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 7 12 3 8 7"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+          <path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/>
         </svg>
-        <span class="sb-item-label">Refresh</span>
+        <span class="sb-item-label">Import CSV</span>
       </button>
-
-      <div class="sb-divider"></div>
-      <div class="sb-section-label">Inventory</div>
-
-      <a href="https://op360live.github.io/assetvault/" target="_blank" rel="noopener noreferrer" class="sb-item" title="Laptop Vault" style="text-decoration:none;">
-        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>
-        <span class="sb-item-label">Laptop Vault</span>
-      </a>
 
       <div class="sb-divider"></div>
       <div class="sb-section-label">Admin</div>
@@ -1757,6 +1891,12 @@ mark.gsr-highlight {
       </button>
 
       <div class="sb-divider"></div>
+      <div class="sb-section-label sb-online-label">Online Users</div>
+      <div id="sidebarOnlineList" class="sb-online-list">
+        <div class="sb-online-empty">Loading…</div>
+      </div>
+
+      <div class="sb-divider"></div>
       <div class="sb-section-label">Related Apps</div>
 
       <a href="https://op360live.github.io/assetvault/" target="_blank" rel="noopener noreferrer" class="sb-item" title="Laptop Vault" style="text-decoration:none;">
@@ -1767,6 +1907,7 @@ mark.gsr-highlight {
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 16l4-4-4-4"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/></svg>
         <span class="sb-item-label">Offboarding</span>
       </a>
+    </nav>
 
     <!-- Footer: theme toggle -->
     <div class="sb-footer">
@@ -1814,6 +1955,12 @@ mark.gsr-highlight {
             <div class="acct-dd-header">
               <div class="acct-dd-name" id="acctDdName">—</div>
               <div class="acct-dd-role" id="acctDdRole">—</div>
+            </div>
+            <div class="acct-dd-item" onclick="openAccountSettings()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              Settings
             </div>
             <div class="acct-dd-item danger" onclick="doLogout()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -1886,18 +2033,19 @@ mark.gsr-highlight {
         </select>
         <select class="filter-select" id="typeFilter" onchange="renderTable()">
           <option value="">All Asset Types</option>
-          <option>Laptop</option>
-          <option>Desktop</option>
-          <option>Monitor</option>
-          <option>Printer</option>
-          <option>Keyboard</option>
-          <option>Mouse</option>
-          <option>Headset</option>
-          <option>Webcam</option>
-          <option>Docking Station</option>
-          <option>Network Switch</option>
           <option>Access Point</option>
+          <option>Desktop</option>
+          <option>Docking Station</option>
+          <option>Headset</option>
+          <option>Keyboard</option>
+          <option>Laptop</option>
+          <option>Monitor</option>
+          <option>Mouse</option>
+          <option>Network Switch</option>
+          <option>Printer</option>
           <option>UPS</option>
+          <option>Webcam</option>
+          <option>YubiKey</option>
           <option>Other</option>
         </select>
       </div>
@@ -1959,18 +2107,19 @@ mark.gsr-highlight {
         </select>
         <select class="filter-select" id="invTypeFilter" onchange="renderInventory()">
           <option value="">All Asset Types</option>
-          <option>Laptop</option>
-          <option>Desktop</option>
-          <option>Monitor</option>
-          <option>Printer</option>
-          <option>Keyboard</option>
-          <option>Mouse</option>
-          <option>Headset</option>
-          <option>Webcam</option>
-          <option>Docking Station</option>
-          <option>Network Switch</option>
           <option>Access Point</option>
+          <option>Desktop</option>
+          <option>Docking Station</option>
+          <option>Headset</option>
+          <option>Keyboard</option>
+          <option>Laptop</option>
+          <option>Monitor</option>
+          <option>Mouse</option>
+          <option>Network Switch</option>
+          <option>Printer</option>
           <option>UPS</option>
+          <option>Webcam</option>
+          <option>YubiKey</option>
           <option>Other</option>
         </select>
       </div>
@@ -2038,18 +2187,19 @@ mark.gsr-highlight {
         </select>
         <select class="filter-select" id="assetTypeFilter" onchange="_assetPage=1;renderAssets()">
           <option value="">All Asset Types</option>
-          <option>Laptop</option>
-          <option>Desktop</option>
-          <option>Monitor</option>
-          <option>Printer</option>
-          <option>Keyboard</option>
-          <option>Mouse</option>
-          <option>Headset</option>
-          <option>Webcam</option>
-          <option>Docking Station</option>
-          <option>Network Switch</option>
           <option>Access Point</option>
+          <option>Desktop</option>
+          <option>Docking Station</option>
+          <option>Headset</option>
+          <option>Keyboard</option>
+          <option>Laptop</option>
+          <option>Monitor</option>
+          <option>Mouse</option>
+          <option>Network Switch</option>
+          <option>Printer</option>
           <option>UPS</option>
+          <option>Webcam</option>
+          <option>YubiKey</option>
           <option>Other</option>
         </select>
         <select class="filter-select" id="assetSiteFilter" onchange="_assetSiteFilters.clear();_updateAssetSiteBtn();_assetPage=1;renderAssets()">
@@ -2074,21 +2224,9 @@ mark.gsr-highlight {
         </select>
         <!-- hidden CSV input -->
         <input type="file" id="assetCSVInput" accept=".csv" style="display:none" onchange="handleAssetCSV(event)">
-        <button class="btn" onclick="exportAssetsCSV()" title="Export all assets as CSV">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
-          Export CSV
-        </button>
-        <button class="btn" id="btnImportCSV" onclick="document.getElementById('assetCSVInput').click()" title="Import from CSV">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="16 7 12 3 8 7"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
-          Import CSV
-        </button>
         <button class="btn btn-primary" onclick="openAddAssetModal()" style="margin-left:auto;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Add Asset
-        </button>
-        <button class="btn btn-danger" id="btnDeleteAllAssets" onclick="deleteAllAssets()" title="Delete all asset records">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-          Delete All
         </button>
       </div>
 
@@ -2210,9 +2348,9 @@ mark.gsr-highlight {
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
           </span>
-          <input type="text" class="search-input" id="auditSearchInput" placeholder="Search action, user, details…" oninput="renderAudit()">
+          <input type="text" class="search-input" id="auditSearchInput" placeholder="Search action, user, details…" oninput="auditPage=1;renderAudit()">
         </div>
-        <select class="filter-select" id="auditActionFilter" onchange="renderAudit()">
+        <select class="filter-select" id="auditActionFilter" onchange="auditPage=1;renderAudit()">
           <option value="">All Actions</option>
           <option>Login</option>
           <option>Logout</option>
@@ -2221,16 +2359,15 @@ mark.gsr-highlight {
           <option>Delete</option>
           <option>Export</option>
         </select>
-        <select class="filter-select" id="auditUserFilter" onchange="renderAudit()">
+        <select class="filter-select" id="auditUserFilter" onchange="auditPage=1;renderAudit()">
           <option value="">All Users</option>
         </select>
-        <input type="date" class="filter-select" id="auditDateFilter" onchange="renderAudit()" style="width:auto;">
+        <input type="date" class="filter-select" id="auditDateFilter" onchange="auditPage=1;renderAudit()" style="width:auto;">
       </div>
 
       <!-- Count bar -->
       <div class="count-bar">
         <span id="auditRecordCount">0 logs</span>
-        <button class="btn-sm" onclick="clearAuditLog()" style="margin-left:auto;padding:4px 10px;font-size:11px;">Clear Log</button>
       </div>
 
       <!-- Audit Table -->
@@ -2295,18 +2432,19 @@ mark.gsr-highlight {
           <label>Asset Type placeholder (unused)</label>
           <select id="f_assetType">
             <option value="">Select Asset Type</option>
-            <option>Laptop</option>
-            <option>Desktop</option>
-            <option>Monitor</option>
-            <option>Printer</option>
-            <option>Keyboard</option>
-            <option>Mouse</option>
-            <option>Headset</option>
-            <option>Webcam</option>
-            <option>Docking Station</option>
-            <option>Network Switch</option>
             <option>Access Point</option>
+            <option>Desktop</option>
+            <option>Docking Station</option>
+            <option>Headset</option>
+            <option>Keyboard</option>
+            <option>Laptop</option>
+            <option>Monitor</option>
+            <option>Mouse</option>
+            <option>Network Switch</option>
+            <option>Printer</option>
             <option>UPS</option>
+            <option>Webcam</option>
+            <option>YubiKey</option>
             <option>Other</option>
           </select>
         </div>
@@ -2449,6 +2587,86 @@ mark.gsr-highlight {
 </div>
 
 <!-- ════════════════════════════════
+     ACCOUNT SETTINGS MODAL
+════════════════════════════════ -->
+<div class="overlay" id="accountSettingsOverlay" onclick="if(event.target===this)closeAccountSettings()">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <span class="modal-title">Account Settings</span>
+      <button class="modal-close" onclick="closeAccountSettings()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="acct-settings-tabs">
+      <button class="acct-stab active" id="stab-profile" onclick="switchSettingsTab('profile')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Profile
+      </button>
+      <button class="acct-stab" id="stab-password" onclick="switchSettingsTab('password')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Password
+      </button>
+      <button class="acct-stab" id="stab-pin" onclick="switchSettingsTab('pin')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="7" cy="13" r="1.2" fill="currentColor"/><circle cx="12" cy="13" r="1.2" fill="currentColor"/><circle cx="17" cy="13" r="1.2" fill="currentColor"/></svg>
+        PIN
+      </button>
+    </div>
+    <!-- Profile panel -->
+    <div class="acct-spanel" id="spanel-profile">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+        <div class="acct-avatar-row">
+          <div class="acct-avatar-preview" id="settingsAvatarPreview">
+            <div class="avatar avatar-xl" id="settingsAvatarInitials">--</div>
+            <img id="settingsAvatarImg" src="" alt="" style="display:none;width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--glass-border);">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text);">Profile Picture</div>
+            <div style="font-size:11px;color:var(--text3);">JPG, PNG or GIF · Max 2 MB</div>
+            <div style="display:flex;gap:6px;margin-top:2px;">
+              <button class="btn btn-sm" onclick="document.getElementById('avatarFileInput').click()">Upload Photo</button>
+              <button class="btn btn-sm btn-danger" id="btnRemoveAvatar" onclick="clearAvatarPreview()" style="display:none;">Remove</button>
+            </div>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="previewAvatarFile(event)">
+          </div>
+        </div>
+        <div class="fg"><label>Display Name</label><input type="text" id="settings_displayName" placeholder="Your display name" autocomplete="off"></div>
+        <div class="login-error" id="profileSettingsError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeAccountSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="doSaveProfile()">Save Profile</button>
+      </div>
+    </div>
+    <!-- Password panel -->
+    <div class="acct-spanel" id="spanel-password" style="display:none;">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="fg"><label>Current Password</label><input type="password" id="settings_currentPw" placeholder="Enter current password" autocomplete="current-password"></div>
+        <div class="fg"><label>New Password</label><input type="password" id="settings_newPw" placeholder="New password" autocomplete="new-password"></div>
+        <div class="fg"><label>Confirm New Password</label><input type="password" id="settings_confirmPw" placeholder="Repeat new password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doChangePassword()"></div>
+        <div class="login-error" id="passwordSettingsError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeAccountSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="doChangePassword()">Change Password</button>
+      </div>
+    </div>
+    <!-- PIN panel -->
+    <div class="acct-spanel" id="spanel-pin" style="display:none;">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="font-size:13px;color:var(--text2);line-height:1.5;">Set a numeric PIN as an alternative login method. Leave blank to remove your current PIN.</div>
+        <div class="fg"><label>New PIN</label><input type="password" inputmode="numeric" id="settings_newPin" placeholder="4–20 digits" maxlength="20" autocomplete="new-password" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+        <div class="fg"><label>Confirm PIN</label><input type="password" inputmode="numeric" id="settings_confirmPin" placeholder="Repeat PIN" maxlength="20" autocomplete="new-password" oninput="this.value=this.value.replace(/[^0-9]/g,'')" onkeydown="if(event.key==='Enter')doSetPinSettings()"></div>
+        <div class="login-error" id="pinSettingsError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeAccountSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="doSetPinSettings()">Save PIN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
      USER MANAGEMENT MODAL
 ════════════════════════════════ -->
 <div class="overlay" id="userFormOverlay" onclick="if(event.target===this)document.getElementById('userFormOverlay').classList.remove('open')">
@@ -2490,6 +2708,30 @@ mark.gsr-highlight {
 </div>
 
 <!-- ═════════════════════════════════════════════════════════════════ -->
+<!-- SESSION TIMEOUT WARNING MODAL -->
+<!-- ═════════════════════════════════════════════════════════════════ -->
+<div id="sessionWarnOverlay">
+  <div class="session-warn-box">
+    <div class="session-warn-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <div class="session-warn-title">Session Expiring Soon</div>
+    <div class="session-warn-msg">
+      You've been inactive for a while.<br>
+      Auto-logout in <span id="sessionCountdown">02:00</span>
+    </div>
+    <div class="session-warn-btns">
+      <button class="btn-stay" onclick="extendSession()">Stay Logged In</button>
+      <button class="btn-logout-now" onclick="doLogout()">Logout Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════════════ -->
 <!-- ASSET FORM MODAL -->
 <!-- ═════════════════════════════════════════════════════════════════ -->
 <div class="overlay" id="assetFormOverlay" onclick="if(event.target===this)document.getElementById('assetFormOverlay').classList.remove('open')">
@@ -2515,13 +2757,13 @@ mark.gsr-highlight {
         <div class="fg"><label>Floor</label><input type="text" id="af_floor" placeholder="e.g. 3F" autocomplete="off"></div>
         <div class="fg">
           <label>Asset Type</label>
-          <select id="af_assetType">
+          <select id="af_assetType" onchange="togglePcFields()">
             <option value="">— Select —</option>
-            <option>Laptop</option><option>Desktop</option><option>Monitor</option>
-            <option>Printer</option><option>Keyboard</option><option>Mouse</option>
-            <option>Headset</option><option>Webcam</option><option>Docking Station</option>
-            <option>Network Switch</option><option>Access Point</option><option>UPS</option>
-            <option>Other</option>
+            <option>Access Point</option><option>Desktop</option><option>Docking Station</option>
+            <option>Headset</option><option>Keyboard</option><option>Laptop</option>
+            <option>Monitor</option><option>Mouse</option><option>Network Switch</option>
+            <option>Printer</option><option>UPS</option><option>Webcam</option>
+            <option>YubiKey</option><option>Other</option>
           </select>
         </div>
         <div class="fg"><label>Device Model</label><input type="text" id="af_deviceModel" placeholder="e.g. ThinkPad X1 Carbon" autocomplete="off"></div>
@@ -2539,11 +2781,11 @@ mark.gsr-highlight {
             <option>For Repair</option><option>For Disposal</option>
           </select>
         </div>
-        <div class="fg"><label>Hostname</label><input type="text" id="af_hostname" placeholder="e.g. PH-LT-0042" autocomplete="off"></div>
-        <div class="fg"><label>Domain User ID</label><input type="text" id="af_domainUserId" placeholder="e.g. jdelacruz" autocomplete="off"></div>
-        <div class="fg full"><label>CPU Specs</label><input type="text" id="af_cpuSpecs" placeholder="e.g. Intel Core i7-1165G7 @ 2.80GHz" autocomplete="off"></div>
-        <div class="fg"><label>RAM (GB)</label><input type="number" id="af_ramGb" placeholder="e.g. 16" min="0"></div>
-        <div class="fg"><label>Hard Drive Capacity (GB)</label><input type="number" id="af_hddGb" placeholder="e.g. 512" min="0"></div>
+        <div class="fg" id="fg_hostname" style="display:none"><label>Hostname</label><input type="text" id="af_hostname" placeholder="e.g. PH-LT-0042" autocomplete="off"></div>
+        <div class="fg" id="fg_domainUserId" style="display:none"><label>Domain User ID</label><input type="text" id="af_domainUserId" placeholder="e.g. jdelacruz" autocomplete="off"></div>
+        <div class="fg full" id="fg_cpuSpecs" style="display:none"><label>CPU Specs</label><input type="text" id="af_cpuSpecs" placeholder="e.g. Intel Core i7-1165G7 @ 2.80GHz" autocomplete="off"></div>
+        <div class="fg" id="fg_ramGb" style="display:none"><label>RAM (GB)</label><input type="number" id="af_ramGb" placeholder="e.g. 16" min="0"></div>
+        <div class="fg" id="fg_hddGb" style="display:none"><label>Hard Drive Capacity (GB)</label><input type="number" id="af_hddGb" placeholder="e.g. 512" min="0"></div>
         <div id="assetFormError" class="fg full" style="display:none;color:var(--red);font-size:12px;padding:8px 12px;background:var(--red-bg);border-radius:8px;"></div>
       </div>
     </div>
@@ -2703,6 +2945,7 @@ async function tursoInit() {
     { sql: 'CREATE TABLE IF NOT EXISTS inventory (ikey TEXT PRIMARY KEY, data TEXT NOT NULL)' },
     { sql: 'CREATE TABLE IF NOT EXISTS audit (id TEXT PRIMARY KEY, ts TEXT NOT NULL, data TEXT NOT NULL)' },
     { sql: 'CREATE TABLE IF NOT EXISTS assets (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
+    { sql: 'CREATE TABLE IF NOT EXISTS presence (username TEXT PRIMARY KEY, data TEXT NOT NULL)' },
   ]);
 }
 
@@ -2973,6 +3216,48 @@ window.closePasswordStep = function() {
   document.getElementById('loginPass').value = '';
   document.getElementById('loginError2').classList.remove('show');
 };
+window.openPinStep = function() {
+  const u = document.getElementById('loginUser').value.trim();
+  if (!u) { showLoginErr('Please enter your username first.'); return; }
+  document.getElementById('loginStep1').style.display = 'none';
+  document.getElementById('loginStep3').classList.add('open');
+  document.getElementById('loginUserConfirmPin').textContent = u;
+  document.getElementById('loginPin').value = '';
+  document.getElementById('loginError3').classList.remove('show');
+  setTimeout(() => document.getElementById('loginPin').focus(), 100);
+};
+window.closePinStep = function() {
+  document.getElementById('loginStep3').classList.remove('open');
+  document.getElementById('loginStep1').style.display = '';
+  document.getElementById('loginPin').value = '';
+  document.getElementById('loginError3').classList.remove('show');
+};
+window.doLoginWithPin = async function() {
+  const u = document.getElementById('loginUser').value.trim();
+  const pin = document.getElementById('loginPin').value;
+  if (!u || !pin) { showLoginErr('Please enter your PIN.', 'loginError3'); return; }
+  loadUsers();
+  try {
+    const uRes = await tursoExec('SELECT data FROM users WHERE username = ?', [u.toLowerCase()]);
+    if (uRes && uRes.rows && uRes.rows.length) {
+      const fresh = JSON.parse(uRes.rows[0][0].value);
+      const idx = (_usersCache || []).findIndex(x => x.username.toLowerCase() === u.toLowerCase());
+      if (idx >= 0) _usersCache[idx] = fresh; else (_usersCache = _usersCache || []).push(fresh);
+      localStorage.setItem(LS_USERS, JSON.stringify(_usersCache));
+    }
+  } catch(e) {}
+  const users = getUsers();
+  const hash = await hashPassword(pin);
+  const user = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.pinHash && x.pinHash === hash);
+  if (!user) { showLoginErr('Incorrect PIN.', 'loginError3'); document.getElementById('loginPin').value = ''; return; }
+  if (user.active === false) { showLoginErr('This account has been disabled.', 'loginError3'); return; }
+  document.getElementById('loginError3').classList.remove('show');
+  currentUser = applySharedProfile({...user});
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  closePinStep();
+  await showApp();
+};
 function showLoginErr(msg, field = 'loginError') {
   const e = document.getElementById(field);
   if (e) { e.textContent = msg; e.classList.add('show'); }
@@ -2999,7 +3284,7 @@ window.doLogin = async function() {
   if (!user) { showLoginErr('Incorrect password.', 'loginError2'); document.getElementById('loginPass').value = ''; return; }
   if (user.active === false) { showLoginErr('This account has been disabled.', 'loginError2'); return; }
   document.getElementById('loginError2').classList.remove('show');
-  currentUser = {...user};
+  currentUser = applySharedProfile({...user});
   logAudit('Login', u);
 
   if (user.mustChangePassword) {
@@ -3022,6 +3307,7 @@ window.doLogin = async function() {
 window.doLogout = function() {
   const username = currentUser?.username || 'unknown';
   logAudit('Logout', username);
+  stopPresence();
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('assetvault_session');
   currentUser = null;
@@ -3035,30 +3321,201 @@ window.doLogout = function() {
 function checkSession() {
   try {
     const s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
-    if (s && s.username) { currentUser = s; return true; }
+    if (s && s.username) { currentUser = applySharedProfile(s); return true; }
   } catch {}
   try {
     const s = JSON.parse(localStorage.getItem('assetvault_session'));
-    if (s && s.username) { currentUser = s; sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); return true; }
+    if (s && s.username) { currentUser = applySharedProfile(s); sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); return true; }
   } catch {}
   return false;
 }
 
-async function showApp() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('appScreen').classList.add('active');
+function persistSharedProfile(user) {
+  try {
+    const profiles = JSON.parse(localStorage.getItem('assetvault_profiles') || '{}');
+    profiles[user.username] = { avatar: user.avatar || null, displayName: user.displayName || user.username };
+    localStorage.setItem('assetvault_profiles', JSON.stringify(profiles));
+  } catch(e) {}
+}
+function applySharedProfile(user) {
+  try {
+    const profiles = JSON.parse(localStorage.getItem('assetvault_profiles') || '{}');
+    const p = profiles[user.username];
+    if (p) { if (p.avatar) user.avatar = p.avatar; if (p.displayName) user.displayName = p.displayName; }
+  } catch(e) {}
+  return user;
+}
 
+function updateAvatarDisplay() {
+  if (!currentUser) return;
   const name = currentUser.displayName || currentUser.username;
   const init = name.slice(0, 2).toUpperCase();
-  document.getElementById('userAvatar').textContent      = init;
-  document.getElementById('userNameDisplay').textContent = name;
   const roleDisp = currentUser.role === 'superadmin' ? 'Super Admin' :
                    currentUser.role === 'admin'       ? 'Admin' : 'Member';
+  document.getElementById('userNameDisplay').textContent = name;
   document.getElementById('userRoleDisplay').textContent = roleDisp;
   const an = document.getElementById('acctDdName');
   const ar = document.getElementById('acctDdRole');
   if (an) an.textContent = name;
   if (ar) ar.textContent = roleDisp;
+  const avatarEl = document.getElementById('userAvatar');
+  if (currentUser.avatar) {
+    avatarEl.textContent = '';
+    avatarEl.style.backgroundImage = 'url(' + currentUser.avatar + ')';
+    avatarEl.style.backgroundSize = 'cover';
+    avatarEl.style.backgroundPosition = 'center';
+  } else {
+    avatarEl.textContent = init;
+    avatarEl.style.backgroundImage = '';
+  }
+}
+
+/* ── ACCOUNT SETTINGS ── */
+window.openAccountSettings = function(initialTab) {
+  if (!currentUser) return;
+  document.getElementById('acctDropdown').classList.remove('open');
+  switchSettingsTab(initialTab || 'profile');
+  const name = currentUser.displayName || currentUser.username;
+  document.getElementById('settings_displayName').value = name;
+  _settingsAvatarDataUrl = null;
+  const img = document.getElementById('settingsAvatarImg');
+  const initEl = document.getElementById('settingsAvatarInitials');
+  const removeBtn = document.getElementById('btnRemoveAvatar');
+  document.getElementById('avatarFileInput').value = '';
+  if (currentUser.avatar) {
+    img.src = currentUser.avatar; img.style.display = '';
+    initEl.style.display = 'none'; removeBtn.style.display = '';
+  } else {
+    img.src = ''; img.style.display = 'none';
+    initEl.textContent = name.slice(0,2).toUpperCase(); initEl.style.display = '';
+    removeBtn.style.display = 'none';
+  }
+  ['profileSettingsError','passwordSettingsError','pinSettingsError'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = ''; el.classList.remove('show'); }
+  });
+  ['settings_currentPw','settings_newPw','settings_confirmPw','settings_newPin','settings_confirmPin'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('accountSettingsOverlay').classList.add('open');
+};
+window.closeAccountSettings = function() {
+  document.getElementById('accountSettingsOverlay').classList.remove('open');
+};
+window.switchSettingsTab = function(tab) {
+  ['profile','password','pin'].forEach(t => {
+    document.getElementById('stab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('spanel-' + t).style.display = t === tab ? '' : 'none';
+  });
+};
+let _settingsAvatarDataUrl = null;
+window.previewAvatarFile = function(e) {
+  const file = e.target.files[0]; if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    const err = document.getElementById('profileSettingsError');
+    err.textContent = 'Image too large. Max 2 MB.'; err.classList.add('show'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    _settingsAvatarDataUrl = ev.target.result;
+    const img = document.getElementById('settingsAvatarImg');
+    img.src = _settingsAvatarDataUrl; img.style.display = '';
+    document.getElementById('settingsAvatarInitials').style.display = 'none';
+    document.getElementById('btnRemoveAvatar').style.display = '';
+  };
+  reader.readAsDataURL(file);
+};
+window.clearAvatarPreview = function() {
+  _settingsAvatarDataUrl = 'REMOVE';
+  document.getElementById('settingsAvatarImg').src = '';
+  document.getElementById('settingsAvatarImg').style.display = 'none';
+  const name = currentUser.displayName || currentUser.username;
+  const initEl = document.getElementById('settingsAvatarInitials');
+  initEl.textContent = name.slice(0,2).toUpperCase(); initEl.style.display = '';
+  document.getElementById('btnRemoveAvatar').style.display = 'none';
+  document.getElementById('avatarFileInput').value = '';
+};
+window.doSaveProfile = async function() {
+  if (!currentUser) return;
+  const err = document.getElementById('profileSettingsError');
+  const showErr = msg => { err.textContent = msg; err.classList.add('show'); };
+  err.classList.remove('show');
+  const displayName = document.getElementById('settings_displayName').value.trim();
+  if (!displayName) { showErr('Display name cannot be empty.'); return; }
+  const users = getUsers();
+  const idx = users.findIndex(x => x.username === currentUser.username);
+  if (idx < 0) { showErr('User not found.'); return; }
+  users[idx].displayName = displayName;
+  if (_settingsAvatarDataUrl === 'REMOVE') delete users[idx].avatar;
+  else if (_settingsAvatarDataUrl) users[idx].avatar = _settingsAvatarDataUrl;
+  currentUser = { ...users[idx] };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  _usersCache = users;
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  persistSharedProfile(currentUser);
+  try { await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [currentUser.username, JSON.stringify(currentUser)]); } catch(e) {}
+  updateAvatarDisplay();
+  setPresence(true);
+  closeAccountSettings();
+  showToast('Profile saved.');
+};
+window.doChangePassword = async function() {
+  if (!currentUser) return;
+  const err = document.getElementById('passwordSettingsError');
+  const showErr = msg => { err.textContent = msg; err.classList.add('show'); };
+  err.classList.remove('show');
+  const currentPw = document.getElementById('settings_currentPw').value;
+  const newPw = document.getElementById('settings_newPw').value;
+  const confirmPw = document.getElementById('settings_confirmPw').value;
+  if (!currentPw) { showErr('Enter your current password.'); return; }
+  if (!newPw) { showErr('Enter a new password.'); return; }
+  if (newPw !== confirmPw) { showErr('New passwords do not match.'); return; }
+  if (newPw.length < 6) { showErr('Password must be at least 6 characters.'); return; }
+  const currentHash = await hashPassword(currentPw);
+  if (currentHash !== currentUser.passwordHash) { showErr('Current password is incorrect.'); document.getElementById('settings_currentPw').value = ''; return; }
+  const newHash = await hashPassword(newPw);
+  const users = getUsers();
+  const idx = users.findIndex(x => x.username === currentUser.username);
+  if (idx < 0) { showErr('User not found.'); return; }
+  users[idx].passwordHash = newHash;
+  currentUser = { ...users[idx] };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  _usersCache = users;
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  try { await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [currentUser.username, JSON.stringify(currentUser)]); } catch(e) {}
+  closeAccountSettings();
+  showToast('Password changed successfully.');
+};
+window.doSetPinSettings = async function() {
+  if (!currentUser) return;
+  const err = document.getElementById('pinSettingsError');
+  const showErr = msg => { err.textContent = msg; err.classList.add('show'); };
+  err.classList.remove('show');
+  const newPin = document.getElementById('settings_newPin').value;
+  const confirmPin = document.getElementById('settings_confirmPin').value;
+  if (newPin !== confirmPin) { showErr('PINs do not match.'); return; }
+  if (newPin && (newPin.length < 4 || !/^\d+$/.test(newPin))) { showErr('PIN must be at least 4 digits (numbers only).'); return; }
+  const pinHash = newPin ? await hashPassword(newPin) : null;
+  const users = getUsers();
+  const idx = users.findIndex(x => x.username === currentUser.username);
+  if (idx < 0) { showErr('User not found.'); return; }
+  if (pinHash) users[idx].pinHash = pinHash; else delete users[idx].pinHash;
+  currentUser = { ...users[idx] };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  _usersCache = users;
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  try { await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [currentUser.username, JSON.stringify(currentUser)]); } catch(e) {}
+  closeAccountSettings();
+  showToast(newPin ? 'PIN set successfully.' : 'PIN removed.');
+};
+
+async function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').classList.add('active');
+  updateAvatarDisplay();
 
   // Restrict add button
   const addBtn = document.getElementById('btnAddDelivery');
@@ -3079,6 +3536,110 @@ async function showApp() {
   loadInventory();
   switchView('dashboard');
   tursoSyncAll();
+  startPresenceHeartbeat();
+  loadPresence();
+  setInterval(loadPresence, 60000);
+}
+
+async function setPresence(online) {
+  if (!currentUser) return;
+  try {
+    if (online) {
+      const data = JSON.stringify({username: currentUser.username, displayName: currentUser.displayName || currentUser.username, role: currentUser.role, avatar: currentUser.avatar || null, lastSeen: new Date().toISOString(), online: true});
+      await tursoExec('INSERT OR REPLACE INTO presence (username, data) VALUES (?, ?)', [currentUser.username, data]);
+    } else {
+      await tursoExec('DELETE FROM presence WHERE username = ?', [currentUser.username]);
+    }
+  } catch(e) {}
+}
+async function loadPresence() {
+  try {
+    const res = await tursoExec('SELECT data FROM presence');
+    const now = Date.now();
+    const online = (res?.rows || [])
+      .map(r => { try { return JSON.parse(r[0].value); } catch { return null; } }).filter(Boolean)
+      .filter(p => (now - new Date(p.lastSeen).getTime()) < 15 * 60 * 1000)
+      .sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
+    const sbEl = document.getElementById('sidebarOnlineList');
+    if (sbEl) {
+      if (!online.length) {
+        sbEl.innerHTML = '<div class="sb-online-empty">No active users.</div>';
+      } else {
+        sbEl.innerHTML = online.map(p => {
+          const isActive = (now - new Date(p.lastSeen).getTime()) < 5 * 60 * 1000;
+          const roleDisp = p.role === 'superadmin' ? 'Super Admin' : p.role === 'admin' ? 'Admin' : 'Member';
+          return `<div class="sb-online-row">
+            <div class="sb-online-avatar" style="${p.avatar ? `background-image:url('${p.avatar}');background-size:cover;background-position:center;` : ''} ">${p.avatar ? '' : (p.displayName || p.username).slice(0, 2).toUpperCase()}</div>
+            <div class="sb-online-info">
+              <div class="sb-online-name">${p.displayName || p.username}</div>
+              <div class="sb-online-role">${roleDisp}</div>
+            </div>
+            ${isActive ? '<div class="sb-online-dot"></div>' : ''}
+          </div>`;
+        }).join('');
+      }
+    }
+  } catch(e) {}
+}
+let _presenceTimer, _inactivityTimer, _warnTimer, _countdownInterval;
+const INACTIVITY_MS  = 30 * 60 * 1000;  // 30 min total idle
+const WARN_BEFORE_MS =  2 * 60 * 1000;  // show warning 2 min before logout
+
+function _showSessionWarning() {
+  const overlay = document.getElementById('sessionWarnOverlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  let remaining = Math.round(WARN_BEFORE_MS / 1000);
+  function updateCountdown() {
+    const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+    const s = (remaining % 60).toString().padStart(2, '0');
+    const el = document.getElementById('sessionCountdown');
+    if (el) el.textContent = m + ':' + s;
+    if (remaining <= 0) { clearInterval(_countdownInterval); doLogout(); }
+    remaining--;
+  }
+  updateCountdown();
+  _countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+function _hideSessionWarning() {
+  const overlay = document.getElementById('sessionWarnOverlay');
+  if (overlay) overlay.classList.remove('open');
+  clearInterval(_countdownInterval);
+}
+
+window.extendSession = function() {
+  _hideSessionWarning();
+  _resetInactivityTimer();
+};
+
+function _resetInactivityTimer() {
+  clearTimeout(_inactivityTimer);
+  clearTimeout(_warnTimer);
+  _hideSessionWarning();
+  _warnTimer = setTimeout(() => {
+    _showSessionWarning();
+    _inactivityTimer = setTimeout(() => { doLogout(); }, WARN_BEFORE_MS);
+  }, INACTIVITY_MS - WARN_BEFORE_MS);
+}
+function startPresenceHeartbeat() {
+  setPresence(true);
+  _presenceTimer = setInterval(() => setPresence(true), 3 * 60 * 1000);
+  _resetInactivityTimer();
+  ['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev =>
+    document.addEventListener(ev, _resetInactivityTimer, {passive: true})
+  );
+}
+function stopPresence() {
+  clearInterval(_presenceTimer);
+  clearTimeout(_inactivityTimer);
+  clearTimeout(_warnTimer);
+  clearInterval(_countdownInterval);
+  _hideSessionWarning();
+  ['mousemove','keydown','mousedown','touchstart','scroll'].forEach(ev =>
+    document.removeEventListener(ev, _resetInactivityTimer)
+  );
+  setPresence(false);
 }
 
 function populateTechDropdown() {
@@ -3318,7 +3879,7 @@ function renderTable() {
         + (serialParts.length > 3 ? ` <span style="font-size:11px;color:var(--text3)">+${serialParts.length - 3} more</span>` : '')
       : '<span style="color:var(--text3);font-size:12px;">—</span>';
     const canEdit = can('edit');
-    const canDel  = can('delete') || currentUser?.role === 'superadmin';
+    const canDel  = currentUser?.role === 'superadmin' || currentUser?.role === 'admin';
     return `<tr>
       <td class="mono">${esc(r.po||'—')}</td>
       <td class="date-cell">${r.deliveryDate ? fmtDate(r.deliveryDate) : '—'}</td>
@@ -3420,7 +3981,7 @@ function clearForm() {
 }
 
 // ── ITEM ROW HELPERS ──
-const ASSET_TYPES_LIST = ['Laptop','Desktop','Monitor','Printer','Keyboard','Mouse','Headset','Webcam','Docking Station','Network Switch','Access Point','UPS','Other'];
+const ASSET_TYPES_LIST = ['Access Point','Desktop','Docking Station','Headset','Keyboard','Laptop','Monitor','Mouse','Network Switch','Printer','UPS','Webcam','YubiKey','Other'];
 const ASSET_BRANDS_LIST = ['Acer','Apple','Asus','Canon','Cisco','Dell','Epson','HP','Lenovo','Logitech','Microsoft','MSI','Samsung','TP-Link','Ubiquiti','Other'];
 
 function _typeOpts(sel) {
@@ -4136,6 +4697,8 @@ window.togglePoCard = function(id) {
 // ── USERS MANAGEMENT ──
 const LS_AUDIT = 'deliveryAssets_audit';
 let auditLogs = [];
+let auditPage = 1;
+const AUDIT_PAGE_SIZE = 25;
 
 function loadAuditLog() {
   try {
@@ -4448,7 +5011,8 @@ window.auditFilterQuick = function(key) {
   renderAudit();
 };
 
-function renderAudit() {
+function renderAudit(resetPage) {
+  if (resetPage) auditPage = 1;
   loadAuditLog();
   const q  = (document.getElementById('auditSearchInput')?.value || '').toLowerCase();
   const af = document.getElementById('auditActionFilter')?.value || '';
@@ -4543,7 +5107,36 @@ function renderAudit() {
     return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
-  const rows = filtered.map((log, i) => {
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filtered.length / AUDIT_PAGE_SIZE));
+  if (auditPage > totalPages) auditPage = totalPages;
+  const pageStart = (auditPage - 1) * AUDIT_PAGE_SIZE;
+  const paginated = filtered.slice(pageStart, pageStart + AUDIT_PAGE_SIZE);
+
+  function paginationHtml() {
+    if (totalPages <= 1) return '';
+    const pages = [];
+    for (let p = 1; p <= totalPages; p++) {
+      if (p === 1 || p === totalPages || Math.abs(p - auditPage) <= 2) {
+        pages.push(p);
+      } else if (pages[pages.length - 1] !== '...') {
+        pages.push('...');
+      }
+    }
+    const btns = pages.map(p =>
+      p === '...'
+        ? `<span class="al-pg-ellipsis">…</span>`
+        : `<button class="al-pg-btn${p === auditPage ? ' active' : ''}" onclick="goAuditPage(${p})">${p}</button>`
+    ).join('');
+    return `<div class="al-pagination">
+      <button class="al-pg-btn" onclick="goAuditPage(${auditPage - 1})" ${auditPage === 1 ? 'disabled' : ''}>‹ Prev</button>
+      ${btns}
+      <button class="al-pg-btn" onclick="goAuditPage(${auditPage + 1})" ${auditPage === totalPages ? 'disabled' : ''}>Next ›</button>
+      <span class="al-pg-info">${pageStart + 1}–${Math.min(pageStart + AUDIT_PAGE_SIZE, filtered.length)} of ${filtered.length}</span>
+    </div>`;
+  }
+
+  const rows = paginated.map((log, i) => {
     const date = new Date(log.timestamp);
     const timeStr = date.toLocaleString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric',
@@ -4569,6 +5162,12 @@ function renderAudit() {
         </td>
         <td class="al-td">
           <div class="al-details" title="${esc(log.details || '')}">${esc(log.details || '—')}</div>
+          ${log.changes && log.changes.length ? `<div class="al-changes">
+            ${log.changes.map(c => c.old !== undefined
+              ? `<div class="al-change-row"><span class="al-change-field">${esc(c.field)}</span><span class="al-change-old">${esc(c.old)}</span><span class="al-change-arrow">→</span><span class="al-change-new">${esc(c.new)}</span></div>`
+              : `<div class="al-change-row"><span class="al-change-field">${esc(c.field)}</span><span class="al-change-val">${esc(c.val)}</span></div>`
+            ).join('')}
+          </div>` : ''}
         </td>
       </tr>`;
   }).join('');
@@ -4586,7 +5185,14 @@ function renderAudit() {
         </thead>
         <tbody>${rows}</tbody>
       </table>
-    </div>`;
+    </div>
+    ${paginationHtml()}`;
+}
+
+function goAuditPage(p) {
+  auditPage = Math.max(1, p);
+  renderAudit();
+  document.getElementById('auditBody')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 window.clearAuditLog = function() {
@@ -5149,6 +5755,15 @@ window.setAssetPageSize = function(size) {
   renderAssets();
 };
 
+function togglePcFields() {
+  const type = (document.getElementById('af_assetType').value || '').toLowerCase();
+  const show = type === 'laptop' || type === 'desktop';
+  ['fg_hostname','fg_domainUserId','fg_cpuSpecs','fg_ramGb','fg_hddGb'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = show ? '' : 'none';
+  });
+}
+
 window.openAddAssetModal = function() {
   _editingAssetId = null;
   document.getElementById('assetFormTitle').textContent = 'Add Asset';
@@ -5169,6 +5784,7 @@ window.openAddAssetModal = function() {
   document.getElementById('af_assetType').value = '';
   document.getElementById('af_status').value = '';
   document.getElementById('assetFormError').style.display = 'none';
+  togglePcFields();
   document.getElementById('assetFormOverlay').classList.add('open');
   setTimeout(() => document.getElementById('af_site').focus(), 80);
 };
@@ -5248,6 +5864,7 @@ window.openEditAssetModal = function(id) {
   document.getElementById('assetHeaderDeleteBtn').style.display = 'none';
   document.getElementById('assetHeaderDeleteSep').style.display = 'none';
   document.getElementById('assetFormOverlay').querySelector('.form-grid').classList.remove('asset-view-mode');
+  togglePcFields();
   // ensure overlay is open (may already be open when switching from view mode)
   document.getElementById('assetFormOverlay').classList.add('open');
   setTimeout(() => document.getElementById('af_site').focus(), 80);
@@ -5257,6 +5874,38 @@ window.saveAssetForm = async function() {
   const errEl = document.getElementById('assetFormError');
   errEl.style.display = 'none';
   const get = id => document.getElementById(id)?.value?.trim() ?? '';
+
+  // ── Validation ──
+  const required = [
+    { id: 'af_site',         label: 'Site' },
+    { id: 'af_assetTag',     label: 'Asset Tag' },
+    { id: 'af_assetType',    label: 'Asset Type' },
+    { id: 'af_deviceModel',  label: 'Device Model' },
+    { id: 'af_manufacturer', label: 'Manufacturer' },
+    { id: 'af_serialNumber', label: 'Service Tag / Serial #' },
+    { id: 'af_custodian',    label: 'Custodian' },
+    { id: 'af_assetValue',   label: 'Asset Value' },
+    { id: 'af_eol',          label: 'EOL (End of Life)' },
+    { id: 'af_assetAge',     label: 'Asset Age' },
+    { id: 'af_status',       label: 'Status' },
+  ];
+  const isPc = ['laptop','desktop'].includes(get('af_assetType').toLowerCase());
+  if (isPc) {
+    required.push(
+      { id: 'af_hostname',     label: 'Hostname' },
+      { id: 'af_domainUserId', label: 'Domain User ID' },
+      { id: 'af_cpuSpecs',     label: 'CPU Specs' },
+      { id: 'af_ramGb',        label: 'RAM (GB)' },
+      { id: 'af_hddGb',        label: 'Hard Drive Capacity (GB)' }
+    );
+  }
+  const missing = required.filter(f => !get(f.id));
+  if (missing.length) {
+    errEl.textContent = 'Please fill in: ' + missing.map(f => f.label).join(', ');
+    errEl.style.display = 'block';
+    document.getElementById(missing[0].id)?.focus();
+    return;
+  }
   const asset = {
     id:           _editingAssetId || ('ast_' + Date.now() + '_' + Math.random().toString(36).slice(2,7)),
     site:         get('af_site'),
@@ -5281,8 +5930,47 @@ window.saveAssetForm = async function() {
     updatedBy:    currentUser?.username || '',
   };
   try {
+    const prevAsset = _editingAssetId ? assetsDb.find(a => a.id === _editingAssetId) : null;
     await _persistAsset(asset);
-    logAudit(_editingAssetId ? 'Edit Asset' : 'Add Asset', asset.assetTag || asset.id);
+
+    // Build change details
+    const FIELD_LABELS = {
+      site:'Site', assetTag:'Asset Tag', quantity:'Quantity', floor:'Floor',
+      assetType:'Asset Type', deviceModel:'Device Model', manufacturer:'Manufacturer',
+      serialNumber:'Serial #', custodian:'Custodian', assetValue:'Asset Value',
+      eol:'EOL', assetAge:'Asset Age', status:'Status', hostname:'Hostname',
+      domainUserId:'Domain User ID', cpuSpecs:'CPU Specs', ramGb:'RAM (GB)', hddGb:'HDD (GB)'
+    };
+    let changes = [];
+    if (prevAsset) {
+      Object.keys(FIELD_LABELS).forEach(k => {
+        const oldVal = (prevAsset[k] ?? '').toString().trim();
+        const newVal = (asset[k] ?? '').toString().trim();
+        if (oldVal !== newVal) changes.push({ field: FIELD_LABELS[k], old: oldVal || '—', new: newVal || '—' });
+      });
+    } else {
+      changes = Object.keys(FIELD_LABELS)
+        .filter(k => asset[k])
+        .map(k => ({ field: FIELD_LABELS[k], val: asset[k] }));
+    }
+
+    const detailStr = prevAsset
+      ? (asset.assetTag || asset.id) + ' — ' + changes.length + ' field(s) changed'
+      : (asset.assetTag || asset.id);
+    const entry = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      user: currentUser?.username || 'system',
+      action: _editingAssetId ? 'Edit Asset' : 'Add Asset',
+      details: detailStr,
+      changes
+    };
+    auditLogs.unshift(entry);
+    if (auditLogs.length > 1000) auditLogs = auditLogs.slice(0, 1000);
+    localStorage.setItem(LS_AUDIT, JSON.stringify(auditLogs));
+    tursoExec('INSERT OR IGNORE INTO audit (id, ts, data) VALUES (?, ?, ?)',
+      [entry.id, entry.timestamp, JSON.stringify(entry)]);
+
     showToast(_editingAssetId ? 'Asset updated.' : 'Asset added.');
     document.getElementById('assetFormOverlay').classList.remove('open');
     _editingAssetId = null;
@@ -5627,7 +6315,7 @@ function renderGlobalResults(query) {
   const q = query.toLowerCase();
 
   // ── Asset Register hits ──
-  const ASSET_FIELDS = ['serialNumber','assetTag','deviceModel','manufacturer','custodian','hostname','domainUserId'];
+  const ASSET_FIELDS = ['id','serialNumber','assetTag','deviceModel','manufacturer','custodian','hostname','domainUserId','assetType','site','floor','status','assetAge','assetValue','cpuSpecs'];
   const assetHits = assetsDb.filter(a =>
     ASSET_FIELDS.some(f => (a[f] || '').toLowerCase().includes(q))
   ).slice(0, 6);
@@ -5672,10 +6360,11 @@ function renderGlobalResults(query) {
     html += `<div class="gsr-section-label">Asset Register (${assetHits.length})</div>`;
     html += assetHits.map(a => {
       const assetStatuses = ['Deployed','Spare','Docked','For Repair','For Disposal'];
+      const line2 = [a.assetType, a.deviceModel, a.site, a.custodian].filter(Boolean).map(esc).join(' &middot; ');
       return `<div class="gsr-serial-item">
         <div style="flex:1;min-width:0;cursor:pointer" onclick="goToAsset('${a.id}')" title="Open in Asset Register">
           <div class="gsr-serial-num">${hl(a.serialNumber || a.assetTag || '—')}</div>
-          <div class="gsr-serial-po">${esc(a.assetTag||'—')} &middot; ${esc(a.assetType||'—')} &middot; ${esc(a.deviceModel||'—')}${a.custodian ? ' &middot; ' + esc(a.custodian) : ''}</div>
+          <div class="gsr-serial-po">${line2 || '—'}</div>
         </div>
         <select class="gsr-status-select" data-assetid="${a.id}"
           onchange="quickUpdateAssetStatus('${a.id}',this.value)">
@@ -5782,4 +6471,3 @@ window.addEventListener('resize', function() {
 </script>
 </body>
 </html>
- 
