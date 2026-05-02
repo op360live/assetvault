@@ -297,7 +297,7 @@ body {
 /* Sidebar online users */
 .sb-online-list { display:flex; flex-direction:column; gap:1px; padding:2px 0 6px; }
 .sb-online-row { display:flex; align-items:center; gap:9px; padding:7px 12px; border-radius:10px; }
-.sb-online-avatar { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff; flex-shrink:0; }
+.sb-online-avatar { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff; flex-shrink:0; overflow:hidden; }
 .sb-online-info { flex:1; min-width:0; }
 .sb-online-name { font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .sb-online-role { font-size:10px; color:var(--text3); }
@@ -1805,7 +1805,7 @@ window.doLogin = async function() {
   if (!user) { showLoginErr('Incorrect password.', 'loginError2'); document.getElementById('loginPass').value = ''; return; }
   if (user.active === false) { showLoginErr('This account has been disabled.', 'loginError2'); return; }
   document.getElementById('loginError2').classList.remove('show');
-  currentUser = {...user};
+  currentUser = applySharedProfile({...user});
 
   sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
   localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
@@ -1827,13 +1827,29 @@ window.doLogout = function() {
 function checkSession() {
   try {
     const s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
-    if (s && s.username) { currentUser = s; return true; }
+    if (s && s.username) { currentUser = applySharedProfile(s); return true; }
   } catch {}
   try {
     const s = JSON.parse(localStorage.getItem('assetvault_session'));
-    if (s && s.username) { currentUser = s; sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); return true; }
+    if (s && s.username) { currentUser = applySharedProfile(s); sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); return true; }
   } catch {}
   return false;
+}
+
+function persistSharedProfile(user) {
+  try {
+    const profiles = JSON.parse(localStorage.getItem('assetvault_profiles') || '{}');
+    profiles[user.username] = { avatar: user.avatar || null, displayName: user.displayName || user.username };
+    localStorage.setItem('assetvault_profiles', JSON.stringify(profiles));
+  } catch(e) {}
+}
+function applySharedProfile(user) {
+  try {
+    const profiles = JSON.parse(localStorage.getItem('assetvault_profiles') || '{}');
+    const p = profiles[user.username];
+    if (p) { if (p.avatar) user.avatar = p.avatar; if (p.displayName) user.displayName = p.displayName; }
+  } catch(e) {}
+  return user;
 }
 
 function updateAvatarDisplay() {
@@ -2644,7 +2660,7 @@ async function setPresence(online) {
   if (!currentUser) return;
   try {
     if (online) {
-      const data = JSON.stringify({ username: currentUser.username, displayName: currentUser.displayName || currentUser.username, role: currentUser.role, lastSeen: new Date().toISOString(), online: true });
+      const data = JSON.stringify({ username: currentUser.username, displayName: currentUser.displayName || currentUser.username, role: currentUser.role, avatar: currentUser.avatar || null, lastSeen: new Date().toISOString(), online: true });
       await tursoExec('INSERT OR REPLACE INTO presence (username, data) VALUES (?, ?)', [currentUser.username, data]);
     } else {
       await tursoExec('DELETE FROM presence WHERE username = ?', [currentUser.username]);
@@ -2669,7 +2685,7 @@ async function loadPresence() {
         sbEl.innerHTML = online.map(p => {
           const isActive = (now - new Date(p.lastSeen).getTime()) < 5 * 60 * 1000;
           return `<div class="sb-online-row">
-            <div class="sb-online-avatar">${(p.displayName || p.username).slice(0, 2).toUpperCase()}</div>
+            <div class="sb-online-avatar" style="${p.avatar ? `background-image:url('${p.avatar}');background-size:cover;background-position:center;` : ''} ">${p.avatar ? '' : (p.displayName || p.username).slice(0, 2).toUpperCase()}</div>
             <div class="sb-online-info">
               <div class="sb-online-name">${p.displayName || p.username}</div>
               <div class="sb-online-role">${roleLabel(p.role)}</div>
@@ -2922,10 +2938,12 @@ window.doSaveProfile = async function() {
   localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
   localStorage.setItem(LS_USERS, JSON.stringify(users));
   _usersCache = users;
+  persistSharedProfile(currentUser);
   try {
     await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [currentUser.username, JSON.stringify(currentUser)]);
   } catch(e) { /* offline */ }
   updateAvatarDisplay();
+  setPresence(true);
   closeAccountSettings();
   showToast('Profile saved.');
 };
