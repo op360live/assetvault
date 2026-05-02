@@ -311,6 +311,7 @@ body {
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+  overflow: hidden;
 }
 .sb-online-info { flex: 1; min-width: 0; }
 .sb-online-name { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -528,7 +529,15 @@ body {
 .acct-dd-item:hover { background:var(--surface-tint); color:var(--text); }
 .acct-dd-item.danger { color:var(--red); }
 .acct-dd-item.danger:hover { background:var(--red-bg); }
-.avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; }
+.avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; overflow:hidden; }
+.avatar-xl { width:64px; height:64px; font-size:20px; font-weight:700; }
+/* Account Settings Modal */
+.acct-settings-tabs { display:flex; border-bottom:1px solid var(--glass-border2); padding:0 16px; gap:2px; }
+.acct-stab { display:flex; align-items:center; gap:6px; padding:10px 14px; font-size:12px; font-weight:600; color:var(--text3); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:color 0.15s, border-color 0.15s; margin-bottom:-1px; }
+.acct-stab:hover { color:var(--text); }
+.acct-stab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.acct-avatar-row { display:flex; align-items:center; gap:18px; padding:4px 0; }
+.acct-avatar-preview { position:relative; flex-shrink:0; }
 .chip-name { font-size:13px; font-weight:600; color:var(--text); }
 .chip-role { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-top:1px; }
 
@@ -1927,6 +1936,12 @@ mark.gsr-highlight {
               <div class="acct-dd-name" id="acctDdName">—</div>
               <div class="acct-dd-role" id="acctDdRole">—</div>
             </div>
+            <div class="acct-dd-item" onclick="openAccountSettings()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              Settings
+            </div>
             <div class="acct-dd-item danger" onclick="doLogout()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
@@ -2552,6 +2567,86 @@ mark.gsr-highlight {
 </div>
 
 <!-- ════════════════════════════════
+     ACCOUNT SETTINGS MODAL
+════════════════════════════════ -->
+<div class="overlay" id="accountSettingsOverlay" onclick="if(event.target===this)closeAccountSettings()">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <span class="modal-title">Account Settings</span>
+      <button class="modal-close" onclick="closeAccountSettings()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="acct-settings-tabs">
+      <button class="acct-stab active" id="stab-profile" onclick="switchSettingsTab('profile')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Profile
+      </button>
+      <button class="acct-stab" id="stab-password" onclick="switchSettingsTab('password')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Password
+      </button>
+      <button class="acct-stab" id="stab-pin" onclick="switchSettingsTab('pin')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="7" cy="13" r="1.2" fill="currentColor"/><circle cx="12" cy="13" r="1.2" fill="currentColor"/><circle cx="17" cy="13" r="1.2" fill="currentColor"/></svg>
+        PIN
+      </button>
+    </div>
+    <!-- Profile panel -->
+    <div class="acct-spanel" id="spanel-profile">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+        <div class="acct-avatar-row">
+          <div class="acct-avatar-preview" id="settingsAvatarPreview">
+            <div class="avatar avatar-xl" id="settingsAvatarInitials">--</div>
+            <img id="settingsAvatarImg" src="" alt="" style="display:none;width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--glass-border);">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text);">Profile Picture</div>
+            <div style="font-size:11px;color:var(--text3);">JPG, PNG or GIF · Max 2 MB</div>
+            <div style="display:flex;gap:6px;margin-top:2px;">
+              <button class="btn btn-sm" onclick="document.getElementById('avatarFileInput').click()">Upload Photo</button>
+              <button class="btn btn-sm btn-danger" id="btnRemoveAvatar" onclick="clearAvatarPreview()" style="display:none;">Remove</button>
+            </div>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="previewAvatarFile(event)">
+          </div>
+        </div>
+        <div class="fg"><label>Display Name</label><input type="text" id="settings_displayName" placeholder="Your display name" autocomplete="off"></div>
+        <div class="login-error" id="profileSettingsError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeAccountSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="doSaveProfile()">Save Profile</button>
+      </div>
+    </div>
+    <!-- Password panel -->
+    <div class="acct-spanel" id="spanel-password" style="display:none;">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="fg"><label>Current Password</label><input type="password" id="settings_currentPw" placeholder="Enter current password" autocomplete="current-password"></div>
+        <div class="fg"><label>New Password</label><input type="password" id="settings_newPw" placeholder="New password" autocomplete="new-password"></div>
+        <div class="fg"><label>Confirm New Password</label><input type="password" id="settings_confirmPw" placeholder="Repeat new password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doChangePassword()"></div>
+        <div class="login-error" id="passwordSettingsError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeAccountSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="doChangePassword()">Change Password</button>
+      </div>
+    </div>
+    <!-- PIN panel -->
+    <div class="acct-spanel" id="spanel-pin" style="display:none;">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="font-size:13px;color:var(--text2);line-height:1.5;">Set a numeric PIN as an alternative login method. Leave blank to remove your current PIN.</div>
+        <div class="fg"><label>New PIN</label><input type="password" inputmode="numeric" id="settings_newPin" placeholder="4–20 digits" maxlength="20" autocomplete="new-password" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+        <div class="fg"><label>Confirm PIN</label><input type="password" inputmode="numeric" id="settings_confirmPin" placeholder="Repeat PIN" maxlength="20" autocomplete="new-password" oninput="this.value=this.value.replace(/[^0-9]/g,'')" onkeydown="if(event.key==='Enter')doSetPinSettings()"></div>
+        <div class="login-error" id="pinSettingsError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeAccountSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="doSetPinSettings()">Save PIN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
      USER MANAGEMENT MODAL
 ════════════════════════════════ -->
 <div class="overlay" id="userFormOverlay" onclick="if(event.target===this)document.getElementById('userFormOverlay').classList.remove('open')">
@@ -3127,7 +3222,7 @@ window.doLogin = async function() {
   if (!user) { showLoginErr('Incorrect password.', 'loginError2'); document.getElementById('loginPass').value = ''; return; }
   if (user.active === false) { showLoginErr('This account has been disabled.', 'loginError2'); return; }
   document.getElementById('loginError2').classList.remove('show');
-  currentUser = {...user};
+  currentUser = applySharedProfile({...user});
   logAudit('Login', u);
 
   if (user.mustChangePassword) {
@@ -3164,30 +3259,201 @@ window.doLogout = function() {
 function checkSession() {
   try {
     const s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
-    if (s && s.username) { currentUser = s; return true; }
+    if (s && s.username) { currentUser = applySharedProfile(s); return true; }
   } catch {}
   try {
     const s = JSON.parse(localStorage.getItem('assetvault_session'));
-    if (s && s.username) { currentUser = s; sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); return true; }
+    if (s && s.username) { currentUser = applySharedProfile(s); sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); return true; }
   } catch {}
   return false;
 }
 
-async function showApp() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('appScreen').classList.add('active');
+function persistSharedProfile(user) {
+  try {
+    const profiles = JSON.parse(localStorage.getItem('assetvault_profiles') || '{}');
+    profiles[user.username] = { avatar: user.avatar || null, displayName: user.displayName || user.username };
+    localStorage.setItem('assetvault_profiles', JSON.stringify(profiles));
+  } catch(e) {}
+}
+function applySharedProfile(user) {
+  try {
+    const profiles = JSON.parse(localStorage.getItem('assetvault_profiles') || '{}');
+    const p = profiles[user.username];
+    if (p) { if (p.avatar) user.avatar = p.avatar; if (p.displayName) user.displayName = p.displayName; }
+  } catch(e) {}
+  return user;
+}
 
+function updateAvatarDisplay() {
+  if (!currentUser) return;
   const name = currentUser.displayName || currentUser.username;
   const init = name.slice(0, 2).toUpperCase();
-  document.getElementById('userAvatar').textContent      = init;
-  document.getElementById('userNameDisplay').textContent = name;
   const roleDisp = currentUser.role === 'superadmin' ? 'Super Admin' :
                    currentUser.role === 'admin'       ? 'Admin' : 'Member';
+  document.getElementById('userNameDisplay').textContent = name;
   document.getElementById('userRoleDisplay').textContent = roleDisp;
   const an = document.getElementById('acctDdName');
   const ar = document.getElementById('acctDdRole');
   if (an) an.textContent = name;
   if (ar) ar.textContent = roleDisp;
+  const avatarEl = document.getElementById('userAvatar');
+  if (currentUser.avatar) {
+    avatarEl.textContent = '';
+    avatarEl.style.backgroundImage = 'url(' + currentUser.avatar + ')';
+    avatarEl.style.backgroundSize = 'cover';
+    avatarEl.style.backgroundPosition = 'center';
+  } else {
+    avatarEl.textContent = init;
+    avatarEl.style.backgroundImage = '';
+  }
+}
+
+/* ── ACCOUNT SETTINGS ── */
+window.openAccountSettings = function(initialTab) {
+  if (!currentUser) return;
+  document.getElementById('acctDropdown').classList.remove('open');
+  switchSettingsTab(initialTab || 'profile');
+  const name = currentUser.displayName || currentUser.username;
+  document.getElementById('settings_displayName').value = name;
+  _settingsAvatarDataUrl = null;
+  const img = document.getElementById('settingsAvatarImg');
+  const initEl = document.getElementById('settingsAvatarInitials');
+  const removeBtn = document.getElementById('btnRemoveAvatar');
+  document.getElementById('avatarFileInput').value = '';
+  if (currentUser.avatar) {
+    img.src = currentUser.avatar; img.style.display = '';
+    initEl.style.display = 'none'; removeBtn.style.display = '';
+  } else {
+    img.src = ''; img.style.display = 'none';
+    initEl.textContent = name.slice(0,2).toUpperCase(); initEl.style.display = '';
+    removeBtn.style.display = 'none';
+  }
+  ['profileSettingsError','passwordSettingsError','pinSettingsError'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = ''; el.classList.remove('show'); }
+  });
+  ['settings_currentPw','settings_newPw','settings_confirmPw','settings_newPin','settings_confirmPin'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('accountSettingsOverlay').classList.add('open');
+};
+window.closeAccountSettings = function() {
+  document.getElementById('accountSettingsOverlay').classList.remove('open');
+};
+window.switchSettingsTab = function(tab) {
+  ['profile','password','pin'].forEach(t => {
+    document.getElementById('stab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('spanel-' + t).style.display = t === tab ? '' : 'none';
+  });
+};
+let _settingsAvatarDataUrl = null;
+window.previewAvatarFile = function(e) {
+  const file = e.target.files[0]; if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    const err = document.getElementById('profileSettingsError');
+    err.textContent = 'Image too large. Max 2 MB.'; err.classList.add('show'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    _settingsAvatarDataUrl = ev.target.result;
+    const img = document.getElementById('settingsAvatarImg');
+    img.src = _settingsAvatarDataUrl; img.style.display = '';
+    document.getElementById('settingsAvatarInitials').style.display = 'none';
+    document.getElementById('btnRemoveAvatar').style.display = '';
+  };
+  reader.readAsDataURL(file);
+};
+window.clearAvatarPreview = function() {
+  _settingsAvatarDataUrl = 'REMOVE';
+  document.getElementById('settingsAvatarImg').src = '';
+  document.getElementById('settingsAvatarImg').style.display = 'none';
+  const name = currentUser.displayName || currentUser.username;
+  const initEl = document.getElementById('settingsAvatarInitials');
+  initEl.textContent = name.slice(0,2).toUpperCase(); initEl.style.display = '';
+  document.getElementById('btnRemoveAvatar').style.display = 'none';
+  document.getElementById('avatarFileInput').value = '';
+};
+window.doSaveProfile = async function() {
+  if (!currentUser) return;
+  const err = document.getElementById('profileSettingsError');
+  const showErr = msg => { err.textContent = msg; err.classList.add('show'); };
+  err.classList.remove('show');
+  const displayName = document.getElementById('settings_displayName').value.trim();
+  if (!displayName) { showErr('Display name cannot be empty.'); return; }
+  const users = getUsers();
+  const idx = users.findIndex(x => x.username === currentUser.username);
+  if (idx < 0) { showErr('User not found.'); return; }
+  users[idx].displayName = displayName;
+  if (_settingsAvatarDataUrl === 'REMOVE') delete users[idx].avatar;
+  else if (_settingsAvatarDataUrl) users[idx].avatar = _settingsAvatarDataUrl;
+  currentUser = { ...users[idx] };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  _usersCache = users;
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  persistSharedProfile(currentUser);
+  try { await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [currentUser.username, JSON.stringify(currentUser)]); } catch(e) {}
+  updateAvatarDisplay();
+  setPresence(true);
+  closeAccountSettings();
+  showToast('Profile saved.');
+};
+window.doChangePassword = async function() {
+  if (!currentUser) return;
+  const err = document.getElementById('passwordSettingsError');
+  const showErr = msg => { err.textContent = msg; err.classList.add('show'); };
+  err.classList.remove('show');
+  const currentPw = document.getElementById('settings_currentPw').value;
+  const newPw = document.getElementById('settings_newPw').value;
+  const confirmPw = document.getElementById('settings_confirmPw').value;
+  if (!currentPw) { showErr('Enter your current password.'); return; }
+  if (!newPw) { showErr('Enter a new password.'); return; }
+  if (newPw !== confirmPw) { showErr('New passwords do not match.'); return; }
+  if (newPw.length < 6) { showErr('Password must be at least 6 characters.'); return; }
+  const currentHash = await hashPassword(currentPw);
+  if (currentHash !== currentUser.passwordHash) { showErr('Current password is incorrect.'); document.getElementById('settings_currentPw').value = ''; return; }
+  const newHash = await hashPassword(newPw);
+  const users = getUsers();
+  const idx = users.findIndex(x => x.username === currentUser.username);
+  if (idx < 0) { showErr('User not found.'); return; }
+  users[idx].passwordHash = newHash;
+  currentUser = { ...users[idx] };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  _usersCache = users;
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  try { await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [currentUser.username, JSON.stringify(currentUser)]); } catch(e) {}
+  closeAccountSettings();
+  showToast('Password changed successfully.');
+};
+window.doSetPinSettings = async function() {
+  if (!currentUser) return;
+  const err = document.getElementById('pinSettingsError');
+  const showErr = msg => { err.textContent = msg; err.classList.add('show'); };
+  err.classList.remove('show');
+  const newPin = document.getElementById('settings_newPin').value;
+  const confirmPin = document.getElementById('settings_confirmPin').value;
+  if (newPin !== confirmPin) { showErr('PINs do not match.'); return; }
+  if (newPin && (newPin.length < 4 || !/^\d+$/.test(newPin))) { showErr('PIN must be at least 4 digits (numbers only).'); return; }
+  const pinHash = newPin ? await hashPassword(newPin) : null;
+  const users = getUsers();
+  const idx = users.findIndex(x => x.username === currentUser.username);
+  if (idx < 0) { showErr('User not found.'); return; }
+  if (pinHash) users[idx].pinHash = pinHash; else delete users[idx].pinHash;
+  currentUser = { ...users[idx] };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  _usersCache = users;
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  try { await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [currentUser.username, JSON.stringify(currentUser)]); } catch(e) {}
+  closeAccountSettings();
+  showToast(newPin ? 'PIN set successfully.' : 'PIN removed.');
+};
+
+async function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').classList.add('active');
+  updateAvatarDisplay();
 
   // Restrict add button
   const addBtn = document.getElementById('btnAddDelivery');
@@ -3217,7 +3483,7 @@ async function setPresence(online) {
   if (!currentUser) return;
   try {
     if (online) {
-      const data = JSON.stringify({username: currentUser.username, displayName: currentUser.displayName || currentUser.username, role: currentUser.role, lastSeen: new Date().toISOString(), online: true});
+      const data = JSON.stringify({username: currentUser.username, displayName: currentUser.displayName || currentUser.username, role: currentUser.role, avatar: currentUser.avatar || null, lastSeen: new Date().toISOString(), online: true});
       await tursoExec('INSERT OR REPLACE INTO presence (username, data) VALUES (?, ?)', [currentUser.username, data]);
     } else {
       await tursoExec('DELETE FROM presence WHERE username = ?', [currentUser.username]);
@@ -3241,7 +3507,7 @@ async function loadPresence() {
           const isActive = (now - new Date(p.lastSeen).getTime()) < 5 * 60 * 1000;
           const roleDisp = p.role === 'superadmin' ? 'Super Admin' : p.role === 'admin' ? 'Admin' : 'Member';
           return `<div class="sb-online-row">
-            <div class="sb-online-avatar">${(p.displayName || p.username).slice(0, 2).toUpperCase()}</div>
+            <div class="sb-online-avatar" style="${p.avatar ? `background-image:url('${p.avatar}');background-size:cover;background-position:center;` : ''} ">${p.avatar ? '' : (p.displayName || p.username).slice(0, 2).toUpperCase()}</div>
             <div class="sb-online-info">
               <div class="sb-online-name">${p.displayName || p.username}</div>
               <div class="sb-online-role">${roleDisp}</div>
