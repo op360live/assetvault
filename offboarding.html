@@ -183,6 +183,8 @@ body {
 #sidebar.collapsed .sb-brand-name,
 #sidebar.collapsed .sb-section-label,
 #sidebar.collapsed .sb-item-label,
+#sidebar.collapsed .sb-online-label,
+#sidebar.collapsed .sb-online-list,
 #sidebar.collapsed .sb-divider { display: none; }
 
 #sidebar.collapsed .sb-item {
@@ -291,6 +293,17 @@ body {
 .sb-item.active .sb-item-icon { opacity: 1; }
 .sb-divider { height: 1px; background: var(--sidebar-border, #f0f2f5); margin: 6px 4px; }
 [data-theme="dark"] .sb-divider { background: var(--glass-border2); }
+
+/* Sidebar online users */
+.sb-online-list { display:flex; flex-direction:column; gap:1px; padding:2px 0 6px; }
+.sb-online-row { display:flex; align-items:center; gap:9px; padding:7px 12px; border-radius:10px; }
+.sb-online-avatar { width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff; flex-shrink:0; }
+.sb-online-info { flex:1; min-width:0; }
+.sb-online-name { font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sb-online-role { font-size:10px; color:var(--text3); }
+.sb-online-dot { width:7px; height:7px; border-radius:50%; background:var(--green); flex-shrink:0; box-shadow:0 0 0 2px rgba(61,180,140,0.25); animation:pulse-dot 2s ease infinite; }
+@keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 2px rgba(61,180,140,0.25);}50%{box-shadow:0 0 0 5px rgba(61,180,140,0.08);} }
+.sb-online-empty { font-size:11px; color:var(--text3); padding:4px 12px; font-style:italic; }
 
 .sb-footer {
   padding: 10px 12px 14px;
@@ -484,7 +497,17 @@ body {
 .acct-dd-item:hover { background:var(--surface-tint); color:var(--text); }
 .acct-dd-item.danger { color:var(--red); }
 .acct-dd-item.danger:hover { background:var(--red-bg); }
-.avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; }
+.avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; overflow:hidden; }
+.avatar-xl { width:64px; height:64px; font-size:20px; font-weight:700; }
+
+/* Account Settings Modal */
+.acct-settings-tabs { display:flex; border-bottom:1px solid var(--glass-border2); padding:0 16px; gap:2px; }
+.acct-stab { display:flex; align-items:center; gap:6px; padding:10px 14px; font-size:12px; font-weight:600; color:var(--text3); background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; transition:color 0.15s, border-color 0.15s; margin-bottom:-1px; }
+.acct-stab:hover { color:var(--text); }
+.acct-stab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.acct-spanel { }
+.acct-avatar-row { display:flex; align-items:center; gap:18px; padding:4px 0; }
+.acct-avatar-preview { position:relative; flex-shrink:0; }
 .chip-name { font-size:13px; font-weight:600; color:var(--text); }
 .chip-role { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-top:1px; }
 
@@ -851,6 +874,11 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
             <span class="btn-social-text">Continue with Password</span>
             <span class="btn-social-arrow">→</span>
           </button>
+          <button class="btn-social" id="btnPinLogin" onclick="openPinStep()" style="margin-top:8px;">
+            <span class="btn-social-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="8" cy="13" r="1.5" fill="currentColor"/><circle cx="12" cy="13" r="1.5" fill="currentColor"/><circle cx="16" cy="13" r="1.5" fill="currentColor"/><path d="M8 6V4a4 4 0 0 1 8 0v2"/></svg></span>
+            <span class="btn-social-text">Continue with PIN</span>
+            <span class="btn-social-arrow">→</span>
+          </button>
           <div class="login-error" id="loginError"></div>
         </div>
         <div class="login-pw-step" id="loginStep2">
@@ -867,6 +895,21 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
           </div>
           <div class="login-error" id="loginError2"></div>
           <button class="btn-signin" onclick="doLogin()">Sign In →</button>
+        </div>
+        <div class="login-pw-step" id="loginStep3">
+          <button class="btn-back-login" onclick="closePinStep()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+          </button>
+          <div style="font-size:13px;color:var(--text2);font-weight:600;padding:4px 0 2px;">
+            Signing in as <span id="loginUserConfirmPin" style="color:var(--accent)"></span>
+          </div>
+          <div class="field-wrap">
+            <label class="field-label">PIN</label>
+            <input type="password" inputmode="numeric" class="field-input" id="loginPin" placeholder="Enter your PIN" autocomplete="off" maxlength="20" oninput="this.value=this.value.replace(/[^0-9]/g,'')" onkeydown="if(event.key==='Enter')doLoginWithPin()">
+          </div>
+          <div class="login-error" id="loginError3"></div>
+          <button class="btn-signin" onclick="doLoginWithPin()">Sign In →</button>
         </div>
       </div>
 
@@ -955,6 +998,12 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
       </button>
 
       <div class="sb-divider"></div>
+      <div class="sb-section-label sb-online-label">Online Users</div>
+      <div id="sidebarOnlineList" class="sb-online-list">
+        <div class="sb-online-empty">Loading…</div>
+      </div>
+
+      <div class="sb-divider"></div>
       <div class="sb-section-label">Related Apps</div>
 
       <a href="https://op360live.github.io/assetvault/" target="_blank" rel="noopener noreferrer" class="sb-item" title="Laptop Vault" style="text-decoration:none;">
@@ -1007,6 +1056,12 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
             <div class="acct-dd-header">
               <div class="acct-dd-name" id="acctDdName">—</div>
               <div class="acct-dd-role" id="acctDdRole">—</div>
+            </div>
+            <div class="acct-dd-item" onclick="openAccountSettings()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              Settings
             </div>
             <div class="acct-dd-item danger" onclick="doLogout()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -1275,6 +1330,90 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 </div>
 
 <!-- USER FORM MODAL -->
+<div class="overlay" id="accountSettingsOverlay" onclick="if(event.target===this)closeAccountSettings()">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <span class="modal-title">Account Settings</span>
+      <button class="modal-close" onclick="closeAccountSettings()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <!-- Tab bar -->
+    <div class="acct-settings-tabs">
+      <button class="acct-stab active" id="stab-profile" onclick="switchSettingsTab('profile')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Profile
+      </button>
+      <button class="acct-stab" id="stab-password" onclick="switchSettingsTab('password')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Password
+      </button>
+      <button class="acct-stab" id="stab-pin" onclick="switchSettingsTab('pin')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="7" cy="13" r="1.2" fill="currentColor"/><circle cx="12" cy="13" r="1.2" fill="currentColor"/><circle cx="17" cy="13" r="1.2" fill="currentColor"/></svg>
+        PIN
+      </button>
+    </div>
+
+    <!-- Profile panel -->
+    <div class="acct-spanel" id="spanel-profile">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+        <div class="acct-avatar-row">
+          <div class="acct-avatar-preview" id="settingsAvatarPreview">
+            <div class="avatar avatar-xl" id="settingsAvatarInitials">--</div>
+            <img id="settingsAvatarImg" src="" alt="" style="display:none;width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--glass-border);">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="font-size:12px;font-weight:600;color:var(--text);">Profile Picture</div>
+            <div style="font-size:11px;color:var(--text3);">JPG, PNG or GIF · Max 2 MB</div>
+            <div style="display:flex;gap:6px;margin-top:2px;">
+              <button class="btn btn-sm" onclick="document.getElementById('avatarFileInput').click()">Upload Photo</button>
+              <button class="btn btn-sm btn-danger" id="btnRemoveAvatar" onclick="clearAvatarPreview()" style="display:none;">Remove</button>
+            </div>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="previewAvatarFile(event)">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Display Name</label>
+          <input type="text" id="settings_displayName" placeholder="Your display name" autocomplete="off">
+        </div>
+        <div class="login-error" id="profileSettingsError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeAccountSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="doSaveProfile()">Save Profile</button>
+      </div>
+    </div>
+
+    <!-- Password panel -->
+    <div class="acct-spanel" id="spanel-password" style="display:none;">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="fg"><label>Current Password</label><input type="password" id="settings_currentPw" placeholder="Enter current password" autocomplete="current-password"></div>
+        <div class="fg"><label>New Password</label><input type="password" id="settings_newPw" placeholder="New password" autocomplete="new-password"></div>
+        <div class="fg"><label>Confirm New Password</label><input type="password" id="settings_confirmPw" placeholder="Repeat new password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doChangePassword()"></div>
+        <div class="login-error" id="passwordSettingsError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeAccountSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="doChangePassword()">Change Password</button>
+      </div>
+    </div>
+
+    <!-- PIN panel -->
+    <div class="acct-spanel" id="spanel-pin" style="display:none;">
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="font-size:13px;color:var(--text2);line-height:1.5;">Set a numeric PIN as an alternative login method. Leave blank to remove your current PIN.</div>
+        <div class="fg"><label>New PIN</label><input type="password" inputmode="numeric" id="settings_newPin" placeholder="4–20 digits" maxlength="20" autocomplete="new-password" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+        <div class="fg"><label>Confirm PIN</label><input type="password" inputmode="numeric" id="settings_confirmPin" placeholder="Repeat PIN" maxlength="20" autocomplete="new-password" oninput="this.value=this.value.replace(/[^0-9]/g,'')" onkeydown="if(event.key==='Enter')doSetPinSettings()"></div>
+        <div class="login-error" id="pinSettingsError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeAccountSettings()">Cancel</button>
+        <button class="btn btn-primary" onclick="doSetPinSettings()">Save PIN</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="userFormOverlay" onclick="if(event.target===this)document.getElementById('userFormOverlay').classList.remove('open')">
   <div class="modal" style="max-width:440px;">
     <div class="modal-header">
@@ -1335,6 +1474,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 ══════════════════════════════════════════ */
 const TURSO_URL   = 'https://turso-proxy.rcabil-op360.workers.dev';
 const TURSO_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJleHAiOjE4MDg0MjkwMjMsImlhdCI6MTc3Njg5MzAyMywiaWQiOiIwMTlkYjcxMS1jNDAxLTdiZDgtODUyNy00MGUzYTEzMmM5MzkiLCJyaWQiOiIwMTY1NjhiOC03NjE0LTRjNjAtYWI3Zi0yZjY5YzQ3MDhjMTYifQ.-rLfhTh8wuECeovdGDgnduzA_WYtMC4L8JJZz-mRQ1nO6mCGAkYvS_YzR_CHAnogNFcLNow7RSRRebuDQfLxCA';
+// PIN login — no external worker needed
 
 async function tursoExec(sql, args = []) {
   const ctrl = new AbortController();
@@ -1400,6 +1540,7 @@ async function tursoInit() {
   await tursoBatch([
     { sql: 'CREATE TABLE IF NOT EXISTS offboarding (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
     { sql: 'CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, data TEXT NOT NULL)' },
+    { sql: 'CREATE TABLE IF NOT EXISTS presence (username TEXT PRIMARY KEY, data TEXT NOT NULL)' },
   ]);
 }
 
@@ -1672,6 +1813,7 @@ window.doLogin = async function() {
 };
 
 window.doLogout = function() {
+  stopPresence();
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('assetvault_session');
   currentUser = null;
@@ -1694,20 +1836,35 @@ function checkSession() {
   return false;
 }
 
-async function showApp() {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('appScreen').classList.add('active');
-
+function updateAvatarDisplay() {
+  if (!currentUser) return;
   const name = currentUser.displayName || currentUser.username;
   const init = name.slice(0, 2).toUpperCase();
-  document.getElementById('userAvatar').textContent      = init;
-  document.getElementById('userNameDisplay').textContent = name;
   const roleDisp = roleLabel(currentUser.role);
+  // Topbar chip
+  document.getElementById('userNameDisplay').textContent = name;
   document.getElementById('userRoleDisplay').textContent = roleDisp;
   const an = document.getElementById('acctDdName');
   const ar = document.getElementById('acctDdRole');
   if (an) an.textContent = name;
   if (ar) ar.textContent = roleDisp;
+  // Avatar: show image if present, else initials
+  const avatarEl = document.getElementById('userAvatar');
+  if (currentUser.avatar) {
+    avatarEl.textContent = '';
+    avatarEl.style.backgroundImage = 'url(' + currentUser.avatar + ')';
+    avatarEl.style.backgroundSize = 'cover';
+    avatarEl.style.backgroundPosition = 'center';
+  } else {
+    avatarEl.textContent = init;
+    avatarEl.style.backgroundImage = '';
+  }
+}
+
+async function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').classList.add('active');
+  updateAvatarDisplay();
 
   // Show Users nav only for admins/superadmins
   const navUsers = document.getElementById('navUsers');
@@ -1723,6 +1880,9 @@ async function showApp() {
 
   loadRecords();
   switchView('offboarding');
+  startPresenceHeartbeat();
+  loadPresence();
+  setInterval(loadPresence, 60000);
   // Ensure table exists before syncing
   if (_tursoInitPromise) await _tursoInitPromise.catch(() => {});
   tursoSyncAll();
@@ -2468,6 +2628,91 @@ window.handleCSVImport = async function(e) {
 };
 
 /* ══════════════════════════════════════════
+   PRESENCE / WHO'S ONLINE
+══════════════════════════════════════════ */
+function relativeTime(iso) {
+  const ms = Date.now() - new Date(iso).getTime();
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return 'just now';
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  return `${h}h ago`;
+}
+
+async function setPresence(online) {
+  if (!currentUser) return;
+  try {
+    if (online) {
+      const data = JSON.stringify({ username: currentUser.username, displayName: currentUser.displayName || currentUser.username, role: currentUser.role, lastSeen: new Date().toISOString(), online: true });
+      await tursoExec('INSERT OR REPLACE INTO presence (username, data) VALUES (?, ?)', [currentUser.username, data]);
+    } else {
+      await tursoExec('DELETE FROM presence WHERE username = ?', [currentUser.username]);
+    }
+  } catch(e) {}
+}
+
+async function loadPresence() {
+  try {
+    const res = await tursoExec('SELECT data FROM presence');
+    const now = Date.now();
+    const online = (res?.rows || [])
+      .map(r => { try { return JSON.parse(r[0].value); } catch { return null; } }).filter(Boolean)
+      .filter(p => (now - new Date(p.lastSeen).getTime()) < 15 * 60 * 1000)
+      .sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
+
+    const sbEl = document.getElementById('sidebarOnlineList');
+    if (sbEl) {
+      if (!online.length) {
+        sbEl.innerHTML = '<div class="sb-online-empty">No active users.</div>';
+      } else {
+        sbEl.innerHTML = online.map(p => {
+          const isActive = (now - new Date(p.lastSeen).getTime()) < 5 * 60 * 1000;
+          return `<div class="sb-online-row">
+            <div class="sb-online-avatar">${(p.displayName || p.username).slice(0, 2).toUpperCase()}</div>
+            <div class="sb-online-info">
+              <div class="sb-online-name">${p.displayName || p.username}</div>
+              <div class="sb-online-role">${roleLabel(p.role)}</div>
+            </div>
+            ${isActive ? '<div class="sb-online-dot"></div>' : ''}
+          </div>`;
+        }).join('');
+      }
+    }
+  } catch(e) {}
+}
+
+let presenceTimer, inactivityTimer;
+const INACTIVITY_MS = 30 * 60 * 1000;
+
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(async () => {
+    showToast('Session expired due to inactivity. Logging out…', true);
+    await new Promise(r => setTimeout(r, 2000));
+    doLogout();
+  }, INACTIVITY_MS);
+}
+
+function startPresenceHeartbeat() {
+  setPresence(true);
+  presenceTimer = setInterval(() => setPresence(true), 3 * 60 * 1000);
+  resetInactivityTimer();
+  ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'].forEach(ev =>
+    document.addEventListener(ev, resetInactivityTimer, { passive: true })
+  );
+}
+
+function stopPresence() {
+  clearInterval(presenceTimer);
+  clearTimeout(inactivityTimer);
+  ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'].forEach(ev =>
+    document.removeEventListener(ev, resetInactivityTimer)
+  );
+  setPresence(false);
+}
+
+/* ══════════════════════════════════════════
    TOAST
 ══════════════════════════════════════════ */
 function showToast(msg, isErr = false) {
@@ -2527,6 +2772,229 @@ function toInputDatetime(str) {
 }
 
 /* ══════════════════════════════════════════
+   PIN LOGIN
+══════════════════════════════════════════ */
+window.openPinStep = function() {
+  const u = document.getElementById('loginUser').value.trim();
+  if (!u) { showLoginErr('Please enter your username first.'); return; }
+  document.getElementById('loginStep1').style.display = 'none';
+  document.getElementById('loginStep3').classList.add('open');
+  document.getElementById('loginUserConfirmPin').textContent = u;
+  document.getElementById('loginPin').value = '';
+  document.getElementById('loginError3').classList.remove('show');
+  setTimeout(() => document.getElementById('loginPin').focus(), 100);
+};
+window.closePinStep = function() {
+  document.getElementById('loginStep3').classList.remove('open');
+  document.getElementById('loginStep1').style.display = '';
+  document.getElementById('loginPin').value = '';
+  document.getElementById('loginError3').classList.remove('show');
+};
+window.doLoginWithPin = async function() {
+  const u = document.getElementById('loginUser').value.trim();
+  const pin = document.getElementById('loginPin').value;
+  if (!u || !pin) { showLoginErr('Please enter your PIN.', 'loginError3'); return; }
+  loadUsers();
+  try {
+    const uRes = await tursoExec('SELECT data FROM users WHERE username = ?', [u.toLowerCase()]);
+    if (uRes && uRes.rows && uRes.rows.length) {
+      const fresh = JSON.parse(uRes.rows[0][0].value);
+      const idx = (_usersCache || []).findIndex(x => x.username.toLowerCase() === u.toLowerCase());
+      if (idx >= 0) _usersCache[idx] = fresh; else (_usersCache = _usersCache || []).push(fresh);
+      localStorage.setItem(LS_USERS, JSON.stringify(_usersCache));
+    }
+  } catch(e) { /* offline */ }
+  const users = getUsers();
+  const hash = await hashPassword(pin);
+  const user = users.find(x => x.username.toLowerCase() === u.toLowerCase() && x.pinHash && x.pinHash === hash);
+  if (!user) { showLoginErr('Incorrect PIN.', 'loginError3'); document.getElementById('loginPin').value = ''; return; }
+  if (user.active === false) { showLoginErr('This account has been disabled.', 'loginError3'); return; }
+  document.getElementById('loginError3').classList.remove('show');
+  currentUser = { ...user };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  closePinStep();
+  await showApp();
+};
+window.openAccountSettings = function(initialTab) {
+  if (!currentUser) return;
+  document.getElementById('acctDropdown').classList.remove('open');
+  // Reset all panels
+  switchSettingsTab(initialTab || 'profile');
+  // Populate profile
+  const name = currentUser.displayName || currentUser.username;
+  document.getElementById('settings_displayName').value = name;
+  // Avatar
+  _settingsAvatarDataUrl = null;
+  const img = document.getElementById('settingsAvatarImg');
+  const initEl = document.getElementById('settingsAvatarInitials');
+  const removeBtn = document.getElementById('btnRemoveAvatar');
+  document.getElementById('avatarFileInput').value = '';
+  if (currentUser.avatar) {
+    img.src = currentUser.avatar;
+    img.style.display = '';
+    initEl.style.display = 'none';
+    removeBtn.style.display = '';
+  } else {
+    img.src = '';
+    img.style.display = 'none';
+    initEl.style.display = '';
+    initEl.textContent = name.slice(0,2).toUpperCase();
+    removeBtn.style.display = 'none';
+  }
+  // Clear errors and password/pin fields
+  ['profileSettingsError','passwordSettingsError','pinSettingsError'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = ''; el.classList.remove('show'); }
+  });
+  ['settings_currentPw','settings_newPw','settings_confirmPw','settings_newPin','settings_confirmPin'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('accountSettingsOverlay').classList.add('open');
+};
+
+window.closeAccountSettings = function() {
+  document.getElementById('accountSettingsOverlay').classList.remove('open');
+};
+
+window.switchSettingsTab = function(tab) {
+  ['profile','password','pin'].forEach(t => {
+    document.getElementById('stab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('spanel-' + t).style.display = t === tab ? '' : 'none';
+  });
+};
+
+// Avatar preview
+let _settingsAvatarDataUrl = null;
+window.previewAvatarFile = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    const err = document.getElementById('profileSettingsError');
+    err.textContent = 'Image too large. Max 2 MB.'; err.classList.add('show'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    _settingsAvatarDataUrl = ev.target.result;
+    const img = document.getElementById('settingsAvatarImg');
+    const initEl = document.getElementById('settingsAvatarInitials');
+    const removeBtn = document.getElementById('btnRemoveAvatar');
+    img.src = _settingsAvatarDataUrl;
+    img.style.display = '';
+    initEl.style.display = 'none';
+    removeBtn.style.display = '';
+  };
+  reader.readAsDataURL(file);
+};
+
+window.clearAvatarPreview = function() {
+  _settingsAvatarDataUrl = 'REMOVE';
+  const img = document.getElementById('settingsAvatarImg');
+  const initEl = document.getElementById('settingsAvatarInitials');
+  const removeBtn = document.getElementById('btnRemoveAvatar');
+  img.src = ''; img.style.display = 'none';
+  const name = currentUser.displayName || currentUser.username;
+  initEl.textContent = name.slice(0,2).toUpperCase();
+  initEl.style.display = '';
+  removeBtn.style.display = 'none';
+  document.getElementById('avatarFileInput').value = '';
+};
+
+window.doSaveProfile = async function() {
+  if (!currentUser) return;
+  const err = document.getElementById('profileSettingsError');
+  const showErr = msg => { err.textContent = msg; err.classList.add('show'); };
+  err.classList.remove('show');
+  const displayName = document.getElementById('settings_displayName').value.trim();
+  if (!displayName) { showErr('Display name cannot be empty.'); return; }
+  const users = getUsers();
+  const idx = users.findIndex(x => x.username === currentUser.username);
+  if (idx < 0) { showErr('User not found.'); return; }
+  users[idx].displayName = displayName;
+  if (_settingsAvatarDataUrl === 'REMOVE') {
+    delete users[idx].avatar;
+  } else if (_settingsAvatarDataUrl) {
+    users[idx].avatar = _settingsAvatarDataUrl;
+  }
+  currentUser = { ...users[idx] };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  _usersCache = users;
+  try {
+    await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [currentUser.username, JSON.stringify(currentUser)]);
+  } catch(e) { /* offline */ }
+  updateAvatarDisplay();
+  closeAccountSettings();
+  showToast('Profile saved.');
+};
+
+window.doChangePassword = async function() {
+  if (!currentUser) return;
+  const err = document.getElementById('passwordSettingsError');
+  const showErr = msg => { err.textContent = msg; err.classList.add('show'); };
+  err.classList.remove('show');
+  const currentPw = document.getElementById('settings_currentPw').value;
+  const newPw = document.getElementById('settings_newPw').value;
+  const confirmPw = document.getElementById('settings_confirmPw').value;
+  if (!currentPw) { showErr('Enter your current password.'); return; }
+  if (!newPw) { showErr('Enter a new password.'); return; }
+  if (newPw !== confirmPw) { showErr('New passwords do not match.'); return; }
+  if (newPw.length < 6) { showErr('Password must be at least 6 characters.'); return; }
+  const currentHash = await hashPassword(currentPw);
+  if (currentHash !== currentUser.passwordHash) { showErr('Current password is incorrect.'); document.getElementById('settings_currentPw').value = ''; return; }
+  const newHash = await hashPassword(newPw);
+  const users = getUsers();
+  const idx = users.findIndex(x => x.username === currentUser.username);
+  if (idx < 0) { showErr('User not found.'); return; }
+  users[idx].passwordHash = newHash;
+  currentUser = { ...users[idx] };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  _usersCache = users;
+  try {
+    await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [currentUser.username, JSON.stringify(currentUser)]);
+  } catch(e) { /* offline */ }
+  closeAccountSettings();
+  showToast('Password changed successfully.');
+};
+
+window.doSetPinSettings = async function() {
+  if (!currentUser) return;
+  const err = document.getElementById('pinSettingsError');
+  const showErr = msg => { err.textContent = msg; err.classList.add('show'); };
+  err.classList.remove('show');
+  const newPin = document.getElementById('settings_newPin').value;
+  const confirmPin = document.getElementById('settings_confirmPin').value;
+  if (newPin !== confirmPin) { showErr('PINs do not match.'); return; }
+  if (newPin && (newPin.length < 4 || !/^\d+$/.test(newPin))) { showErr('PIN must be at least 4 digits (numbers only).'); return; }
+  const pinHash = newPin ? await hashPassword(newPin) : null;
+  const users = getUsers();
+  const idx = users.findIndex(x => x.username === currentUser.username);
+  if (idx < 0) { showErr('User not found.'); return; }
+  if (pinHash) users[idx].pinHash = pinHash;
+  else delete users[idx].pinHash;
+  currentUser = { ...users[idx] };
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  localStorage.setItem(LS_USERS, JSON.stringify(users));
+  _usersCache = users;
+  try {
+    await tursoExec('INSERT OR REPLACE INTO users (username, data) VALUES (?, ?)', [currentUser.username, JSON.stringify(currentUser)]);
+  } catch(e) { /* offline */ }
+  closeAccountSettings();
+  showToast(newPin ? 'PIN set successfully.' : 'PIN removed.');
+};
+
+// Keep legacy aliases so any stale references don't break
+window.openSetPinModal = function() { openAccountSettings('pin'); };
+window.closePinModal   = closeAccountSettings;
+
+
+
+/* ══════════════════════════════════════════
    INIT
 ══════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', async function() {
@@ -2570,6 +3038,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     btn.style.left = (isCollapsed ? 60 : 240) - 13 + 'px';
     btn.classList.toggle('is-collapsed', !!isCollapsed);
   }
+
 });
 </script>
 </body>
