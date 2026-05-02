@@ -2511,6 +2511,11 @@ mark.gsr-highlight {
             <span class="btn-social-text">Continue with Password</span>
             <span class="btn-social-arrow">→</span>
           </button>
+          <button class="btn-social" onclick="openPinStep()" style="margin-top:8px;">
+            <span class="btn-social-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="8" cy="13" r="1.5" fill="currentColor"/><circle cx="12" cy="13" r="1.5" fill="currentColor"/><circle cx="16" cy="13" r="1.5" fill="currentColor"/><path d="M8 6V4a4 4 0 0 1 8 0v2"/></svg></span>
+            <span class="btn-social-text">Continue with PIN</span>
+            <span class="btn-social-arrow">→</span>
+          </button>
           <div class="login-error" id="loginError" style="margin-top:10px;"></div>
         </div>
 
@@ -2532,6 +2537,23 @@ mark.gsr-highlight {
           </div>
           <div class="login-error" id="loginError2"></div>
           <button class="btn-signin" onclick="doLogin()">Sign in →</button>
+        </div>
+
+        <!-- Step 3: PIN -->
+        <div class="login-pw-step" id="loginStep3">
+          <button class="btn-back-login" onclick="closePinStep()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Back
+          </button>
+          <div style="font-size:13px;color:var(--text2);font-weight:600;padding:4px 0 2px;">
+            Signing in as <span id="loginUserConfirmPin" style="color:var(--accent)"></span>
+          </div>
+          <div class="field-wrap">
+            <label class="field-label">PIN</label>
+            <input type="password" inputmode="numeric" class="field-input" id="loginPin" placeholder="Enter your PIN" autocomplete="off" maxlength="20" oninput="this.value=this.value.replace(/[^0-9]/g,'')" onkeydown="if(event.key==='Enter')doLoginWithPin()">
+          </div>
+          <div class="login-error" id="loginError3"></div>
+          <button class="btn-signin" onclick="doLoginWithPin()">Sign In →</button>
         </div>
       </div>
 
@@ -3340,6 +3362,48 @@ function closePasswordStep(){
   document.getElementById('loginStep1').style.display = '';
   document.getElementById('loginPass').value = '';
   document.getElementById('loginError2').classList.remove('show');
+}
+function openPinStep(){
+  const u = document.getElementById('loginUser').value.trim();
+  if(!u){ showLoginErr('Please enter your username first.'); return; }
+  document.getElementById('loginStep1').style.display = 'none';
+  document.getElementById('loginStep3').classList.add('open');
+  document.getElementById('loginUserConfirmPin').textContent = u;
+  document.getElementById('loginPin').value = '';
+  document.getElementById('loginError3').classList.remove('show');
+  setTimeout(()=>document.getElementById('loginPin').focus(), 100);
+}
+function closePinStep(){
+  document.getElementById('loginStep3').classList.remove('open');
+  document.getElementById('loginStep1').style.display = '';
+  document.getElementById('loginPin').value = '';
+  document.getElementById('loginError3').classList.remove('show');
+}
+async function doLoginWithPin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const pin = document.getElementById('loginPin').value;
+  if(!u||!pin){ showLoginErr('Please enter your PIN.','loginError3'); return; }
+  loadUsers();
+  try{
+    const uRes = await tursoExec('SELECT data FROM users WHERE username = ?',[u.toLowerCase()]);
+    if(uRes&&uRes.rows&&uRes.rows.length){
+      const fresh = JSON.parse(uRes.rows[0][0].value);
+      const idx = (_usersCache||[]).findIndex(x=>x.username.toLowerCase()===u.toLowerCase());
+      if(idx>=0) _usersCache[idx]=fresh; else (_usersCache=_usersCache||[]).push(fresh);
+      localStorage.setItem(STORAGE_KEY+'_users', JSON.stringify(_usersCache));
+    }
+  }catch(e){}
+  const users = getUsers();
+  const hash = await hashPassword(pin);
+  const user = users.find(x=>x.username.toLowerCase()===u.toLowerCase()&&x.pinHash&&x.pinHash===hash);
+  if(!user){ showLoginErr('Incorrect PIN.','loginError3'); document.getElementById('loginPin').value=''; return; }
+  if(user.active===false){ showLoginErr('This account has been disabled.','loginError3'); return; }
+  document.getElementById('loginError3').classList.remove('show');
+  currentUser = applySharedProfile({...user});
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+  localStorage.setItem('assetvault_session', JSON.stringify(currentUser));
+  closePinStep();
+  showApp();
 }
 function showLoginErr(msg, field='loginError'){
   const e = document.getElementById(field);
@@ -5738,6 +5802,9 @@ window.doLogin=doLogin;
 
 window.openPasswordStep=openPasswordStep;
 window.closePasswordStep=closePasswordStep;
+window.openPinStep=openPinStep;
+window.closePinStep=closePinStep;
+window.doLoginWithPin=doLoginWithPin;
 window.doLogout=doLogout;
 
 window.openAddModal=openAddModal;
