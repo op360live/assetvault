@@ -2879,19 +2879,32 @@ window.handleCSVImport = async function(e) {
   const fieldMap = headers.map(h => CSV_MAP[h] || null);
   const newRecords = [];
 
+  // Build a lookup of existing records by offboardingId for deduplication
+  const existingByObId = {};
+  records.forEach(r => { if (r.offboardingId) existingByObId[r.offboardingId.trim().toLowerCase()] = r.id; });
+
+  let skippedRetracted = 0;
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
     if (row.every(c => !c.trim())) continue;
-    const rec = {
-      id: 'ob_' + Date.now() + '_' + r + '_' + Math.random().toString(36).slice(2,5),
-    };
+    const rec = {};
     fieldMap.forEach((field, i) => {
       if (field) rec[field] = (row[i] || '').trim();
     });
+    // Skip retracted records
+    if ((rec.offboardingStatus || '').toLowerCase() === 'retracted') { skippedRetracted++; continue; }
+    // Reuse existing id if offboardingId already exists (update instead of duplicate)
+    const obKey = (rec.offboardingId || '').toLowerCase();
+    rec.id = (obKey && existingByObId[obKey])
+      ? existingByObId[obKey]
+      : 'ob_' + Date.now() + '_' + r + '_' + Math.random().toString(36).slice(2,5);
     newRecords.push(rec);
   }
 
-  if (!newRecords.length) { showToast('No valid rows found in CSV.'); return; }
+  if (!newRecords.length) {
+    showToast(skippedRetracted ? `All ${skippedRetracted} rows were Retracted — nothing imported.` : 'No valid rows found in CSV.', true);
+    return;
+  }
 
   const overlay  = document.getElementById('importProgressOverlay');
   const bar      = document.getElementById('importProgressBar');
@@ -2924,12 +2937,18 @@ window.handleCSVImport = async function(e) {
   }
 
   overlay.style.display = 'none';
-  records.push(...newRecords);
+  // Upsert: update existing records in-place, append new ones
+  newRecords.forEach(rec => {
+    const idx = records.findIndex(r => r.id === rec.id);
+    if (idx >= 0) records[idx] = rec;
+    else records.push(rec);
+  });
   localStorage.setItem(LS_DATA, JSON.stringify(records));
+  const skippedMsg = skippedRetracted ? ` (${skippedRetracted} Retracted skipped)` : '';
   if (errors > 0) {
     showToast(`Import done with ${errors} failed batch(es). Check connection.`, true);
   } else {
-    showToast(newRecords.length.toLocaleString() + ' records imported from ' + file.name + '.');
+    showToast(newRecords.length.toLocaleString() + ' records imported from ' + file.name + skippedMsg + '.');
   }
   renderStats();
   renderTable();
@@ -2970,17 +2989,24 @@ window.handleEACSVImport = async function(e) {
   const fieldMap = headers.map(h => EA_CSV_MAP[h] || null);
   const newRecords = [];
 
+  const existing = JSON.parse(localStorage.getItem('employeeAssets') || '[]');
+  // Build lookup by serialNumber for deduplication (update existing instead of duplicating)
+  const existingBySerial = {};
+  existing.forEach(r => { if (r.serialNumber) existingBySerial[r.serialNumber.trim().toLowerCase()] = r.id; });
+
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
     if (row.every(c => !c.trim())) continue;
-    const rec = { id: 'ea_' + Date.now() + '_' + r + '_' + Math.random().toString(36).slice(2,5) };
+    const rec = {};
     fieldMap.forEach((field, i) => { if (field) rec[field] = (row[i] || '').trim(); });
+    const snKey = (rec.serialNumber || '').toLowerCase();
+    rec.id = (snKey && existingBySerial[snKey])
+      ? existingBySerial[snKey]
+      : 'ea_' + Date.now() + '_' + r + '_' + Math.random().toString(36).slice(2,5);
     newRecords.push(rec);
   }
 
   if (!newRecords.length) { showToast('No valid rows found in CSV.', true); return; }
-
-  const existing = JSON.parse(localStorage.getItem('employeeAssets') || '[]');
 
   const overlay  = document.getElementById('importProgressOverlay');
   const bar      = document.getElementById('importProgressBar');
@@ -3003,7 +3029,11 @@ window.handleEACSVImport = async function(e) {
 
   for (let i = 0; i < newRecords.length; i += CHUNK) {
     const chunk = newRecords.slice(i, i + CHUNK);
-    existing.push(...chunk);
+    chunk.forEach(rec => {
+      const idx = existing.findIndex(r => r.id === rec.id);
+      if (idx >= 0) existing[idx] = rec;
+      else existing.push(rec);
+    });
     processed += chunk.length;
     const pct = Math.round((processed / newRecords.length) * 100);
     bar.style.width = pct + '%';
