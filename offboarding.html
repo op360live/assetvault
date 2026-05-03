@@ -3021,6 +3021,7 @@ window.handleCSVImport = async function(e) {
   records.forEach(r => { if (r.offboardingId) existingByObId[r.offboardingId.trim().toLowerCase()] = r.id; });
 
   let skippedRetracted = 0;
+  let skippedYear = 0;
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
     if (row.every(c => !c.trim())) continue;
@@ -3030,6 +3031,9 @@ window.handleCSVImport = async function(e) {
     });
     // Skip retracted records
     if ((rec.offboardingStatus || '').toLowerCase() === 'retracted') { skippedRetracted++; continue; }
+    // Only accept 2026 records based on Separation Filed Date and Time
+    const filedYear = rec.separationFiledDateTime ? new Date(rec.separationFiledDateTime).getFullYear() : NaN;
+    if (!rec.separationFiledDateTime || isNaN(filedYear) || filedYear !== 2026) { skippedYear++; continue; }
     // Reuse existing id if offboardingId already exists (update instead of duplicate)
     const obKey = (rec.offboardingId || '').toLowerCase();
     rec.id = (obKey && existingByObId[obKey])
@@ -3039,7 +3043,10 @@ window.handleCSVImport = async function(e) {
   }
 
   if (!newRecords.length) {
-    showToast(skippedRetracted ? `All ${skippedRetracted} rows were Retracted — nothing imported.` : 'No valid rows found in CSV.', true);
+    const msgs = [];
+    if (skippedRetracted) msgs.push(`${skippedRetracted} Retracted`);
+    if (skippedYear) msgs.push(`${skippedYear} non-2026`);
+    showToast(msgs.length ? `Nothing imported — ${msgs.join(', ')} row(s) skipped.` : 'No valid rows found in CSV.', true);
     return;
   }
 
