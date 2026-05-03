@@ -844,6 +844,27 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
   .modal { border-radius:var(--radius-xl) var(--radius-xl) 0 0; max-height:96vh; border-bottom:none; }
   .toast { bottom:0; right:0; left:0; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
 }
+.al-pagination {
+  display:flex; align-items:center; gap:4px;
+  padding:12px 16px; flex-wrap:wrap;
+  border-top:1px solid var(--glass-border2);
+  background:var(--card-bg);
+  border-radius:0 0 var(--radius-lg) var(--radius-lg);
+}
+[data-theme="dark"] .al-pagination {
+  border-top-color:var(--glass-border2);
+  background:var(--glass-bg-deep);
+}
+.al-pg-btn {
+  padding:4px 10px; border-radius:6px; border:1px solid var(--glass-border2);
+  background:var(--search-bg); color:var(--text2);
+  font-size:12px; font-weight:500; cursor:pointer; transition:all 0.15s;
+}
+.al-pg-btn:hover:not(:disabled) { background:var(--accent); color:#fff; border-color:var(--accent); }
+.al-pg-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:700; }
+.al-pg-btn:disabled { opacity:0.4; cursor:default; }
+.al-pg-ellipsis { padding:4px 6px; color:var(--text3); font-size:12px; }
+.al-pg-info { margin-left:auto; font-size:11px; color:var(--text3); }
 </style>
 </head>
 <body>
@@ -1156,15 +1177,25 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
             <div class="stats-grid" id="statsGridOb"></div>
           </div>
         </div>
-        <!-- Row 3: IT Tools + IT Asset side by side -->
+        <!-- Row 3: Offboarding per Location -->
         <div class="stats-section-row">
-          <div class="stats-section-group">
+          <div class="stats-section-group full-row">
+            <div class="stats-section-label">Offboarding per Location</div>
+            <div class="stats-grid" id="statsGridLoc" style="grid-template-columns:repeat(3,1fr)"></div>
+          </div>
+        </div>
+        <!-- Row 4: IT Asset Clearance -->
+        <div class="stats-section-row">
+          <div class="stats-section-group full-row">
+            <div class="stats-section-label">IT Asset Clearance</div>
+            <div class="stats-grid" id="statsGridAsset" style="grid-template-columns:repeat(5,1fr)"></div>
+          </div>
+        </div>
+        <!-- Row 5: IT Tools Clearance -->
+        <div class="stats-section-row">
+          <div class="stats-section-group full-row">
             <div class="stats-section-label">IT Tools Clearance</div>
             <div class="stats-grid" id="statsGridIt" style="grid-template-columns:repeat(3,1fr)"></div>
-          </div>
-          <div class="stats-section-group">
-            <div class="stats-section-label">IT Asset Clearance</div>
-            <div class="stats-grid" id="statsGridAsset" style="grid-template-columns:repeat(3,1fr)"></div>
           </div>
         </div>
       </div>
@@ -1172,15 +1203,15 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
       <div class="toolbar">
         <div class="search-wrap">
           <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" class="search-input" id="searchInput" placeholder="Search employee, type, job title…" oninput="renderTable();updateClearFiltersBtn()">
+          <input type="text" class="search-input" id="searchInput" placeholder="Search employee, type, job title…" oninput="obPage=1;renderTable();updateClearFiltersBtn()">
         </div>
-        <select class="filter-select" id="statusFilter" onchange="renderTable();renderStats();updateClearFiltersBtn()">
+        <select class="filter-select" id="statusFilter" onchange="obPage=1;renderTable();renderStats();updateClearFiltersBtn()">
           <option value="">All IT Clearance</option>
           <option value="Pending">Pending</option>
           <option value="Cleared">Cleared</option>
           <option value="Blank">Blank</option>
         </select>
-        <select class="filter-select" id="assetStatusFilter" onchange="renderTable();renderStats();updateClearFiltersBtn()">
+        <select class="filter-select" id="assetStatusFilter" onchange="obPage=1;renderTable();renderStats();updateClearFiltersBtn()">
           <option value="">All Asset Clearance</option>
           <option value="For Clearance">For Clearance</option>
           <option value="Cleared - With Asset">Cleared - With Asset</option>
@@ -1188,13 +1219,13 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
           <option value="With Deduction">With Deduction</option>
           <option value="Pending">Pending</option>
         </select>
-        <select class="filter-select" id="offboardingStatusFilter" onchange="renderTable();renderStats();updateClearFiltersBtn()">
+        <select class="filter-select" id="offboardingStatusFilter" onchange="obPage=1;renderTable();renderStats();updateClearFiltersBtn()">
           <option value="">All Offboarding Status</option>
           <option value="New">New</option>
           <option value="Ongoing">Ongoing</option>
           <option value="Retracted">Retracted</option>
         </select>
-        <select class="filter-select" id="typeFilter" onchange="renderTable();updateClearFiltersBtn()">
+        <select class="filter-select" id="typeFilter" onchange="obPage=1;renderTable();updateClearFiltersBtn()">
           <option value="">All Separation Types</option>
           <option value="Voluntary">Voluntary</option>
           <option value="Involuntary">Involuntary</option>
@@ -1242,13 +1273,14 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
           <tbody id="tableBody"></tbody>
         </table>
       </div>
+      <div id="obPagination"></div>
     </main>
 
     <main class="main" id="employeeAssetMain" style="display:none;">
       <div class="toolbar">
         <div class="search-wrap">
           <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" class="search-input" id="eaSearchInput" placeholder="Search employee, asset…" oninput="renderEmployeeAssetTable()">
+          <input type="text" class="search-input" id="eaSearchInput" placeholder="Search employee, asset…" oninput="eaPage=1;renderEmployeeAssetTable()">
         </div>
       </div>
       <div class="count-bar">
@@ -1285,6 +1317,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
           <tbody id="eaTableBody"></tbody>
         </table>
       </div>
+      <div id="eaPagination"></div>
     </main>
 
   </div>
@@ -1748,6 +1781,10 @@ let deleteId         = null;
 let sortCol          = 'separationDate';
 let sortDir          = -1;
 let overdueFilter    = false;
+let obPage           = 1;
+const OB_PAGE_SIZE   = 50;
+let eaPage           = 1;
+const EA_PAGE_SIZE   = 50;
 let currentUser      = null;
 let _usersCache      = null;
 let currentView      = 'offboarding';
@@ -2234,14 +2271,41 @@ function renderEmployeeAssetTable() {
       r.makeModel, r.serialNumber, r.assetStatus, r.itAssetCondition].some(v => (v||'').toLowerCase().includes(q));
   });
   const tbody = document.getElementById('eaTableBody');
+  const pgEl  = document.getElementById('eaPagination');
   const countEl = document.getElementById('eaRecordCount');
   if (countEl) countEl.textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '');
   if (!tbody) return;
   if (!filtered.length) {
     tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--text3);padding:32px">No records found.</td></tr>';
+    if (pgEl) pgEl.innerHTML = '';
     return;
   }
-  tbody.innerHTML = filtered.map(r => `<tr>
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / EA_PAGE_SIZE));
+  if (eaPage > totalPages) eaPage = totalPages;
+  const pageStart = (eaPage - 1) * EA_PAGE_SIZE;
+  const paginated = filtered.slice(pageStart, pageStart + EA_PAGE_SIZE);
+
+  function eaPaginationHtml() {
+    if (totalPages <= 1) return '';
+    const pages = [];
+    for (let p = 1; p <= totalPages; p++) {
+      if (p === 1 || p === totalPages || Math.abs(p - eaPage) <= 2) pages.push(p);
+      else if (pages[pages.length - 1] !== '...') pages.push('...');
+    }
+    const btns = pages.map(p => p === '...'
+      ? `<span class="al-pg-ellipsis">…</span>`
+      : `<button class="al-pg-btn${p === eaPage ? ' active' : ''}" onclick="goEaPage(${p})">${p}</button>`
+    ).join('');
+    return `<div class="al-pagination">
+      <button class="al-pg-btn" onclick="goEaPage(${eaPage - 1})" ${eaPage === 1 ? 'disabled' : ''}>‹ Prev</button>
+      ${btns}
+      <button class="al-pg-btn" onclick="goEaPage(${eaPage + 1})" ${eaPage === totalPages ? 'disabled' : ''}>Next ›</button>
+      <span class="al-pg-info">${pageStart + 1}–${Math.min(pageStart + EA_PAGE_SIZE, filtered.length)} of ${filtered.length}</span>
+    </div>`;
+  }
+
+  tbody.innerHTML = paginated.map(r => `<tr>
     <td>${r.offboardingRecordNumber||''}</td>
     <td>${r.employeeId||''}</td>
     <td>${r.emailId||''}</td>
@@ -2256,6 +2320,8 @@ function renderEmployeeAssetTable() {
     <td>${r.assetAge||''}</td>
     <td>${r.amountToDeduct||''}</td>
   </tr>`).join('');
+
+  if (pgEl) pgEl.innerHTML = eaPaginationHtml();
 }
 
 /* ══════════════════════════════════════════
@@ -2471,10 +2537,15 @@ function renderStats() {
   const obNew       = records.filter(r => (r.offboardingStatus || 'New') === 'New').length;
   const obOngoing   = records.filter(r => r.offboardingStatus === 'Ongoing').length;
   const obRetracted = records.filter(r => r.offboardingStatus === 'Retracted').length;
+  // Offboarding per Location
+  const locCebu   = records.filter(r => (r.employeeLocation || '').trim().toUpperCase() === 'CEBU').length;
+  const locCDO    = records.filter(r => (r.employeeLocation || '').trim().toUpperCase() === 'CAGAYAN DE ORO').length;
+  const locDavao  = records.filter(r => (r.employeeLocation || '').trim().toUpperCase() === 'DAVAO').length;
 
   const activeSt    = document.getElementById('statusFilter')?.value || '';
   const activeAsset = document.getElementById('assetStatusFilter')?.value || '';
   const activeOb    = document.getElementById('offboardingStatusFilter')?.value || '';
+  const activeLoc   = document.getElementById('locationFilter')?.value || '';
 
   document.getElementById('statsGridOb').innerHTML = `
     <div class="stat-card${activeOb === 'New' ? ' stat-active' : ''}" onclick="filterByOffboardingStatus('New')">
@@ -2488,6 +2559,21 @@ function renderStats() {
     <div class="stat-card${activeOb === 'Retracted' ? ' stat-active' : ''}" onclick="filterByOffboardingStatus('Retracted')">
       <div class="stat-lbl">Retracted</div>
       <div class="stat-val sv-complete">${obRetracted}</div>
+    </div>
+  `;
+
+  document.getElementById('statsGridLoc').innerHTML = `
+    <div class="stat-card${activeLoc === 'Cebu' ? ' stat-active' : ''}" onclick="filterByLocation('Cebu')">
+      <div class="stat-lbl">Cebu</div>
+      <div class="stat-val sv-pending">${locCebu}</div>
+    </div>
+    <div class="stat-card${activeLoc === 'Cagayan De Oro' ? ' stat-active' : ''}" onclick="filterByLocation('Cagayan De Oro')">
+      <div class="stat-lbl">Cagayan De Oro</div>
+      <div class="stat-val sv-cleared">${locCDO}</div>
+    </div>
+    <div class="stat-card${activeLoc === 'Davao' ? ' stat-active' : ''}" onclick="filterByLocation('Davao')">
+      <div class="stat-lbl">Davao</div>
+      <div class="stat-val sv-complete">${locDavao}</div>
     </div>
   `;
 
@@ -2542,6 +2628,8 @@ function renderStats() {
 
 function isOverdue(r) {
   if ((r.offboardingStatus || '').toLowerCase() === 'retracted') return false;
+  const assetStatus = (r.itAssetClearanceStatus || 'For Clearance');
+  if (assetStatus !== 'For Clearance' && assetStatus !== 'Pending') return false;
   if (!r.separationDate) return false;
   const sep = new Date(r.separationDate);
   if (isNaN(sep)) return false;
@@ -2553,33 +2641,51 @@ function isOverdue(r) {
 
 window.filterByOverdue = function() {
   overdueFilter = !overdueFilter;
+  obPage = 1;
   renderTable();
   renderStats();
   updateClearFiltersBtn();
+};
+
+window.goObPage = function(p) {
+  obPage = Math.max(1, p);
+  renderTable();
+  document.getElementById('tableBody')?.closest('.table-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+window.goEaPage = function(p) {
+  eaPage = Math.max(1, p);
+  renderEmployeeAssetTable();
+  document.getElementById('eaTableBody')?.closest('.table-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 window.filterByStatus = function(status) {
   const el = document.getElementById('statusFilter');
   el.value = el.value === status ? '' : status;
-  renderTable();
-  renderStats();
-  updateClearFiltersBtn();
+  obPage = 1; renderTable(); renderStats(); updateClearFiltersBtn();
 };
 
 window.filterByAssetStatus = function(status) {
   const el = document.getElementById('assetStatusFilter');
   el.value = el.value === status ? '' : status;
-  renderTable();
-  renderStats();
-  updateClearFiltersBtn();
+  obPage = 1; renderTable(); renderStats(); updateClearFiltersBtn();
 };
 
 window.filterByOffboardingStatus = function(status) {
   const el = document.getElementById('offboardingStatusFilter');
   el.value = el.value === status ? '' : status;
-  renderTable();
-  renderStats();
-  updateClearFiltersBtn();
+  obPage = 1; renderTable(); renderStats(); updateClearFiltersBtn();
+};
+
+window.filterByLocation = function(loc) {
+  let el = document.getElementById('locationFilter');
+  if (!el) {
+    el = document.createElement('input');
+    el.type = 'hidden'; el.id = 'locationFilter'; el.value = '';
+    document.body.appendChild(el);
+  }
+  el.value = el.value === loc ? '' : loc;
+  obPage = 1; renderTable(); renderStats(); updateClearFiltersBtn();
 };
 
 window.clearAllFilters = function() {
@@ -2588,15 +2694,15 @@ window.clearAllFilters = function() {
   document.getElementById('offboardingStatusFilter').value = '';
   document.getElementById('typeFilter').value = '';
   document.getElementById('searchInput').value = '';
-  overdueFilter = false;
-  updateClearFiltersBtn();
-  renderTable();
-  renderStats();
+  const locEl = document.getElementById('locationFilter');
+  if (locEl) locEl.value = '';
+  overdueFilter = false; obPage = 1;
+  updateClearFiltersBtn(); renderTable(); renderStats();
 };
 
 function updateClearFiltersBtn() {
   const active = overdueFilter ||
-    ['statusFilter','assetStatusFilter','offboardingStatusFilter','typeFilter']
+    ['statusFilter','assetStatusFilter','offboardingStatusFilter','typeFilter','locationFilter']
       .some(id => document.getElementById(id)?.value) ||
     (document.getElementById('searchInput')?.value || '') !== '';
   const btn = document.getElementById('btnClearFilters');
@@ -2612,6 +2718,7 @@ function getFiltered() {
   const assetStatus = document.getElementById('assetStatusFilter')?.value || '';
   const obStatus   = document.getElementById('offboardingStatusFilter')?.value || '';
   const type       = document.getElementById('typeFilter')?.value   || '';
+  const locFilter  = (document.getElementById('locationFilter')?.value || '').toUpperCase();
 
   return records.filter(r => {
     const matchSearch   = !q          || [r.recordNumber, r.offboardingId, r.employeeName, r.jobTitle, r.businessUnit, r.personalEmail].some(v => (v||'').toLowerCase().includes(q));
@@ -2620,7 +2727,8 @@ function getFiltered() {
     const matchObStatus = !obStatus   || (r.offboardingStatus || 'New') === obStatus;
     const matchType     = !type       || r.separationType === type;
     const matchOverdue  = !overdueFilter || isOverdue(r);
-    return matchSearch && matchStatus && matchAsset && matchObStatus && matchType && matchOverdue;
+    const matchLoc      = !locFilter  || (r.employeeLocation || '').trim().toUpperCase() === locFilter;
+    return matchSearch && matchStatus && matchAsset && matchObStatus && matchType && matchOverdue && matchLoc;
   });
 }
 
@@ -2643,12 +2751,39 @@ function renderTable() {
   });
 
   const tb = document.getElementById('tableBody');
+  const pgEl = document.getElementById('obPagination');
+
   if (!filtered.length) {
     tb.innerHTML = `<tr><td colspan="15"><div class="empty-state"><div class="empty-icon">📋</div><div style="font-size:15px;font-weight:600;margin-bottom:6px;">No offboarding records found</div><div style="font-size:13px;">Add a record or adjust your search filters.</div></div></td></tr>`;
+    if (pgEl) pgEl.innerHTML = '';
     return;
   }
 
-  tb.innerHTML = filtered.map(r => {
+  const totalPages = Math.max(1, Math.ceil(filtered.length / OB_PAGE_SIZE));
+  if (obPage > totalPages) obPage = totalPages;
+  const pageStart = (obPage - 1) * OB_PAGE_SIZE;
+  const paginated = filtered.slice(pageStart, pageStart + OB_PAGE_SIZE);
+
+  function obPaginationHtml() {
+    if (totalPages <= 1) return '';
+    const pages = [];
+    for (let p = 1; p <= totalPages; p++) {
+      if (p === 1 || p === totalPages || Math.abs(p - obPage) <= 2) pages.push(p);
+      else if (pages[pages.length - 1] !== '...') pages.push('...');
+    }
+    const btns = pages.map(p => p === '...'
+      ? `<span class="al-pg-ellipsis">…</span>`
+      : `<button class="al-pg-btn${p === obPage ? ' active' : ''}" onclick="goObPage(${p})">${p}</button>`
+    ).join('');
+    return `<div class="al-pagination">
+      <button class="al-pg-btn" onclick="goObPage(${obPage - 1})" ${obPage === 1 ? 'disabled' : ''}>‹ Prev</button>
+      ${btns}
+      <button class="al-pg-btn" onclick="goObPage(${obPage + 1})" ${obPage === totalPages ? 'disabled' : ''}>Next ›</button>
+      <span class="al-pg-info">${pageStart + 1}–${Math.min(pageStart + OB_PAGE_SIZE, filtered.length)} of ${filtered.length}</span>
+    </div>`;
+  }
+
+  tb.innerHTML = paginated.map(r => {
     return `<tr>
       <td class="mono"><button onclick="openAssetModal('${esc(r.recordNumber||'')}','${esc(r.employeeName||'')}')" style="font-family:inherit;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-glow);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:var(--radius);padding:3px 8px;cursor:pointer;letter-spacing:0.01em;transition:background 0.15s,box-shadow 0.15s;" onmouseover="this.style.background='color-mix(in srgb,var(--accent) 22%,transparent)';this.style.boxShadow='0 2px 8px var(--accent-glow)'" onmouseout="this.style.background='var(--accent-glow)';this.style.boxShadow=''">${esc(r.recordNumber||'—')}</button></td>
       <td class="mono">${esc(r.offboardingId||'—')}</td>
@@ -2676,6 +2811,8 @@ function renderTable() {
       </td>
     </tr>`;
   }).join('');
+
+  if (pgEl) pgEl.innerHTML = obPaginationHtml();
 }
 
 window.sortBy = function(col) {
