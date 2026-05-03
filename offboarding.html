@@ -262,6 +262,30 @@ body {
   gap: 1px;
   overflow-y: auto;
 }
+.sb-search-wrap {
+  position: relative;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--search-bg, #f3f4f6);
+  border: 1.5px solid var(--sidebar-border, #e5e7eb);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+[data-theme="dark"] .sb-search-wrap {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.1);
+}
+.sb-search-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.sb-search-input {
+  border: none; background: transparent; outline: none;
+  font-size: 13px; color: var(--text); width: 100%; font-family: inherit;
+}
+.sb-search-input::placeholder { color: var(--text3); }
+#sidebar.collapsed .sb-search-wrap { display: none; }
 .sb-section-label {
   font-size: 10px; font-weight: 700;
   color: var(--text3);
@@ -954,6 +978,10 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
     </div>
 
     <nav class="sb-nav">
+      <div class="sb-search-wrap">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0;color:var(--text3)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="sb-search-input" id="obSidebarSearch" placeholder="Search records…" oninput="onObSidebarSearch(this.value)" autocomplete="off">
+      </div>
       <div class="sb-section-label">Menu</div>
       <button class="sb-item active" id="navOffboarding" onclick="switchView('offboarding')" title="Offboarding">
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -963,6 +991,15 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
           <line x1="23" y1="8" x2="18" y2="13"/>
         </svg>
         <span class="sb-item-label">Offboarding</span>
+      </button>
+      <button class="sb-item" id="navEmployeeAsset" onclick="switchView('employeeAsset')" title="Employee Asset">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+          <line x1="12" y1="12" x2="12" y2="16"/>
+          <line x1="10" y1="14" x2="14" y2="14"/>
+        </svg>
+        <span class="sb-item-label">Employee Asset</span>
       </button>
 
       <div class="sb-divider"></div>
@@ -1207,6 +1244,70 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
       </div>
     </main>
 
+    <main class="main" id="employeeAssetMain" style="display:none;">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="search-input" id="eaSearchInput" placeholder="Search employee, asset…" oninput="renderEmployeeAssetTable()">
+        </div>
+      </div>
+      <div class="count-bar">
+        <span id="eaRecordCount">0 records</span>
+        <input type="file" id="eaCsvInput" accept=".csv" style="display:none" onchange="handleEACSVImport(event)">
+        <button class="btn btn-sm" id="btnEAImportCSV" onclick="document.getElementById('eaCsvInput').click()" style="display:none">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Import CSV
+        </button>
+        <button class="btn btn-sm btn-danger" id="btnEADeleteAll" onclick="deleteAllEARecords()" style="display:none;margin-left:4px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          Delete All
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Offboarding Record #</th>
+              <th>Employee Id</th>
+              <th>Email ID</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Asset Type</th>
+              <th>Make and Model</th>
+              <th>Serial Number</th>
+              <th>Asset Status</th>
+              <th>IT Asset Condition</th>
+              <th>Initial Cost</th>
+              <th>Asset Age</th>
+              <th>Amount to Deduct</th>
+            </tr>
+          </thead>
+          <tbody id="eaTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<!-- EMPLOYEE ASSET MODAL -->
+<div class="overlay" id="assetModalOverlay">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-header" style="padding:16px 20px 14px;">
+      <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+        <div style="width:38px;height:38px;border-radius:10px;background:var(--accent-glow);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+        </div>
+        <div style="min-width:0;">
+          <div class="modal-title" id="assetModalTitle">Employee Assets</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:1px;" id="assetModalSub"></div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('assetModalOverlay').classList.remove('open')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="assetModalBody" style="padding:0 0 4px;max-height:78vh;overflow-y:auto;"></div>
   </div>
 </div>
 
@@ -1894,6 +1995,14 @@ async function showApp() {
   const btnImport = document.getElementById('btnImportCSV');
   if (btnImport) btnImport.style.display = can('import') ? '' : 'none';
 
+  // Show Employee Asset Import CSV for admin and superadmin
+  const btnEAImport = document.getElementById('btnEAImportCSV');
+  if (btnEAImport) btnEAImport.style.display = can('import') ? '' : 'none';
+
+  // Show Employee Asset Delete All only for superadmin
+  const btnEADeleteAll = document.getElementById('btnEADeleteAll');
+  if (btnEADeleteAll) btnEADeleteAll.style.display = currentUser.role === 'superadmin' ? '' : 'none';
+
   loadRecords();
   switchView('offboarding');
   startPresenceHeartbeat();
@@ -1938,17 +2047,26 @@ function removeRecord(id) {
 /* ══════════════════════════════════════════
    VIEW SWITCHER
 ══════════════════════════════════════════ */
+window.onObSidebarSearch = function(val) {
+  // Switch to offboarding view and push value into main search box
+  if (currentView !== 'offboarding') switchView('offboarding');
+  const mainSearch = document.getElementById('searchInput');
+  if (mainSearch) { mainSearch.value = val; renderTable(); updateClearFiltersBtn(); }
+};
+
 window.switchView = function(view) {
   currentView = view;
   const om  = document.getElementById('offboardingMain');
   const um  = document.getElementById('usersMain');
+  const eam = document.getElementById('employeeAssetMain');
   const no  = document.getElementById('navOffboarding');
   const nu  = document.getElementById('navUsers');
+  const nea = document.getElementById('navEmployeeAsset');
   const title = document.getElementById('topbarTitle');
   const btnAdd = document.getElementById('btnAdd');
 
-  [om, um].forEach(el => { if (el) el.style.display = 'none'; });
-  [no, nu].forEach(el => { if (el) el.classList.remove('active'); });
+  [om, um, eam].forEach(el => { if (el) el.style.display = 'none'; });
+  [no, nu, nea].forEach(el => { if (el) el.classList.remove('active'); });
 
   if (view === 'users') {
     if (um) um.style.display = '';
@@ -1956,6 +2074,12 @@ window.switchView = function(view) {
     if (title) title.textContent = 'User Management';
     if (btnAdd) btnAdd.style.display = 'none';
     renderUsers();
+  } else if (view === 'employeeAsset') {
+    if (eam) eam.style.display = '';
+    if (nea) nea.classList.add('active');
+    if (title) title.textContent = 'Employee Asset';
+    if (btnAdd) btnAdd.style.display = 'none';
+    renderEmployeeAssetTable();
   } else {
     if (om) om.style.display = '';
     if (no) no.classList.add('active');
@@ -1965,6 +2089,174 @@ window.switchView = function(view) {
     renderTable();
   }
 };
+
+/* ══════════════════════════════════════════
+   EMPLOYEE ASSET MODAL (from Offboarding ID click)
+══════════════════════════════════════════ */
+window.openAssetModal = function(recordNumber, employeeName) {
+  const all = JSON.parse(localStorage.getItem('employeeAssets') || '[]');
+  const matched = all.filter(r => (r.offboardingRecordNumber || '').trim().toLowerCase() === (recordNumber || '').trim().toLowerCase());
+
+  document.getElementById('assetModalTitle').textContent = employeeName || recordNumber;
+  document.getElementById('assetModalSub').textContent   = 'Offboarding Record: ' + recordNumber;
+
+  const body = document.getElementById('assetModalBody');
+
+  if (!matched.length) {
+    body.innerHTML = `
+      <div style="text-align:center;color:var(--text3);padding:48px 20px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="opacity:0.25;margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px;">No assets linked</div>
+        <div style="font-size:12px;">No asset records found for this offboarding record.</div>
+      </div>`;
+    document.getElementById('assetModalOverlay').classList.add('open');
+    return;
+  }
+
+  const emp = matched[0];
+  const totalDeduction = matched.reduce((sum, r) => {
+    const val = parseFloat((r.amountToDeduct || '').toString().replace(/[^0-9.]/g, ''));
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
+
+  const groups = {};
+  matched.forEach(r => {
+    const type = (r.assetType || 'Uncategorized').trim();
+    if (!groups[type]) groups[type] = [];
+    groups[type].push(r);
+  });
+  const typeList = Object.keys(groups);
+  const typeColors = ['var(--accent)','var(--blue)','var(--green)','var(--amber)'];
+
+  // Employee info strip
+  const empName = [emp.firstName, emp.lastName].filter(Boolean).join(' ') || '\u2014';
+  const empStrip = `
+    <div style="padding:12px 20px 10px;border-bottom:1px solid var(--glass-border2);display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:var(--surface-tint);">
+      <div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Employee ID</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);font-family:monospace;">${esc(emp.employeeId || '\u2014')}</div>
+      </div>
+      <div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Full Name</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">${esc(empName)}</div>
+      </div>
+      <div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;">Email</div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(emp.emailId || '')}">${esc(emp.emailId || '\u2014')}</div>
+      </div>
+    </div>`;
+
+  // Stats strip
+  const statsStrip = `
+    <div style="padding:10px 20px;border-bottom:1px solid var(--glass-border2);display:flex;align-items:center;">
+      <div style="flex:1;text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:var(--text);line-height:1;">${matched.length}</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-top:2px;">Asset${matched.length !== 1 ? 's' : ''}</div>
+      </div>
+      <div style="width:1px;background:var(--glass-border2);height:34px;"></div>
+      <div style="flex:1;text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:var(--text);line-height:1;">${typeList.length}</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-top:2px;">Type${typeList.length !== 1 ? 's' : ''}</div>
+      </div>
+      <div style="width:1px;background:var(--glass-border2);height:34px;"></div>
+      <div style="flex:2;text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:${totalDeduction > 0 ? 'var(--red)' : 'var(--text3)'};line-height:1;">&#8722;&thinsp;${totalDeduction > 0 ? totalDeduction.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '0.00'}</div>
+        <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-top:2px;">Total Deduction</div>
+      </div>
+    </div>`;
+
+  // Asset groups
+  const groupsHtml = '<div style="padding:12px 16px;display:flex;flex-direction:column;gap:10px;">' +
+    typeList.map((type, gi) => {
+      const items = groups[type];
+      const tc = typeColors[gi % typeColors.length];
+      const typeDed = items.reduce((s, r) => {
+        const v = parseFloat((r.amountToDeduct || '').toString().replace(/[^0-9.]/g, ''));
+        return s + (isNaN(v) ? 0 : v);
+      }, 0);
+
+      const rows = items.map((r, idx) =>
+        '<div style="display:grid;grid-template-columns:1.4fr 1.2fr 1fr 1fr auto;gap:0;align-items:stretch;' +
+        (idx > 0 ? 'border-top:1px solid var(--glass-border2);' : '') + '">' +
+          '<div style="padding:8px 10px;">' +
+            '<div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Make &amp; Model</div>' +
+            '<div style="font-size:12px;font-weight:600;color:var(--text);">' + esc(r.makeModel || '\u2014') + '</div>' +
+            '<div style="font-size:10px;color:var(--text3);margin-top:3px;font-family:monospace;">' + esc(r.serialNumber || '') + '</div>' +
+          '</div>' +
+          '<div style="padding:8px 10px;border-left:1px solid var(--glass-border2);">' +
+            '<div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Condition</div>' +
+            '<div style="font-size:12px;font-weight:600;color:var(--text);">' + esc(r.itAssetCondition || '\u2014') + '</div>' +
+          '</div>' +
+          '<div style="padding:8px 10px;border-left:1px solid var(--glass-border2);">' +
+            '<div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Status</div>' +
+            '<div style="font-size:11px;font-weight:600;color:var(--blue);">' + esc(r.assetStatus || '\u2014') + '</div>' +
+          '</div>' +
+          '<div style="padding:8px 10px;border-left:1px solid var(--glass-border2);">' +
+            '<div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">Initial Cost</div>' +
+            '<div style="font-size:12px;font-weight:600;color:var(--text);">' + esc(r.initialCost || '\u2014') + '</div>' +
+            '<div style="font-size:10px;color:var(--text3);margin-top:2px;">' + (r.assetAge ? esc(r.assetAge) + ' old' : '') + '</div>' +
+          '</div>' +
+          '<div style="padding:8px 14px;border-left:1px solid var(--glass-border2);text-align:right;min-width:96px;display:flex;flex-direction:column;justify-content:center;">' +
+            '<div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">Deduction</div>' +
+            '<div style="font-size:14px;font-weight:800;color:' + (r.amountToDeduct ? 'var(--red)' : 'var(--text3)') + ';">&#8722;&thinsp;' + esc(r.amountToDeduct || '0') + '</div>' +
+          '</div>' +
+        '</div>'
+      ).join('');
+
+      return '<div style="border:1px solid color-mix(in srgb,' + tc + ' 25%,var(--glass-border2));border-radius:var(--radius-lg);overflow:hidden;">' +
+        '<div style="padding:7px 12px;background:color-mix(in srgb,' + tc + ' 9%,transparent);border-bottom:1px solid color-mix(in srgb,' + tc + ' 18%,var(--glass-border2));display:flex;align-items:center;justify-content:space-between;">' +
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+            '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + tc + ';flex-shrink:0;"></span>' +
+            '<span style="font-size:12px;font-weight:700;color:' + tc + ';">' + esc(type) + '</span>' +
+            '<span style="font-size:11px;color:var(--text3);">' + items.length + ' item' + (items.length !== 1 ? 's' : '') + '</span>' +
+          '</div>' +
+          (typeDed > 0
+            ? '<span style="font-size:12px;font-weight:700;color:var(--red);">&#8722;&thinsp;' + typeDed.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) + '</span>'
+            : '<span style="font-size:11px;color:var(--text3);">No deduction</span>') +
+        '</div>' +
+        '<div style="background:var(--card-bg);">' + rows + '</div>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+
+  body.innerHTML = empStrip + statsStrip + groupsHtml;
+  document.getElementById('assetModalOverlay').classList.add('open');
+};
+
+/* ══════════════════════════════════════════
+   EMPLOYEE ASSET
+══════════════════════════════════════════ */
+function renderEmployeeAssetTable() {
+  const q = (document.getElementById('eaSearchInput')?.value || '').toLowerCase();
+  const raw = JSON.parse(localStorage.getItem('employeeAssets') || '[]');
+  const filtered = raw.filter(r => {
+    return !q || [r.employeeId, r.emailId, r.firstName, r.lastName, r.assetType,
+      r.makeModel, r.serialNumber, r.assetStatus, r.itAssetCondition].some(v => (v||'').toLowerCase().includes(q));
+  });
+  const tbody = document.getElementById('eaTableBody');
+  const countEl = document.getElementById('eaRecordCount');
+  if (countEl) countEl.textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '');
+  if (!tbody) return;
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--text3);padding:32px">No records found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(r => `<tr>
+    <td>${r.offboardingRecordNumber||''}</td>
+    <td>${r.employeeId||''}</td>
+    <td>${r.emailId||''}</td>
+    <td>${r.firstName||''}</td>
+    <td>${r.lastName||''}</td>
+    <td>${r.assetType||''}</td>
+    <td>${r.makeModel||''}</td>
+    <td>${r.serialNumber||''}</td>
+    <td>${r.assetStatus||''}</td>
+    <td>${r.itAssetCondition||''}</td>
+    <td>${r.initialCost||''}</td>
+    <td>${r.assetAge||''}</td>
+    <td>${r.amountToDeduct||''}</td>
+  </tr>`).join('');
+}
 
 /* ══════════════════════════════════════════
    USER MANAGEMENT
@@ -2322,7 +2614,7 @@ function getFiltered() {
   const type       = document.getElementById('typeFilter')?.value   || '';
 
   return records.filter(r => {
-    const matchSearch   = !q          || [r.offboardingId, r.employeeName, r.jobTitle, r.businessUnit, r.personalEmail].some(v => (v||'').toLowerCase().includes(q));
+    const matchSearch   = !q          || [r.recordNumber, r.offboardingId, r.employeeName, r.jobTitle, r.businessUnit, r.personalEmail].some(v => (v||'').toLowerCase().includes(q));
     const matchStatus   = !status     || r.clearanceStatus === status;
     const matchAsset    = !assetStatus || r.itAssetClearanceStatus === assetStatus;
     const matchObStatus = !obStatus   || (r.offboardingStatus || 'New') === obStatus;
@@ -2358,7 +2650,7 @@ function renderTable() {
 
   tb.innerHTML = filtered.map(r => {
     return `<tr>
-      <td class="mono">${esc(r.recordNumber||'—')}</td>
+      <td class="mono"><button onclick="openAssetModal('${esc(r.recordNumber||'')}','${esc(r.employeeName||'')}')" style="font-family:inherit;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-glow);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);border-radius:var(--radius);padding:3px 8px;cursor:pointer;letter-spacing:0.01em;transition:background 0.15s,box-shadow 0.15s;" onmouseover="this.style.background='color-mix(in srgb,var(--accent) 22%,transparent)';this.style.boxShadow='0 2px 8px var(--accent-glow)'" onmouseout="this.style.background='var(--accent-glow)';this.style.boxShadow=''">${esc(r.recordNumber||'—')}</button></td>
       <td class="mono">${esc(r.offboardingId||'—')}</td>
       <td style="font-weight:600;">${esc(r.employeeName||'—')}</td>
       <td class="date-cell">${r.separationFiledDateTime ? fmtDate(r.separationFiledDateTime) : '—'}</td>
@@ -2641,6 +2933,92 @@ window.handleCSVImport = async function(e) {
   }
   renderStats();
   renderTable();
+};
+
+window.deleteAllEARecords = function() {
+  if (!confirm('Delete ALL Employee Asset records? This cannot be undone.')) return;
+  localStorage.setItem('employeeAssets', '[]');
+  showToast('All Employee Asset records deleted.');
+  renderEmployeeAssetTable();
+};
+
+window.handleEACSVImport = async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+  const text = await file.text();
+  const rows = _parseCSV(text);
+  if (rows.length < 2) { showToast('CSV is empty or has no data rows.', true); return; }
+
+  const EA_CSV_MAP = {
+    'offboarding record number': 'offboardingRecordNumber',
+    'employee id':        'employeeId',
+    'email id':           'emailId',
+    'first name':         'firstName',
+    'last name':          'lastName',
+    'asset type':         'assetType',
+    'make and model':     'makeModel',
+    'serial number':      'serialNumber',
+    'asset status':       'assetStatus',
+    'it asset condition': 'itAssetCondition',
+    'initial cost':       'initialCost',
+    'asset age':          'assetAge',
+    'amount to deduct':   'amountToDeduct',
+  };
+
+  const headers  = rows[0].map(h => h.trim().toLowerCase());
+  const fieldMap = headers.map(h => EA_CSV_MAP[h] || null);
+  const newRecords = [];
+
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (row.every(c => !c.trim())) continue;
+    const rec = { id: 'ea_' + Date.now() + '_' + r + '_' + Math.random().toString(36).slice(2,5) };
+    fieldMap.forEach((field, i) => { if (field) rec[field] = (row[i] || '').trim(); });
+    newRecords.push(rec);
+  }
+
+  if (!newRecords.length) { showToast('No valid rows found in CSV.', true); return; }
+
+  const existing = JSON.parse(localStorage.getItem('employeeAssets') || '[]');
+
+  const overlay  = document.getElementById('importProgressOverlay');
+  const bar      = document.getElementById('importProgressBar');
+  const sub      = document.getElementById('importProgressSub');
+  const countEl  = document.getElementById('importProgressCount');
+  const pctEl    = document.getElementById('importProgressPct');
+  const titleEl  = document.getElementById('importProgressTitle');
+  if (titleEl) titleEl.textContent = 'Importing Employee Asset Records…';
+  overlay.style.display = 'flex';
+  bar.style.width = '0%';
+  pctEl.textContent = '0%';
+  countEl.textContent = `0 / ${newRecords.length.toLocaleString()}`;
+  sub.textContent = `Saving ${newRecords.length.toLocaleString()} rows…`;
+
+  // Yield to allow the browser to paint the overlay before processing
+  await new Promise(r => setTimeout(r, 50));
+
+  const CHUNK = 500;
+  let processed = 0;
+
+  for (let i = 0; i < newRecords.length; i += CHUNK) {
+    const chunk = newRecords.slice(i, i + CHUNK);
+    existing.push(...chunk);
+    processed += chunk.length;
+    const pct = Math.round((processed / newRecords.length) * 100);
+    bar.style.width = pct + '%';
+    pctEl.textContent = pct + '%';
+    countEl.textContent = `${processed.toLocaleString()} / ${newRecords.length.toLocaleString()}`;
+    sub.textContent = `Batch ${Math.ceil((i + CHUNK) / CHUNK)} of ${Math.ceil(newRecords.length / CHUNK)} saved…`;
+    // yield to UI between chunks so progress updates are visible
+    await new Promise(r => setTimeout(r, 30));
+  }
+
+  localStorage.setItem('employeeAssets', JSON.stringify(existing));
+  overlay.style.display = 'none';
+  if (titleEl) titleEl.textContent = 'Importing Records…';
+  showToast(newRecords.length.toLocaleString() + ' records imported from ' + file.name + '.');
+  renderEmployeeAssetTable();
 };
 
 /* ══════════════════════════════════════════
