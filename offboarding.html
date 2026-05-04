@@ -961,7 +961,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
       <div class="login-app-nav">
         <div class="login-app-nav-divider"><span>SWITCH TO</span></div>
         <div class="login-app-nav-links">
-          <a class="login-app-nav-btn" href="https://op360live.github.io/assetvault/">
+          <a class="login-app-nav-btn" href="https://op360live.github.io/assetvault/laptop.html">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="19" x2="24" y2="19"/></svg>
             Laptop Inventory
           </a>
@@ -1064,7 +1064,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
       <div class="sb-divider"></div>
       <div class="sb-section-label">Related Apps</div>
 
-      <a href="https://op360live.github.io/assetvault/" target="_blank" rel="noopener noreferrer" class="sb-item" title="Laptop Vault" style="text-decoration:none;">
+      <a href="https://op360live.github.io/assetvault/laptop.html" target="_blank" rel="noopener noreferrer" class="sb-item" title="Laptop Vault" style="text-decoration:none;">
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>
         <span class="sb-item-label">Laptop Vault</span>
       </a>
@@ -1286,7 +1286,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
       <div class="count-bar">
         <span id="eaRecordCount">0 records</span>
         <input type="file" id="eaCsvInput" accept=".csv" style="display:none" onchange="handleEACSVImport(event)">
-        <button class="btn btn-sm" id="btnEAImportCSV" onclick="document.getElementById('eaCsvInput').click()" style="display:none">
+        <button class="btn btn-sm" id="btnEAImportCSV" onclick="openEAImportNoticeModal()" style="display:none">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Import CSV
         </button>
@@ -1341,6 +1341,27 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
       </button>
     </div>
     <div class="modal-body" id="assetModalBody" style="padding:0 0 4px;max-height:78vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- EA IMPORT NOTICE MODAL -->
+<div class="overlay" id="eaImportNoticeOverlay" onclick="if(event.target===this)closeEAImportNoticeModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">Employee Asset Import</div>
+      <button class="modal-close" onclick="closeEAImportNoticeModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:var(--text2);line-height:1.55;">
+        Please upload <strong>IT Asset List.csv</strong> here.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeEAImportNoticeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmEAImportNotice()">Continue</button>
+    </div>
   </div>
 </div>
 
@@ -1955,11 +1976,7 @@ window.doLogout = function() {
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('assetvault_session');
   currentUser = null;
-  document.getElementById('appScreen').classList.remove('active');
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('loginUser').value = '';
-  if (document.getElementById('loginPass')) document.getElementById('loginPass').value = '';
-  window.closePasswordStep();
+  window.location.href = 'index.html';
 };
 
 function checkSession() {
@@ -2149,6 +2166,19 @@ window.openAssetModal = function(recordNumber, employeeName) {
     document.getElementById('assetModalOverlay').classList.add('open');
     return;
   }
+
+  window.openEAImportNoticeModal = function() {
+    document.getElementById('eaImportNoticeOverlay')?.classList.add('open');
+  };
+
+  window.closeEAImportNoticeModal = function() {
+    document.getElementById('eaImportNoticeOverlay')?.classList.remove('open');
+  };
+
+  window.confirmEAImportNotice = function() {
+    closeEAImportNoticeModal();
+    document.getElementById('eaCsvInput')?.click();
+  };
 
   const emp = matched[0];
   const totalDeduction = matched.reduce((sum, r) => {
