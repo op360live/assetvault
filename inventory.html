@@ -14,24 +14,24 @@
    THEMES
 ══════════════════════════════ */
 [data-theme="light"] {
-  --bg-from: #fdf8f4;
-  --bg-to:   #fff8f0;
-  --bg-mid:  #fef3eb;
+  --bg-from: #f0f4f8;
+  --bg-to:   #f0f4f8;
+  --bg-mid:  #e8eef5;
   --glass-bg:       rgba(255,255,255,0.60);
   --glass-bg-hover: rgba(255,255,255,0.78);
   --glass-bg-deep:  rgba(255,255,255,0.88);
   --glass-border:   rgba(255,255,255,0.85);
-  --glass-border2:  rgba(240,200,160,0.45);
-  --glass-shadow:   0 8px 32px rgba(220,110,30,0.10), 0 1.5px 0 rgba(255,255,255,0.8) inset;
-  --glass-shadow-sm:0 4px 16px rgba(220,110,30,0.08);
+  --glass-border2:  rgba(29,78,216,0.15);
+  --glass-shadow:   0 8px 32px rgba(29,78,216,0.10), 0 1.5px 0 rgba(255,255,255,0.8) inset;
+  --glass-shadow-sm:0 4px 16px rgba(29,78,216,0.08);
   --surface-tint:   rgba(255,255,255,0.40);
   --text:    #1a1d23;
   --text2:   #4b5563;
   --text3:   #9ca3af;
   --text-on-accent: #fff;
-  --accent:  #e8711a;
-  --accent2: #f5a623;
-  --accent-glow: rgba(232,113,26,0.18);
+  --accent:  #1d4ed8;
+  --accent2: #2563eb;
+  --accent-glow: rgba(29,78,216,0.18);
   --green:   #3db48c;
   --green-bg:rgba(61,180,140,0.13);
   --blue:    #5b8fe8;
@@ -54,9 +54,9 @@
   --card-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
 }
 [data-theme="dark"] {
-  --bg-from: #1a1008;
-  --bg-to:   #200e02;
-  --bg-mid:  #141008;
+  --bg-from: #0f172a;
+  --bg-to:   #0f172a;
+  --bg-mid:  #0f172a;
   --glass-bg:       rgba(255,255,255,0.06);
   --glass-bg-hover: rgba(255,255,255,0.11);
   --glass-bg-deep:  rgba(255,255,255,0.09);
@@ -65,13 +65,13 @@
   --glass-shadow:   0 8px 32px rgba(0,0,0,0.50), 0 1px 0 rgba(255,255,255,0.07) inset;
   --glass-shadow-sm:0 4px 16px rgba(0,0,0,0.38);
   --surface-tint:   rgba(255,255,255,0.04);
-  --text:    #fdf4ec;
-  --text2:   #c9ab84;
-  --text3:   #7a6040;
+  --text:    #f1f5f9;
+  --text2:   #94a3b8;
+  --text3:   #64748b;
   --text-on-accent: #fff;
-  --accent:  #f09040;
-  --accent2: #f5c060;
-  --accent-glow: rgba(240,144,64,0.28);
+  --accent:  #60a5fa;
+  --accent2: #93c5fd;
+  --accent-glow: rgba(96,165,250,0.28);
   --green:   #5fd4a8;
   --green-bg:rgba(95,212,168,0.13);
   --blue:    #7db0f5;
@@ -84,13 +84,13 @@
   --radius-lg: 10px;
   --radius-xl: 14px;
   /* sidebar/layout */
-  --page-bg: #110a04;
-  --sidebar-bg: rgba(26,14,4,0.98);
-  --topbar-bg: rgba(26,14,4,0.95);
-  --sidebar-border: rgba(255,255,255,0.1);
+  --page-bg: #0f172a;
+  --sidebar-bg: #1e293b;
+  --topbar-bg: #1e293b;
+  --sidebar-border: rgba(255,255,255,0.08);
   --search-bg: rgba(255,255,255,0.06);
   --sb-hover: rgba(255,255,255,0.07);
-  --card-bg: rgba(255,255,255,0.06);
+  --card-bg: #1e293b;
   --card-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
 
@@ -415,7 +415,7 @@ body {
 /* ── LEFT DECORATIVE PANEL ── */
 .login-left {
   width: 44%; min-height: 100vh; flex-shrink: 0;
-  background: linear-gradient(150deg, var(--accent) 0%, var(--accent2) 55%, #e07b40 100%);
+  background: linear-gradient(150deg, #1e3a8a 0%, #1d4ed8 55%, #2563eb 100%);
   display: flex; flex-direction: column;
   padding: 60px 52px;
   position: relative; overflow: hidden;
@@ -438,11 +438,11 @@ body {
 
 /* ── RIGHT FORM PANEL ── */
 .login-right { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 48px; background: #f7f8fc; min-height: 100vh; position: relative; }
-[data-theme="dark"] #loginScreen { background: #110d1c; }
-[data-theme="dark"] .login-right { background: #110d1c; }
-[data-theme="dark"] .login-left { background: linear-gradient(150deg, #7a3a10 0%, #b05a20 55%, #c06030 100%); }
-.login-form-wrap { width: 100%; max-width: 420px; background: #fff; border-radius: 12px; padding: 48px 44px; box-shadow: 0 32px 80px rgba(80,40,140,0.13), 0 8px 28px rgba(0,0,0,0.07); }
-[data-theme="dark"] .login-form-wrap { background: #251a3a; border: 1px solid rgba(155,109,204,0.20); box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 24px 60px rgba(0,0,0,0.50), 0 0 40px rgba(120,60,200,0.12); }
+[data-theme="dark"] #loginScreen { background: #0f172a; }
+[data-theme="dark"] .login-right { background: #0f172a; }
+[data-theme="dark"] .login-left { background: linear-gradient(150deg, #1e3a8a 0%, #1d4ed8 55%, #1e40af 100%); }
+.login-form-wrap { width: 100%; max-width: 420px; background: #fff; border-radius: 12px; padding: 48px 44px; box-shadow: 0 32px 80px rgba(29,78,216,0.13), 0 8px 28px rgba(0,0,0,0.07); }
+[data-theme="dark"] .login-form-wrap { background: #1e293b; border: 1px solid rgba(96,165,250,0.20); box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 24px 60px rgba(0,0,0,0.50), 0 0 40px rgba(29,78,216,0.12); }
 .login-form-title { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.8px; margin-bottom: 8px; text-align: center; }
 .login-form-sub { font-size: 14px; color: var(--text3); margin-bottom: 36px; line-height: 1.5; text-align: center; }
 .login-body { display: flex; flex-direction: column; gap: 16px; }
@@ -1248,8 +1248,8 @@ mark.gsr-highlight {
 /* ══════════════════════════════
    SPLASH
 ══════════════════════════════ */
-#splashScreen { position:fixed; inset:0; z-index:10000; background:linear-gradient(135deg,#e8711a 0%,#f5a623 60%,#e07b40 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; transition:opacity 0.45s ease; animation: splash-css-fallback 0.5s ease 5s forwards; }
-[data-theme="dark"] #splashScreen { background:linear-gradient(135deg,#7a3a10 0%,#b05a20 60%,#c06030 100%); }
+#splashScreen { position:fixed; inset:0; z-index:10000; background:linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 60%,#2563eb 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; transition:opacity 0.45s ease; animation: splash-css-fallback 0.5s ease 5s forwards; }
+[data-theme="dark"] #splashScreen { background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 60%,#1e293b 100%); }
 #splashScreen.fade-out { opacity:0; pointer-events:none; }
 @keyframes splash-css-fallback { to { opacity:0; pointer-events:none; visibility:hidden; } }
 .splash-logo { width:64px; height:64px; border-radius:18px; background:rgba(255,255,255,0.22); border:1.5px solid rgba(255,255,255,0.40); display:flex; align-items:center; justify-content:center; margin-bottom:4px; box-shadow:0 8px 24px rgba(0,0,0,0.15); }
