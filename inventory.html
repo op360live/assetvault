@@ -1488,6 +1488,7 @@ mark.gsr-highlight {
   letter-spacing:0.2px;
 }
 .pcc-deployed  { background:var(--green-bg); color:var(--green); }
+.pcc-borrowed  { background:var(--amber-bg); color:var(--amber); }
 .pcc-defective { background:var(--red-bg);   color:var(--red); }
 .pcc-repair    { background:var(--amber-bg); color:var(--amber); }
 .pcc-lost      { background:rgba(128,128,128,0.12); color:var(--text3); }
@@ -1568,6 +1569,7 @@ mark.gsr-highlight {
 .asset-status-select[data-status="Repair"]    { background-color:var(--amber-bg); color:var(--amber); border-color:var(--amber); }
 .asset-status-select[data-status="Lost"]      { background-color:rgba(128,128,128,0.10); color:var(--text3); border-color:var(--text3); }
 .asset-status-select[data-status="Spare"]     { background-color:var(--blue-bg);  color:var(--blue);  border-color:var(--blue); }
+.asset-status-select[data-status="Borrowed"]  { background-color:var(--amber-bg); color:var(--amber); border-color:var(--amber); }
 .asset-status-select[data-status="Untagged"]  { background-color:var(--glass-bg); color:var(--text3); border-color:var(--glass-border); }
 .inv-serial { font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--text2); }
 .inv-unit   { font-size:12px; color:var(--text3); font-style:italic; }
@@ -2180,6 +2182,7 @@ mark.gsr-highlight {
         <select class="filter-select" id="assetStatusFilter" onchange="_assetStatusFilters.clear();_assetPage=1;renderAssets()">
           <option value="">All Status</option>
           <option>Deployed</option>
+          <option>Borrowed</option>
           <option>Spare</option>
           <option>Docked</option>
           <option>For Repair</option>
@@ -2777,7 +2780,7 @@ mark.gsr-highlight {
           <label>Status</label>
           <select id="af_status">
             <option value="">— Select —</option>
-            <option>Deployed</option><option>Spare</option><option>Docked</option>
+            <option>Deployed</option><option>Borrowed</option><option>Spare</option><option>Docked</option>
             <option>For Repair</option><option>For Disposal</option>
           </select>
         </div>
@@ -3725,12 +3728,13 @@ function renderDashboard() {
   // Inventory counters
   const allInv = Object.values(invItems);
   const invTotal = allInv.length;
-  const invCounts = { Deployed:0, Defective:0, Repair:0, Lost:0, Spare:0, Untagged:0 };
+  const invCounts = { Deployed:0, Defective:0, Repair:0, Lost:0, Spare:0, Untagged:0, Borrowed:0 };
   allInv.forEach(v => { if (invCounts[v.status] !== undefined) invCounts[v.status]++; });
 
   document.getElementById('dashInvGrid').innerHTML = [
     { lbl: 'Total Assets', val: invTotal,              cls: 'sv-total',    filter: '' },
     { lbl: 'Deployed',     val: invCounts.Deployed,    cls: 'sv-received', filter: 'Deployed' },
+    { lbl: 'Borrowed',     val: invCounts.Borrowed,    cls: 'sv-pending',  filter: 'Borrowed' },
     { lbl: 'Untagged',     val: invCounts.Untagged,    cls: 'sv-returned', filter: 'Untagged' },
     { lbl: 'Repair',       val: invCounts.Repair,      cls: 'sv-pending',  filter: 'Repair' },
     { lbl: 'Defective',    val: invCounts.Defective,   cls: 'sv-cancelled',filter: 'Defective' },
@@ -4468,19 +4472,20 @@ window.deleteInvUnit = function(key) {
 };
 
 function invStatusColor(s) {
-  const map = { Deployed:'b-received', Defective:'b-cancelled', Repair:'b-pending', Lost:'b-returned', Spare:'b-partial', Untagged:'b-returned' };
+  const map = { Deployed:'b-received', Defective:'b-cancelled', Repair:'b-pending', Lost:'b-returned', Spare:'b-partial', Untagged:'b-returned', Borrowed:'b-pending' };
   return map[s] || 'b-returned';
 }
 
 function renderInvStats() {
   const all   = Object.values(invItems);
   const total = all.length;
-  const counts = { Deployed:0, Defective:0, Repair:0, Lost:0, Spare:0, Untagged:0 };
+  const counts = { Deployed:0, Defective:0, Repair:0, Lost:0, Spare:0, Untagged:0, Borrowed:0 };
   all.forEach(v => { if (counts[v.status] !== undefined) counts[v.status]++; });
 
   const cards = [
     { label:'Total Assets', val:total,            cls:'sv-total',    filter:'' },
     { label:'Deployed',     val:counts.Deployed,  cls:'sv-received', filter:'Deployed' },
+    { label:'Borrowed',     val:counts.Borrowed,  cls:'sv-pending',  filter:'Borrowed' },
     { label:'Defective',    val:counts.Defective, cls:'sv-returned', filter:'Defective' },
     { label:'Repair',       val:counts.Repair,    cls:'sv-pending',  filter:'Repair' },
     { label:'Lost',         val:counts.Lost,      cls:'sv-returned', filter:'Lost' },
@@ -4585,7 +4590,7 @@ function renderInventory() {
       const unitLabel = item._serial
         ? `<span class="inv-serial">${esc(item._serial)}</span>`
         : `<span class="inv-unit">Unit ${item._unit}</span>`;
-      const statusOpts = ['Deployed','Defective','Repair','Lost','Spare','Untagged']
+      const statusOpts = ['Deployed','Borrowed','Defective','Repair','Lost','Spare','Untagged']
         .map(s => `<option value="${s}"${item.status===s?' selected':''}>${s}</option>`).join('');
       const safeKey = item.key.replace(/"/g,'&quot;');
       const recId   = item._rec || '';
@@ -5282,6 +5287,7 @@ function renderAssetStats() {
   const statusCards = [
     { label:'Total Assets', val:total,                  cls:'sv-total',    status:null },
     { label:'Deployed',     val:counts.Deployed,        cls:'sv-partial',  status:'Deployed' },
+    { label:'Borrowed',     val:counts.Borrowed,        cls:'sv-pending',  status:'Borrowed' },
     { label:'Spare',        val:counts.Spare,           cls:'sv-received', status:'Spare' },
     { label:'Docked',       val:counts.Docked,          cls:'sv-received', status:'Docked' },
     { label:'For Repair',   val:counts['For Repair'],   cls:'sv-pending',  status:'For Repair' },
@@ -5660,7 +5666,7 @@ function renderAssets(skipStats) {
   _renderAssetPagination(total, start, end);
 
   const statusColors = {
-    Active:'var(--green)', Deployed:'var(--accent)', Spare:'var(--amber)',
+    Active:'var(--green)', Deployed:'var(--accent)', Borrowed:'var(--blue)', Spare:'var(--amber)',
     Defective:'var(--red)', Repair:'var(--amber)', Decommissioned:'var(--text3)', Lost:'var(--red)'
   };
 
@@ -6350,7 +6356,7 @@ function renderGlobalResults(query) {
     return esc(str.slice(0, idx)) + '<mark class="gsr-highlight">' + esc(str.slice(idx, idx + q.length)) + '</mark>' + esc(str.slice(idx + q.length));
   };
 
-  const statusOpts = ['Deployed','Defective','Repair','Lost','Spare','Untagged']
+const statusOpts = ['Deployed','Borrowed','Defective','Repair','Lost','Spare','Untagged']
     .map(s => `<option value="${s}">`+s+'</option>').join('');
 
   let html = '';
@@ -6359,7 +6365,7 @@ function renderGlobalResults(query) {
   if (assetHits.length) {
     html += `<div class="gsr-section-label">Asset Register (${assetHits.length})</div>`;
     html += assetHits.map(a => {
-      const assetStatuses = ['Deployed','Spare','Docked','For Repair','For Disposal'];
+      const assetStatuses = ['Deployed','Borrowed','Spare','Docked','For Repair','For Disposal'];
       const line2 = [a.assetType, a.deviceModel, a.site, a.custodian].filter(Boolean).map(esc).join(' &middot; ');
       return `<div class="gsr-serial-item">
         <div style="flex:1;min-width:0;cursor:pointer" onclick="goToAsset('${a.id}')" title="Open in Asset Register">
@@ -6386,7 +6392,7 @@ function renderGlobalResults(query) {
         </div>
         <select class="gsr-status-select" data-status="${item.status}" data-key="${safeKey}"
           onchange="setAssetStatus(this.dataset.key,this.value);this.setAttribute('data-status',this.value)">
-          ${['Deployed','Defective','Repair','Lost','Spare','Untagged'].map(s=>`<option value="${s}"${item.status===s?' selected':''}>${s}</option>`).join('')}
+          ${['Deployed','Borrowed','Defective','Repair','Lost','Spare','Untagged'].map(s=>`<option value="${s}"${item.status===s?' selected':''}>${s}</option>`).join('')}
         </select>
       </div>`;
     }).join('');
