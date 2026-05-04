@@ -225,6 +225,20 @@ body{
   display:flex;align-items:center;gap:8px;flex-wrap:wrap;
 }
 .rec-card:hover{background:var(--search-bg);border-color:var(--border)}
+.rec-card+.rec-card{border-top:1px solid var(--border)}
+.result-pagination{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:8px 14px;border-top:1px solid var(--border);
+}
+.pg-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:var(--radius);
+  border:1px solid var(--border);background:transparent;
+  color:var(--text2);cursor:pointer;font-size:13px;transition:background .13s,color .13s;
+}
+.pg-btn:hover:not(:disabled){background:var(--hover-bg);color:var(--text)}
+.pg-btn:disabled{opacity:.35;cursor:not-allowed}
+.pg-info{font-size:12px;color:var(--text3);min-width:44px;text-align:center}
 .rec-fields{display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:0}
 .rec-field{display:inline-flex;align-items:center;gap:3px;font-size:11.5px}
 .rec-field-key{color:var(--text3);font-weight:500}
@@ -363,7 +377,7 @@ body{
 <script>
 const TURSO_URL   = 'https://turso-proxy.rcabil-op360.workers.dev';
 const TURSO_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJleHAiOjE4MDg0MjkwMjMsImlhdCI6MTc3Njg5MzAyMywiaWQiOiIwMTlkYjcxMS1jNDAxLTdiZDgtODUyNy00MGUzYTEzMmM5MzkiLCJyaWQiOiIwMTY1NjhiOC03NjE0LTRjNjAtYWI3Zi0yZjY5YzQ3MDhjMTYifQ.-rLfhTh8wuECeovdGDgnduzA_WYtMC4L8JJZz-mRQ1nO6mCGAkYvS_YzR_CHAnogNFcLNow7RSRRebuDQfLxCA';
-const TABLES = ['offboarding','presence','laptops','records','inventory','assets'];
+const TABLES = ['offboarding','laptops','records','inventory','assets'];
 
 const SVG = (d,extra='') => `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${extra}>${d}</svg>`;
 const ICONS = {
@@ -377,7 +391,7 @@ const ICONS = {
 const TABLE_META = {
   offboarding:{icon:ICONS.offboarding,color:'rgba(61,180,140,.15)',  label:'Offboarding',keys:['employee_name','name','department','status','location','last_day']},
   presence:   {icon:ICONS.presence,   color:'rgba(212,135,74,.15)',  label:'Presence',   keys:['name','username','status','date','location']},
-  laptops:    {icon:ICONS.laptops,    color:'rgba(29,78,216,.15)',   label:'Laptops',    keys:['asset_tag','serial','user','model','status','location']},
+  laptops:    {icon:ICONS.laptops,    color:'rgba(29,78,216,.15)',   label:'Laptops',    keys:['currentOwner','model','serialNumber','assetTag','status','accountabilityStatus']},
   records:    {icon:ICONS.records,    color:'rgba(91,143,232,.15)',  label:'Records',    keys:['name','type','status','date','reference']},
   inventory:  {icon:ICONS.inventory,  color:'rgba(37,99,235,.15)',   label:'Inventory',  keys:['item','description','quantity','category','location']},
   assets:     {icon:ICONS.assets,     color:'rgba(61,180,140,.15)',  label:'Assets',     keys:['asset_tag','name','type','status','assigned_to','location']},
@@ -423,10 +437,12 @@ function escapeLike(t){return t.replace(/([%_!])/g,'!$1')}
 function tryParseJson(v){if(!v)return null;try{return JSON.parse(v)}catch(e){return null}}
 function renderFields(data,preferKeys){
   if(!data||typeof data!=='object')return'';
+  const skipPattern=/^(id$|_id$|uuid|rowid|.*_id$)/i;
   const shown=[];
   const allKeys=[...preferKeys,...Object.keys(data).filter(k=>!preferKeys.includes(k))];
   for(const k of allKeys){
     if(!(k in data))continue;
+    if(skipPattern.test(k))continue;
     const v=data[k];
     if(v===null||v===undefined||v==='')continue;
     const val=typeof v==='object'?JSON.stringify(v):String(v);
@@ -435,6 +451,29 @@ function renderFields(data,preferKeys){
   }
   return shown.join('');
 }
+
+/* PAGINATION */
+const PAGE_SIZE=20;
+let allResults={},currentPages={};
+function buildPagination(table,page,totalPages){
+  if(totalPages<=1)return'';
+  const isFirst=page===0,isLast=page===totalPages-1;
+  return '<div class="result-pagination">'
+    +'<button class="pg-btn" onclick="changePage(\''+table+'\','+'-1)" '+(isFirst?'disabled':'')+'>&#8592;</button>'
+    +'<span class="pg-info">'+(page+1)+' / '+totalPages+'</span>'
+    +'<button class="pg-btn" onclick="changePage(\''+table+'\',' +'1)" '+(isLast?'disabled':'')+'>&#8594;</button>'
+    +'</div>';
+}
+window.changePage=function(table,delta){
+  const rows=allResults[table];if(!rows)return;
+  const totalPages=Math.ceil(rows.length/PAGE_SIZE);
+  currentPages[table]=Math.max(0,Math.min((currentPages[table]||0)+delta,totalPages-1));
+  const page=currentPages[table];
+  const meta=TABLE_META[table]||{keys:[]};
+  const pageRows=rows.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE);
+  document.getElementById('grp-records-'+table).innerHTML=pageRows.map(r=>buildRecordCard(r,meta)).join('');
+  document.getElementById('grp-page-'+table).innerHTML=buildPagination(table,page,totalPages);
+};
 
 /* RENDER */
 function buildRecordCard(row,meta){
@@ -450,12 +489,17 @@ function buildRecordCard(row,meta){
 
 function buildGroup(table,rows){
   const meta=TABLE_META[table]||{icon:SVG('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'),color:'rgba(148,163,184,.12)',label:table,keys:[]};
+  allResults[table]=rows;
+  currentPages[table]=0;
+  const totalPages=Math.ceil(rows.length/PAGE_SIZE);
+  const pageRows=rows.slice(0,PAGE_SIZE);
   return '<div class="result-group">'
     +'<div class="result-group-header">'
     +'<div class="result-group-title"><div class="result-group-icon" style="background:'+meta.color+'">'+meta.icon+'</div>'+escapeHtml(meta.label)+'</div>'
     +'<span class="result-group-count">'+rows.length+' result'+(rows.length!==1?'s':'')+'</span>'
     +'</div>'
-    +'<div class="result-records">'+rows.map(r=>buildRecordCard(r,meta)).join('')+'</div>'
+    +'<div class="result-records" id="grp-records-'+table+'">'+pageRows.map(r=>buildRecordCard(r,meta)).join('')+'</div>'
+    +'<div id="grp-page-'+table+'">'+buildPagination(table,0,totalPages)+'</div>'
     +'</div>';
 }
 
@@ -481,9 +525,10 @@ async function runSearch(){
   setStatus('Searching\u2026',true);
   resultsArea.classList.remove('visible');
   resultsGrid.innerHTML='';
+  allResults={}; currentPages={};
   const pattern='%'+escapeLike(term.toLowerCase())+'%';
   const queries=tables.map(t=>
-    tursoExec('SELECT rowid, data FROM '+t+' WHERE LOWER(data) LIKE ? ESCAPE \'!\' LIMIT 50',[pattern])
+    tursoExec('SELECT rowid, data FROM '+t+' WHERE LOWER(data) LIKE ? ESCAPE \'!\' AND (json_extract(data,\'$.deleted\') IS NULL OR json_extract(data,\'$.deleted\') = 0) AND (json_extract(data,\'$._rec\') IS NULL OR json_extract(data,\'$._rec\') NOT LIKE \'del\_%\') LIMIT 50',[pattern])
       .then(result=>({table:t,result}))
   );
   const responses=await Promise.all(queries);
@@ -494,7 +539,14 @@ async function runSearch(){
       parts.push('<div class="err-card"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> <strong>'+escapeHtml(t)+':</strong> '+escapeHtml(result.error)+'</div>');
       continue;
     }
-    const rows=result.rows||[];
+    const rows=(result.rows||[]).filter(r=>{
+      try{
+        const d=JSON.parse(r[1]?.value??r[0]?.value??'');
+        if(d.deleted===true||d.deleted===1)return false;
+        if(typeof d._rec==='string'&&d._rec.startsWith('del_'))return false;
+        return true;
+      }catch{return true;}
+    });
     if(!rows.length)continue;
     total+=rows.length;
     parts.push(buildGroup(t,rows));
