@@ -3462,15 +3462,10 @@ async function doLogin(){
 
 async function doLogout(){
   await stopPresence();
-  sessionStorage.removeItem(SESSION_KEY); localStorage.removeItem('assetvault_session'); currentUser = null;
-  const as = document.getElementById('appScreen');
-  as.classList.remove('active'); as.style.display = '';
-  const ls = document.getElementById('loginScreen');
-  ls.classList.remove('splash-hidden');
-  ls.style.display = 'flex';
-  document.getElementById('loginUser').value = '';
-  if(document.getElementById('loginPass')) document.getElementById('loginPass').value = '';
-  closePasswordStep();
+  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem('assetvault_session');
+  currentUser = null;
+  window.location.href = 'index.html';
 }
 
 function checkSession(){
