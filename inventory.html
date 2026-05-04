@@ -1759,7 +1759,7 @@ mark.gsr-highlight {
       <div class="login-app-nav">
         <div class="login-app-nav-divider"><span>SWITCH TO</span></div>
         <div class="login-app-nav-links">
-          <a class="login-app-nav-btn" href="https://op360live.github.io/assetvault/">
+          <a class="login-app-nav-btn" href="https://op360live.github.io/assetvault/laptop.html">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="19" x2="24" y2="19"/></svg>
             Laptop Inventory
           </a>
@@ -1901,7 +1901,7 @@ mark.gsr-highlight {
       <div class="sb-divider"></div>
       <div class="sb-section-label">Related Apps</div>
 
-      <a href="https://op360live.github.io/assetvault/" target="_blank" rel="noopener noreferrer" class="sb-item" title="Laptop Vault" style="text-decoration:none;">
+      <a href="https://op360live.github.io/assetvault/laptop.html" target="_blank" rel="noopener noreferrer" class="sb-item" title="Laptop Vault" style="text-decoration:none;">
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>
         <span class="sb-item-label">Laptop Vault</span>
       </a>
@@ -3314,11 +3314,7 @@ window.doLogout = function() {
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('assetvault_session');
   currentUser = null;
-  document.getElementById('appScreen').classList.remove('active');
-  document.getElementById('loginScreen').style.display = 'flex';
-  document.getElementById('loginUser').value = '';
-  if (document.getElementById('loginPass')) document.getElementById('loginPass').value = '';
-  window.closePasswordStep();
+  window.location.href = 'index.html';
 };
 
 function checkSession() {
