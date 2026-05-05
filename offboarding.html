@@ -547,6 +547,8 @@ body {
 .btn-danger { color:var(--red); border-color:rgba(220,38,38,0.25); background:var(--red-bg); }
 .btn-danger:hover { background:rgba(220,38,38,0.2); }
 .btn-sm { padding:5px 11px; font-size:12px; border-radius:10px; }
+.btn-clear-filters { background:rgba(239,68,68,0.10) !important; border-color:rgba(239,68,68,0.35) !important; color:#ef4444 !important; }
+.btn-clear-filters:hover { background:rgba(239,68,68,0.20) !important; border-color:rgba(239,68,68,0.55) !important; }
 
 /* ══════════════════════════════
    MAIN CONTENT
@@ -558,6 +560,12 @@ body {
 ══════════════════════════════ */
 .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(90px,1fr)); gap:6px; }
 .stats-section { display:flex; flex-direction:column; gap:10px; margin-bottom:10px; }
+.site-filter-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:2px 0 4px; }
+.site-tab { display:inline-flex; align-items:center; gap:5px; padding:5px 14px; border-radius:999px; border:1px solid var(--glass-border); background:var(--glass-bg); color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.site-tab:hover { background:var(--glass-bg-hover); color:var(--text); }
+.site-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 2px 10px var(--accent-glow); }
+[data-theme="light"] .site-tab { background:var(--card-bg); border-color:var(--sidebar-border); backdrop-filter:none; }
+[data-theme="light"] .site-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
 .stats-section-row { display:flex; gap:12px; flex-wrap:wrap; }
 .stats-section-group { display:flex; flex-direction:column; gap:4px; flex:1; min-width:160px; }
 .stats-section-group.full-row { flex:1 1 100%; }
@@ -568,15 +576,17 @@ body {
   -webkit-backdrop-filter:blur(20px) saturate(160%);
   border:1px solid var(--glass-border);
   border-radius:var(--radius);
-  padding:7px 12px;
+  padding:14px 16px;
   box-shadow:var(--glass-shadow-sm);
   transition:transform 0.2s,box-shadow 0.2s;
   cursor:pointer;
+  display:flex; flex-direction:column; justify-content:space-between;
+  min-height:72px;
 }
 .stat-card:hover { transform:translateY(-2px); box-shadow:var(--glass-shadow); }
 .stat-card.stat-active { border-color:var(--accent); box-shadow:var(--glass-shadow),0 0 0 2px var(--accent-glow); }
-.stat-lbl { font-size:9px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:2px; }
-.stat-val { font-size:18px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1; }
+.stat-lbl { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:6px; }
+.stat-val { font-size:24px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1; }
 .sv-total    { color:var(--text); }
 .sv-pending  { color:var(--amber); }
 .sv-complete { color:var(--green); }
@@ -660,10 +670,12 @@ body {
   overflow:auto;
   -webkit-overflow-scrolling:touch;
   box-shadow:var(--glass-shadow-sm);
+  max-height:calc(100vh - 300px);
 }
 table { width:100%; border-collapse:collapse; font-size:12px; min-width:1200px; }
 thead th {
   background:var(--surface-tint);
+  position:sticky; top:0; z-index:2;
   padding:6px 10px; text-align:left;
   font-size:10px; font-weight:700; color:var(--text3);
   text-transform:uppercase; letter-spacing:0.7px;
@@ -801,9 +813,17 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 /* ══════════════════════════════
    SCROLLBAR
 ══════════════════════════════ */
-::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar { width:7px; height:7px; }
 ::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--glass-border); border-radius:10px; }
+::-webkit-scrollbar-thumb { background:rgba(100,116,139,0.45); border-radius:10px; }
+::-webkit-scrollbar-thumb:hover { background:rgba(100,116,139,0.75); }
+.table-wrap::-webkit-scrollbar { width:8px; height:8px; }
+.table-wrap::-webkit-scrollbar-track { background:rgba(0,0,0,0.06); border-radius:0 0 var(--radius-lg) var(--radius-lg); }
+.table-wrap::-webkit-scrollbar-thumb { background:rgba(100,116,139,0.55); border-radius:10px; border:2px solid transparent; background-clip:padding-box; }
+.table-wrap::-webkit-scrollbar-thumb:hover { background:rgba(100,116,139,0.85); background-clip:padding-box; }
+[data-theme="dark"] .table-wrap::-webkit-scrollbar-track { background:rgba(255,255,255,0.04); }
+[data-theme="dark"] .table-wrap::-webkit-scrollbar-thumb { background:rgba(148,163,184,0.35); background-clip:padding-box; }
+[data-theme="dark"] .table-wrap::-webkit-scrollbar-thumb:hover { background:rgba(148,163,184,0.65); background-clip:padding-box; }
 
 /* ══════════════════════════════
    RESPONSIVE
@@ -1163,6 +1183,13 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 
     <main class="main" id="offboardingMain" style="display:none;">
       <div class="stats-section">
+        <!-- Site filter tabs -->
+        <div class="site-filter-row" id="siteFilterRow">
+          <button class="site-tab active" id="siteTab-all" onclick="setSiteFilter('')">All Sites</button>
+          <button class="site-tab" id="siteTab-cdo" onclick="setSiteFilter('CAGAYAN DE ORO')">Cagayan De Oro</button>
+          <button class="site-tab" id="siteTab-cebu" onclick="setSiteFilter('CEBU')">Cebu</button>
+          <button class="site-tab" id="siteTab-davao" onclick="setSiteFilter('DAVAO')">Davao</button>
+        </div>
         <!-- Row 1: Alerts -->
         <div class="stats-section-row" id="alertsRow" style="display:none">
           <div class="stats-section-group full-row">
@@ -1230,7 +1257,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
           <option value="Voluntary">Voluntary</option>
           <option value="Involuntary">Involuntary</option>
         </select>
-        <button class="btn btn-sm" id="btnClearFilters" onclick="clearAllFilters()" style="display:none">
+        <button class="btn btn-sm btn-clear-filters" id="btnClearFilters" onclick="clearAllFilters()" style="display:none">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           Clear Filters
         </button>
@@ -1807,6 +1834,7 @@ let deleteId         = null;
 let sortCol          = 'separationDate';
 let sortDir          = -1;
 let overdueFilter    = false;
+let statsLocFilter   = '';
 let obPage           = 1;
 const OB_PAGE_SIZE   = 50;
 let eaPage           = 1;
@@ -2564,22 +2592,27 @@ window.toggleUserActive = async function(username, currentlyActive) {
    STATS
 ══════════════════════════════════════════ */
 function renderStats() {
-  const total      = records.length;
+  // Scope all counters to the selected site filter
+  const siteScope = statsLocFilter
+    ? records.filter(r => (r.employeeLocation || '').trim().toUpperCase() === statsLocFilter)
+    : records;
+
+  const total      = siteScope.length;
   // IT Tools Clearance
-  const itPending = records.filter(r => (r.clearanceStatus || 'Pending') === 'Pending').length;
-  const itCleared = records.filter(r => r.clearanceStatus === 'Cleared').length;
-  const itBlank   = records.filter(r => r.clearanceStatus === 'Blank').length;
+  const itPending = siteScope.filter(r => (r.clearanceStatus || 'Pending') === 'Pending').length;
+  const itCleared = siteScope.filter(r => r.clearanceStatus === 'Cleared').length;
+  const itBlank   = siteScope.filter(r => r.clearanceStatus === 'Blank').length;
   // IT Asset Clearance
-  const assetForClearance       = records.filter(r => (r.itAssetClearanceStatus || 'For Clearance') === 'For Clearance').length;
-  const assetClearedWithAsset   = records.filter(r => r.itAssetClearanceStatus === 'Cleared - With Asset').length;
-  const assetClearedWithoutAsset= records.filter(r => r.itAssetClearanceStatus === 'Cleared - Without Asset').length;
-  const assetWithDeduction      = records.filter(r => r.itAssetClearanceStatus === 'With Deduction').length;
-  const assetPending            = records.filter(r => r.itAssetClearanceStatus === 'Pending').length;
+  const assetForClearance       = siteScope.filter(r => (r.itAssetClearanceStatus || 'For Clearance') === 'For Clearance').length;
+  const assetClearedWithAsset   = siteScope.filter(r => r.itAssetClearanceStatus === 'Cleared - With Asset').length;
+  const assetClearedWithoutAsset= siteScope.filter(r => r.itAssetClearanceStatus === 'Cleared - Without Asset').length;
+  const assetWithDeduction      = siteScope.filter(r => r.itAssetClearanceStatus === 'With Deduction').length;
+  const assetPending            = siteScope.filter(r => r.itAssetClearanceStatus === 'Pending').length;
   // Offboarding Status
-  const obNew       = records.filter(r => (r.offboardingStatus || 'New') === 'New').length;
-  const obOngoing   = records.filter(r => r.offboardingStatus === 'Ongoing').length;
-  const obRetracted = records.filter(r => r.offboardingStatus === 'Retracted').length;
-  // Offboarding per Location
+  const obNew       = siteScope.filter(r => (r.offboardingStatus || 'New') === 'New').length;
+  const obOngoing   = siteScope.filter(r => r.offboardingStatus === 'Ongoing').length;
+  const obRetracted = siteScope.filter(r => r.offboardingStatus === 'Retracted').length;
+  // Offboarding per Location (always from full records for location cards)
   const locCebu   = records.filter(r => (r.employeeLocation || '').trim().toUpperCase() === 'CEBU').length;
   const locCDO    = records.filter(r => (r.employeeLocation || '').trim().toUpperCase() === 'CAGAYAN DE ORO').length;
   const locDavao  = records.filter(r => (r.employeeLocation || '').trim().toUpperCase() === 'DAVAO').length;
@@ -2634,7 +2667,7 @@ function renderStats() {
     </div>
   `;
 
-  const overdueCount = records.filter(r => isOverdue(r)).length;
+  const overdueCount = siteScope.filter(r => isOverdue(r)).length;
   const alertsRow = document.getElementById('alertsRow');
   if (alertsRow) alertsRow.style.display = overdueCount > 0 ? '' : 'none';
   document.getElementById('statsGridAlerts').innerHTML = `
@@ -2719,6 +2752,25 @@ window.filterByOffboardingStatus = function(status) {
   obPage = 1; renderTable(); renderStats(); updateClearFiltersBtn();
 };
 
+window.setSiteFilter = function(site) {
+  statsLocFilter = site;
+  // Update active tab state
+  document.querySelectorAll('.site-tab').forEach(btn => btn.classList.remove('active'));
+  const tabMap = { '': 'siteTab-all', 'CAGAYAN DE ORO': 'siteTab-cdo', 'CEBU': 'siteTab-cebu', 'DAVAO': 'siteTab-davao' };
+  const activeTab = document.getElementById(tabMap[site]);
+  if (activeTab) activeTab.classList.add('active');
+  // Sync table location filter so table rows match
+  const locValMap = { '': '', 'CAGAYAN DE ORO': 'Cagayan De Oro', 'CEBU': 'Cebu', 'DAVAO': 'Davao' };
+  let locEl = document.getElementById('locationFilter');
+  if (!locEl) {
+    locEl = document.createElement('input');
+    locEl.type = 'hidden'; locEl.id = 'locationFilter'; locEl.value = '';
+    document.body.appendChild(locEl);
+  }
+  locEl.value = locValMap[site] || '';
+  obPage = 1; renderTable(); renderStats(); updateClearFiltersBtn();
+};
+
 window.filterByLocation = function(loc) {
   let el = document.getElementById('locationFilter');
   if (!el) {
@@ -2738,12 +2790,17 @@ window.clearAllFilters = function() {
   document.getElementById('searchInput').value = '';
   const locEl = document.getElementById('locationFilter');
   if (locEl) locEl.value = '';
+  // Reset site tabs
+  statsLocFilter = '';
+  document.querySelectorAll('.site-tab').forEach(btn => btn.classList.remove('active'));
+  const allTab = document.getElementById('siteTab-all');
+  if (allTab) allTab.classList.add('active');
   overdueFilter = false; obPage = 1;
   updateClearFiltersBtn(); renderTable(); renderStats();
 };
 
 function updateClearFiltersBtn() {
-  const active = overdueFilter ||
+  const active = overdueFilter || statsLocFilter !== '' ||
     ['statusFilter','assetStatusFilter','offboardingStatusFilter','typeFilter','locationFilter']
       .some(id => document.getElementById(id)?.value) ||
     (document.getElementById('searchInput')?.value || '') !== '';
