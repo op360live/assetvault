@@ -2145,6 +2145,22 @@ window.switchView = function(view) {
 };
 
 /* ══════════════════════════════════════════
+   EA IMPORT NOTICE MODAL
+══════════════════════════════════════════ */
+window.openEAImportNoticeModal = function() {
+  document.getElementById('eaImportNoticeOverlay')?.classList.add('open');
+};
+
+window.closeEAImportNoticeModal = function() {
+  document.getElementById('eaImportNoticeOverlay')?.classList.remove('open');
+};
+
+window.confirmEAImportNotice = function() {
+  closeEAImportNoticeModal();
+  document.getElementById('eaCsvInput')?.click();
+};
+
+/* ══════════════════════════════════════════
    EMPLOYEE ASSET MODAL (from Offboarding ID click)
 ══════════════════════════════════════════ */
 window.openAssetModal = function(recordNumber, employeeName) {
@@ -2166,19 +2182,6 @@ window.openAssetModal = function(recordNumber, employeeName) {
     document.getElementById('assetModalOverlay').classList.add('open');
     return;
   }
-
-  window.openEAImportNoticeModal = function() {
-    document.getElementById('eaImportNoticeOverlay')?.classList.add('open');
-  };
-
-  window.closeEAImportNoticeModal = function() {
-    document.getElementById('eaImportNoticeOverlay')?.classList.remove('open');
-  };
-
-  window.confirmEAImportNotice = function() {
-    closeEAImportNoticeModal();
-    document.getElementById('eaCsvInput')?.click();
-  };
 
   const emp = matched[0];
   const totalDeduction = matched.reduce((sum, r) => {
