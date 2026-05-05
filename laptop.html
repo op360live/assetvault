@@ -1057,6 +1057,12 @@ body {
   transition: border-color 0.2s;
 }
 .filter-select:focus { border-color: var(--accent); }
+.site-filter-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:2px 0 6px; margin-bottom:10px; }
+.site-tab { display:inline-flex; align-items:center; gap:5px; padding:5px 14px; border-radius:999px; border:1px solid var(--glass-border2); background:var(--glass-bg); color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.site-tab:hover { color:var(--text); }
+.site-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 2px 10px var(--accent-glow); }
+[data-theme="light"] .site-tab { background:var(--card-bg); border-color:var(--sidebar-border); backdrop-filter:none; }
+[data-theme="light"] .site-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
 
 /* TABLE */
 .table-wrap {
@@ -1123,6 +1129,11 @@ tbody tr:hover { background: var(--surface-tint); }
 td { padding: 7px 12px; color: var(--text); vertical-align: middle; }
 td.mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text2); }
 td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text3); white-space: nowrap; }
+/* Compact view */
+.table-compact tbody tr td { padding: 3px 10px !important; }
+.table-compact .owner-pill { padding: 2px 8px; gap: 4px; }
+.table-compact .owner-pill-avatar { width: 20px; height: 20px; font-size: 9px; }
+.table-compact .btn-sm { padding: 2px 8px; font-size: 11px; }
 .empty-state { text-align: center; padding: 64px 24px; color: var(--text3); }
 .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
 .count-bar {
@@ -1571,9 +1582,17 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 }
 .mfa-err.show { display: block; }
 
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+::-webkit-scrollbar { width:7px; height:7px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(100,116,139,0.45); border-radius:10px; }
+::-webkit-scrollbar-thumb:hover { background:rgba(100,116,139,0.75); }
+.table-wrap::-webkit-scrollbar { width:8px; height:8px; }
+.table-wrap::-webkit-scrollbar-track { background:rgba(0,0,0,0.06); border-radius:0 0 var(--radius-lg) var(--radius-lg); }
+.table-wrap::-webkit-scrollbar-thumb { background:rgba(100,116,139,0.55); border-radius:10px; border:2px solid transparent; background-clip:padding-box; }
+.table-wrap::-webkit-scrollbar-thumb:hover { background:rgba(100,116,139,0.85); background-clip:padding-box; }
+[data-theme="dark"] .table-wrap::-webkit-scrollbar-track { background:rgba(255,255,255,0.04); }
+[data-theme="dark"] .table-wrap::-webkit-scrollbar-thumb { background:rgba(148,163,184,0.35); background-clip:padding-box; }
+[data-theme="dark"] .table-wrap::-webkit-scrollbar-thumb:hover { background:rgba(148,163,184,0.65); background-clip:padding-box; }
 
 
 /* ── GLOBAL SEARCH BAR ── */
@@ -2772,24 +2791,14 @@ mark.gsr-highlight {
 
     <!-- ══════════ INVENTORY VIEW ══════════ -->
     <div class="view" id="invView">
-      <!-- Overview filter bar -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap;">Overview</span>
-        <div style="position:relative;" id="ovSiteWrap">
-          <button id="ovSiteBtn" onclick="toggleOvSiteMenu(event)" style="
-            background:var(--card-bg);border:1.5px solid var(--glass-border2);border-radius:var(--radius);
-            padding:5px 10px;font-size:12px;color:var(--text);cursor:pointer;
-            min-width:120px;max-width:240px;display:inline-flex;align-items:center;gap:6px;line-height:1.4;
-            white-space:nowrap;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
-            <span id="ovSiteBtnLabel">All Sites</span>
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="margin-left:auto;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div id="ovSiteMenu" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:1000;
-            background:var(--card-bg);border:1.5px solid var(--glass-border2);border-radius:var(--radius);
-            box-shadow:var(--glass-shadow);padding:6px 0;min-width:180px;max-height:260px;overflow-y:auto;">
-          </div>
-        </div>
+      <!-- Site filter tabs -->
+      <div class="site-filter-row" id="laptopSiteFilterRow">
+        <button class="site-tab active" id="laptopSiteTab-all" onclick="setLaptopSiteTab('')">All Sites</button>
+        <button class="site-tab" id="laptopSiteTab-eb2" onclick="setLaptopSiteTab('EB2')">EB2</button>
+        <button class="site-tab" id="laptopSiteTab-eb3" onclick="setLaptopSiteTab('EB3')">EB3</button>
+        <button class="site-tab" id="laptopSiteTab-dmd" onclick="setLaptopSiteTab('DMD')">DMD</button>
+        <button class="site-tab" id="laptopSiteTab-offsite" onclick="setLaptopSiteTab('OFFSITE')">OFFSITE</button>
+        <button class="site-tab" id="laptopSiteTab-sdp" onclick="setLaptopSiteTab('SDP')">SDP</button>
       </div>
       <div class="stats-grid" id="statsGrid"></div>
 
@@ -2835,9 +2844,9 @@ mark.gsr-highlight {
         <button class="col-toggle-btn" data-col="serialNumber" onclick="toggleCol('serialNumber')">Serial No.</button>
         <button class="col-toggle-btn" data-col="assetTag" onclick="toggleCol('assetTag')">Asset Tag</button>
         <button class="col-toggle-btn" data-col="po" onclick="toggleCol('po')">PO #</button>
-        <button class="col-toggle-btn hidden-col" data-col="processor" onclick="toggleCol('processor')">Processor</button>
-        <button class="col-toggle-btn hidden-col" data-col="ram" onclick="toggleCol('ram')">RAM</button>
-        <button class="col-toggle-btn hidden-col" data-col="os" onclick="toggleCol('os')">OS</button>
+        <button class="col-toggle-btn" data-col="processor" onclick="toggleCol('processor')">Processor</button>
+        <button class="col-toggle-btn" data-col="ram" onclick="toggleCol('ram')">RAM</button>
+        <button class="col-toggle-btn" data-col="os" onclick="toggleCol('os')">OS</button>
         <button class="col-toggle-btn" data-col="siteLocation" onclick="toggleCol('siteLocation')">Site</button>
         <button class="col-toggle-btn" data-col="assetStatus" onclick="toggleCol('assetStatus')">Status</button>
         <button class="col-toggle-btn" data-col="accountabilityStatus" onclick="toggleCol('accountabilityStatus')">Accountability</button>
@@ -2856,6 +2865,7 @@ mark.gsr-highlight {
           <tbody id="tableBody"></tbody>
         </table>
       </div>
+      <div class="audit-pagination" id="invPagination" style="margin-top:12px;"></div>
     </div>
 
 
@@ -3222,6 +3232,9 @@ function can(action){
 
 let records=[], editId=null, deleteId=null, sortCol='dateAdded', sortDir=-1, currentUser=null;
 let activeStatusFilter = null;
+const INV_PAGE_SIZE = 50;
+let invPage = 1;
+function goInvPage(p){ invPage=p; renderTable(); document.getElementById('invView')?.scrollIntoView({behavior:'smooth',block:'start'}); }
 const activeFilters = {status:'', sites:[], search:'', acctStatus:''};
 
 const FIELDS=[
@@ -3828,26 +3841,26 @@ function updateSiteFilter(){
   _updateOvSiteBtn();
 }
 /* ── v17: Column visibility state ── */
-const DEFAULT_HIDDEN = new Set(['processor','ram','os']);
-const hiddenCols = new Set(['processor','ram','os']);
+const DEFAULT_HIDDEN = new Set();
+const hiddenCols = new Set();
 
 /* ── Column metadata & drag-to-reorder ── */
 const COLUMNS_META = [
-  { key:'owner',                label:'Owner',          sortKey:'currentOwner' },
-  { key:'brand',                label:'Brand',          sortKey:'brand' },
-  { key:'model',                label:'Model',          sortKey:'model' },
-  { key:'serialNumber',         label:'Serial No.',     sortKey:'serialNumber' },
-  { key:'assetTag',             label:'Asset Tag',      sortKey:'assetTag' },
-  { key:'po',                   label:'PO #',           sortKey:'po' },
-  { key:'processor',            label:'Processor',      sortKey:'processor',  hideable:true },
-  { key:'ram',                  label:'RAM',            sortKey:'ram',        hideable:true },
-  { key:'os',                   label:'OS',             sortKey:'os',         hideable:true },
-  { key:'siteLocation',         label:'Site',           sortKey:'siteLocation' },
-  { key:'assetStatus',          label:'Status',         sortKey:'assetStatus' },
-  { key:'accountabilityStatus', label:'Accountability', sortKey:'accountabilityStatus' },
-  { key:'dateAdded',            label:'Date Added',     sortKey:'dateAdded' },
-  { key:'dateModified',         label:'Date Modified',  sortKey:'dateModified' },
-  { key:'actions',              label:'Actions',        noSort:true }
+  { key:'owner',                label:'Owner',          sortKey:'currentOwner',          defaultWidth:160 },
+  { key:'brand',                label:'Brand',          sortKey:'brand',                 defaultWidth:110 },
+  { key:'model',                label:'Model',          sortKey:'model',                 defaultWidth:160 },
+  { key:'serialNumber',         label:'Serial No.',     sortKey:'serialNumber',          defaultWidth:140 },
+  { key:'assetTag',             label:'Asset Tag',      sortKey:'assetTag',              defaultWidth:110 },
+  { key:'po',                   label:'PO #',           sortKey:'po',                    defaultWidth:110 },
+  { key:'processor',            label:'Processor',      sortKey:'processor',  hideable:true, defaultWidth:150 },
+  { key:'ram',                  label:'RAM',            sortKey:'ram',        hideable:true, defaultWidth:80  },
+  { key:'os',                   label:'OS',             sortKey:'os',         hideable:true, defaultWidth:100 },
+  { key:'siteLocation',         label:'Site',           sortKey:'siteLocation',          defaultWidth:80  },
+  { key:'assetStatus',          label:'Status',         sortKey:'assetStatus',           defaultWidth:110 },
+  { key:'accountabilityStatus', label:'Accountability', sortKey:'accountabilityStatus',  defaultWidth:130 },
+  { key:'dateAdded',            label:'Date Added',     sortKey:'dateAdded',             defaultWidth:100 },
+  { key:'dateModified',         label:'Date Modified',  sortKey:'dateModified',          defaultWidth:110 },
+  { key:'actions',              label:'Actions',        noSort:true,                     defaultWidth:110 }
 ];
 const DEFAULT_COL_ORDER = COLUMNS_META.map(c=>c.key);
 const COL_ORDER_KEY = 'assetvault_col_order';
@@ -3919,7 +3932,8 @@ function renderHeader(){
     const clsAttr = classes.length ? ` class="${classes.join(' ')}"` : '';
     const sortAttr = col.noSort ? '' : ` onclick="sortBy('${col.sortKey||key}')"`;
     const drag = !col.noSort ? ` draggable="true" data-drag-idx="${idx}"` : '';
-    const widthStyle = colWidths[key] ? ` style="width:${colWidths[key]}px;min-width:${colWidths[key]}px"` : '';
+    const w = colWidths[key] || col.defaultWidth;
+    const widthStyle = w ? ` style="width:${w}px;min-width:${w}px"` : '';
     const resizer = `<span class="col-resizer" data-resize-key="${key}"></span>`;
     return `<th data-col="${key}"${clsAttr}${sortAttr}${drag}${widthStyle}>${col.label}${resizer}</th>`;
   }).join('');
@@ -3988,15 +4002,22 @@ function renderTable(){
     if(sortCol!=='dateAdded'&&sortCol!=='dateModified'){av=av.toLowerCase();bv=bv.toLowerCase();}
     return av<bv?-sortDir:av>bv?sortDir:0;
   });
-  document.getElementById('recordCount').textContent=`${f.length} of ${records.length} records`;
+  const total = f.length;
+  const totalPages = Math.max(1, Math.ceil(total / INV_PAGE_SIZE));
+  if(invPage > totalPages) invPage = totalPages;
+  const start = (invPage-1)*INV_PAGE_SIZE;
+  const pageRows = f.slice(start, start+INV_PAGE_SIZE);
+  document.getElementById('recordCount').textContent=`${total} of ${records.length} records`;
   const tbody=document.getElementById('tableBody');
   if(!f.length){
     tbody.innerHTML=`<tr><td colspan="15"><div class="empty-state">
       <div class="empty-icon">💻</div>
       <p>${records.length===0?'No laptops yet — click Add Laptop to get started.':'No records match your search.'}</p>
-    </div></td></tr>`;return;
+    </div></td></tr>`;
+    document.getElementById('invPagination').innerHTML='';
+    return;
   }
-  tbody.innerHTML=f.map(r=>{
+  tbody.innerHTML=pageRows.map(r=>{
     const ownerInit=(r.currentOwner||'?').trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const ownerAction = `openViewModal('${r.id}')`;
     const ownerPill=r.currentOwner
@@ -4031,6 +4052,20 @@ function renderTable(){
     }).join('');
     return `<tr>${cells}</tr>`;
   }).join('');
+  // Render pagination
+  const pag = document.getElementById('invPagination');
+  if(totalPages <= 1){ pag.innerHTML=''; return; }
+  let html=`<button class="page-btn" onclick="goInvPage(${invPage-1})" ${invPage===1?'disabled':''}>‹</button>`;
+  const range=2;
+  for(let p=1;p<=totalPages;p++){
+    if(p===1||p===totalPages||Math.abs(p-invPage)<=range){
+      html+=`<button class="page-btn${p===invPage?' active':''}" onclick="goInvPage(${p})">${p}</button>`;
+    } else if(Math.abs(p-invPage)===range+1){
+      html+=`<span style="color:var(--text3);padding:0 4px">…</span>`;
+    }
+  }
+  html+=`<button class="page-btn" onclick="goInvPage(${invPage+1})" ${invPage===totalPages?'disabled':''}>›</button>`;
+  pag.innerHTML=html;
 }
 function render(){renderStats();updateSiteFilter();renderHeader();renderTable();renderChips();}
 function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderHeader();renderTable();renderDashboard();}
@@ -4974,20 +5009,20 @@ document.addEventListener('click', e=>{
 function onSearchInput(){
   activeFilters.search = document.getElementById('searchInput').value.trim();
   activeSpecFilter=null;
+  invPage=1;
   renderChips(); renderTable();
 }
 function onStatusFilter(){
   activeFilters.status = document.getElementById('statusFilter').value;
   activeStatusFilter = activeFilters.status || null;
   activeSpecFilter=null;
+  invPage=1;
   renderChips(); renderStats(); renderTable();
 }
 function onSiteFilter(){
   const val = document.getElementById('siteFilter').value;
   activeFilters.sites = val ? [val] : [];
-  _updateOvSiteBtn();
-  const m=document.getElementById('ovSiteMenu');
-  if(m&&m.style.display!=='none') _buildOvSiteMenu();
+  invPage=1;
   renderChips(); renderStats(); renderTable();
 }
 function toggleOvSiteMenu(e){
@@ -5071,13 +5106,26 @@ function removeFilter(type){
   else if(type==='search'){activeFilters.search='';document.getElementById('searchInput').value='';activeSpecFilter=null;}
   renderChips(); renderStats(); renderTable();
 }
+function setLaptopSiteTab(site){
+  activeFilters.sites = site ? [site] : [];
+  document.getElementById('siteFilter').value = site;
+  invPage=1;
+  document.querySelectorAll('.site-tab').forEach(btn => btn.classList.remove('active'));
+  const tabMap = { '': 'laptopSiteTab-all', 'EB2': 'laptopSiteTab-eb2', 'EB3': 'laptopSiteTab-eb3', 'DMD': 'laptopSiteTab-dmd', 'OFFSITE': 'laptopSiteTab-offsite', 'SDP': 'laptopSiteTab-sdp' };
+  const activeTab = document.getElementById(tabMap[site] || 'laptopSiteTab-all');
+  if (activeTab) activeTab.classList.add('active');
+  renderChips(); renderStats(); renderTable();
+}
 function clearAllFilters(){
   activeFilters.status='';activeFilters.sites=[];activeFilters.search='';activeFilters.acctStatus='';
   activeStatusFilter=null;
   activeSpecFilter=null;
+  invPage=1;
   document.getElementById('statusFilter').value='';
   document.getElementById('siteFilter').value='';
-  _updateOvSiteBtn();
+  document.querySelectorAll('.site-tab').forEach(btn => btn.classList.remove('active'));
+  const allTab = document.getElementById('laptopSiteTab-all');
+  if (allTab) allTab.classList.add('active');
   document.getElementById('searchInput').value='';
   renderChips(); renderStats(); renderTable();
 }
