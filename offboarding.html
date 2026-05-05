@@ -1186,12 +1186,9 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         <!-- Site filter tabs -->
         <div class="site-filter-row" id="siteFilterRow">
           <button class="site-tab active" id="siteTab-all" onclick="setSiteFilter('')">All Sites</button>
-          <button class="site-tab" id="siteTab-dmd" onclick="setSiteFilter('DMD')">DMD</button>
-          <button class="site-tab" id="siteTab-eb2" onclick="setSiteFilter('EB2')">EB2</button>
-          <button class="site-tab" id="siteTab-eb3" onclick="setSiteFilter('EB3')">EB3</button>
-          <button class="site-tab" id="siteTab-et" onclick="setSiteFilter('ET')">ET</button>
-          <button class="site-tab" id="siteTab-sdp" onclick="setSiteFilter('SDP')">SDP</button>
-          <button class="site-tab" id="siteTab-wfh" onclick="setSiteFilter('WFH')">WFH</button>
+          <button class="site-tab" id="siteTab-cdo" onclick="setSiteFilter('CAGAYAN DE ORO')">Cagayan De Oro</button>
+          <button class="site-tab" id="siteTab-cebu" onclick="setSiteFilter('CEBU')">Cebu</button>
+          <button class="site-tab" id="siteTab-davao" onclick="setSiteFilter('DAVAO')">Davao</button>
         </div>
         <!-- Row 1: Alerts -->
         <div class="stats-section-row" id="alertsRow" style="display:none">
@@ -2759,11 +2756,11 @@ window.setSiteFilter = function(site) {
   statsLocFilter = site;
   // Update active tab state
   document.querySelectorAll('.site-tab').forEach(btn => btn.classList.remove('active'));
-  const tabMap = { '': 'siteTab-all', 'DMD': 'siteTab-dmd', 'EB2': 'siteTab-eb2', 'EB3': 'siteTab-eb3', 'ET': 'siteTab-et', 'SDP': 'siteTab-sdp', 'WFH': 'siteTab-wfh' };
+  const tabMap = { '': 'siteTab-all', 'CAGAYAN DE ORO': 'siteTab-cdo', 'CEBU': 'siteTab-cebu', 'DAVAO': 'siteTab-davao' };
   const activeTab = document.getElementById(tabMap[site] || 'siteTab-all');
   if (activeTab) activeTab.classList.add('active');
   // Sync table location filter so table rows match
-  const locValMap = { '': '', 'DMD': 'DMD', 'EB2': 'EB2', 'EB3': 'EB3', 'ET': 'ET', 'SDP': 'SDP', 'WFH': 'WFH' };
+  const locValMap = { '': '', 'CAGAYAN DE ORO': 'Cagayan De Oro', 'CEBU': 'Cebu', 'DAVAO': 'Davao' };
   let locEl = document.getElementById('locationFilter');
   if (!locEl) {
     locEl = document.createElement('input');
