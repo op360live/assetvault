@@ -622,17 +622,17 @@ body {
 /* ══════════════════════════════
    TOOLBAR
 ══════════════════════════════ */
-.toolbar { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; align-items:center; }
+.toolbar { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
 .search-wrap { position:relative; flex:1; min-width:220px; }
-.search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text3); pointer-events:none; display:flex; }
+.search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text3); pointer-events:none; display:flex; }
 .search-input {
   width:100%;
   background:var(--glass-bg);
   backdrop-filter:blur(16px);
   border:1px solid var(--glass-border);
   border-radius:var(--radius);
-  padding:7px 12px 7px 36px;
-  color:var(--text); font-size:13px; outline:none;
+  padding:10px 14px 10px 42px;
+  color:var(--text); font-size:14px; outline:none;
   box-shadow:0 2px 6px rgba(0,0,0,0.08);
   transition:border-color 0.2s,box-shadow 0.2s;
 }
@@ -644,8 +644,8 @@ body {
   backdrop-filter:blur(16px);
   border:1px solid var(--glass-border);
   border-radius:var(--radius);
-  padding:7px 10px;
-  color:var(--text2); font-size:12px; font-weight:500; outline:none; cursor:pointer;
+  padding:10px 14px;
+  color:var(--text2); font-size:13px; font-weight:500; outline:none; cursor:pointer;
   transition:border-color 0.2s;
 }
 .filter-select:focus { border-color:var(--accent); }
@@ -1186,9 +1186,12 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         <!-- Site filter tabs -->
         <div class="site-filter-row" id="siteFilterRow">
           <button class="site-tab active" id="siteTab-all" onclick="setSiteFilter('')">All Sites</button>
-          <button class="site-tab" id="siteTab-cdo" onclick="setSiteFilter('CAGAYAN DE ORO')">Cagayan De Oro</button>
-          <button class="site-tab" id="siteTab-cebu" onclick="setSiteFilter('CEBU')">Cebu</button>
-          <button class="site-tab" id="siteTab-davao" onclick="setSiteFilter('DAVAO')">Davao</button>
+          <button class="site-tab" id="siteTab-dmd" onclick="setSiteFilter('DMD')">DMD</button>
+          <button class="site-tab" id="siteTab-eb2" onclick="setSiteFilter('EB2')">EB2</button>
+          <button class="site-tab" id="siteTab-eb3" onclick="setSiteFilter('EB3')">EB3</button>
+          <button class="site-tab" id="siteTab-et" onclick="setSiteFilter('ET')">ET</button>
+          <button class="site-tab" id="siteTab-sdp" onclick="setSiteFilter('SDP')">SDP</button>
+          <button class="site-tab" id="siteTab-wfh" onclick="setSiteFilter('WFH')">WFH</button>
         </div>
         <!-- Row 1: Alerts -->
         <div class="stats-section-row" id="alertsRow" style="display:none">
@@ -2756,11 +2759,11 @@ window.setSiteFilter = function(site) {
   statsLocFilter = site;
   // Update active tab state
   document.querySelectorAll('.site-tab').forEach(btn => btn.classList.remove('active'));
-  const tabMap = { '': 'siteTab-all', 'CAGAYAN DE ORO': 'siteTab-cdo', 'CEBU': 'siteTab-cebu', 'DAVAO': 'siteTab-davao' };
-  const activeTab = document.getElementById(tabMap[site]);
+  const tabMap = { '': 'siteTab-all', 'DMD': 'siteTab-dmd', 'EB2': 'siteTab-eb2', 'EB3': 'siteTab-eb3', 'ET': 'siteTab-et', 'SDP': 'siteTab-sdp', 'WFH': 'siteTab-wfh' };
+  const activeTab = document.getElementById(tabMap[site] || 'siteTab-all');
   if (activeTab) activeTab.classList.add('active');
   // Sync table location filter so table rows match
-  const locValMap = { '': '', 'CAGAYAN DE ORO': 'Cagayan De Oro', 'CEBU': 'Cebu', 'DAVAO': 'Davao' };
+  const locValMap = { '': '', 'DMD': 'DMD', 'EB2': 'EB2', 'EB3': 'EB3', 'ET': 'ET', 'SDP': 'SDP', 'WFH': 'WFH' };
   let locEl = document.getElementById('locationFilter');
   if (!locEl) {
     locEl = document.createElement('input');
