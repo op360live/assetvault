@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23d95a6a'/%3E%3Cpath d='M16 7v10M12 11l4-4 4 4M8 21h16M10 25h12' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AssetVault — Employee Offboarding v1.0</title>
+<title>AssetVault — Employee Offboarding v1.5</title>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -984,7 +984,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
   </div>
 
   <div class="login-right">
-    <div class="login-version">Offboarding v1.0 · Turso</div>
+    <div class="login-version">Offboarding v1.5 · Turso</div>
     <div class="login-form-wrap">
       <h2 class="login-form-title">Offboarding Portal</h2>
       <p class="login-form-sub">Sign in to manage employee separations.</p>
@@ -1076,7 +1076,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         </svg>
       </div>
       <span class="sb-brand-name">Offboard<span class="sb-brand-accent">Vault</span></span>
-      <span class="sb-brand-version">v1.0</span>
+      <span class="sb-brand-version">v1.5</span>
     </div>
 
     <nav class="sb-nav">
@@ -1244,20 +1244,13 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 
     <main class="main" id="offboardingMain" style="display:none;">
       <div class="stats-section">
-        <!-- Site filter tabs -->
-        <div class="site-filter-row" id="siteFilterRow">
-          <button class="site-tab active" id="siteTab-all" onclick="setSiteFilter('')">All Sites</button>
-          <button class="site-tab" id="siteTab-cdo" onclick="setSiteFilter('CAGAYAN DE ORO')">Cagayan De Oro</button>
-          <button class="site-tab" id="siteTab-cebu" onclick="setSiteFilter('CEBU')">Cebu</button>
-          <button class="site-tab" id="siteTab-davao" onclick="setSiteFilter('DAVAO')">Davao</button>
-        </div>
         <!-- IT Asset Clearance (left) + IT Tools Clearance (right) -->
         <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px">
           <div class="ob-matrix-wrap" id="statsMatrix" style="flex:1 1 auto;min-width:0"></div>
           <div id="statsGridIt" style="flex:0 0 220px"></div>
         </div>
       </div>
-      <hr style="border:none;border-top:1px solid var(--glass-border);margin:0 0 16px">
+      <div style="margin:0 0 16px"></div>
 
       <div class="toolbar">
         <div class="search-wrap">
@@ -1289,7 +1282,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         </button>
       </div>
 
-      <hr style="border:none;border-top:1px solid var(--glass-border);margin:0 0 16px">
+      <div style="margin:0 0 16px"></div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -1318,6 +1311,9 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
     </main>
 
     <main class="main" id="employeeAssetMain" style="display:none;">
+      <div class="stats-section" style="margin-bottom:16px">
+        <div id="eaInventoryStats"></div>
+      </div>
       <div class="toolbar">
         <div class="search-wrap">
           <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1854,6 +1850,9 @@ const OB_PAGE_SIZE   = 50;
 let eaPage           = 1;
 const EA_PAGE_SIZE   = 50;
 let eaRecords        = [];
+let eaTypeFilter     = '';
+let eaInvStatusFilter = '';
+let eaInvSiteFilter  = '';
 let currentUser      = null;
 let _usersCache      = null;
 let currentView      = 'offboarding';
@@ -2183,6 +2182,7 @@ window.switchView = function(view) {
     if (btnAdd) btnAdd.style.display = 'none';
     tursoExec('SELECT data FROM employee_assets').then(res => {
       if (res) eaRecords = res.rows.map(row => JSON.parse(row[0].value));
+      renderEAInventoryStats();
       renderEmployeeAssetTable();
     });
   } else {
@@ -2347,12 +2347,108 @@ window.openAssetModal = function(recordNumber, employeeName) {
 /* ══════════════════════════════════════════
    EMPLOYEE ASSET
 ══════════════════════════════════════════ */
+function buildEAObMap() {
+  const m = {};
+  records.forEach(r => {
+    if (r.recordNumber) m[r.recordNumber.trim().toLowerCase()] = {
+      itAssetClearanceStatus: r.itAssetClearanceStatus,
+      employeeLocation: (r.employeeLocation || '').trim().toUpperCase()
+    };
+  });
+  return m;
+}
+
+function renderEAInventoryStats() {
+  const container = document.getElementById('eaInventoryStats');
+  if (!container) return;
+  const assetTypes = ['Monitor','Keyboard','Mouse','System unit','UPS','Headset','Laptop','PLDT/Smart Wifi Kit','Globe Wifi Kit','Yubikey'];
+  const siteKeys   = ['CEBU','DAVAO','CAGAYAN DE ORO'];
+  const siteLabels = ['Cebu','Davao','Cagayan De Oro'];
+  const obMap = buildEAObMap();
+  // Scope counts to active site tab
+  const scoped = eaInvSiteFilter
+    ? eaRecords.filter(r => { const ob = obMap[(r.offboardingRecordNumber||'').trim().toLowerCase()]; return ob && ob.employeeLocation === eaInvSiteFilter; })
+    : eaRecords;
+  const data = assetTypes.map(type => {
+    const tr = scoped.filter(r => (r.assetType || '').trim() === type);
+    const forClearance = tr.filter(r => {
+      const ob = obMap[(r.offboardingRecordNumber || '').trim().toLowerCase()];
+      return ob && (ob.itAssetClearanceStatus || 'For Clearance') === 'For Clearance';
+    }).length;
+    const withDeduction = tr.filter(r => {
+      const v = parseFloat((r.amountToDeduct || '').toString().replace(/[^0-9.]/g, ''));
+      return !isNaN(v) && v > 0;
+    }).length;
+    return { forClearance, withDeduction };
+  });
+  container.innerHTML = `
+    <div class="stats-section-label" style="margin-bottom:8px">Offboarding Asset Inventory</div>
+    <div class="site-filter-row" style="margin-bottom:10px">
+      <button class="site-tab${!eaInvSiteFilter?' active':''}" onclick="filterEASiteTab('')">All Sites</button>
+      ${siteKeys.map((key,i) => `<button class="site-tab${eaInvSiteFilter===key?' active':''}" onclick="filterEASiteTab('${key}')">${siteLabels[i]}</button>`).join('')}
+    </div>
+    <div class="ob-matrix-grid" style="grid-template-columns:auto repeat(${assetTypes.length},1fr)">
+      <div></div>
+      ${assetTypes.map((type, ti) => {
+        const rowActive = eaTypeFilter === type;
+        return `<div class="ob-col-lbl${rowActive?' col-active':''}" onclick="filterEAByRow('${type}')">${type}</div>`;
+      }).join('')}
+      <div class="ob-row-lbl${eaInvStatusFilter==='For Clearance'?' row-active':''}" onclick="filterEAColHeader('For Clearance')">For Clearance</div>
+      ${data.map((d, ti) => {
+        const fcAct = eaTypeFilter === assetTypes[ti] && eaInvStatusFilter === 'For Clearance';
+        return `<div class="ob-cell${fcAct?' cell-active':(d.forClearance===0?' cell-zero':'')}" onclick="filterEACell('${assetTypes[ti]}','For Clearance')"><span class="ob-cell-num">${d.forClearance}</span></div>`;
+      }).join('')}
+      <div class="ob-row-lbl${eaInvStatusFilter==='With Deduction'?' row-active':''}" onclick="filterEAColHeader('With Deduction')">With Deductions</div>
+      ${data.map((d, ti) => {
+        const wdAct = eaTypeFilter === assetTypes[ti] && eaInvStatusFilter === 'With Deduction';
+        return `<div class="ob-cell${wdAct?' cell-active':(d.withDeduction===0?' cell-zero':'')}" onclick="filterEACell('${assetTypes[ti]}','With Deduction')"><span class="ob-cell-num">${d.withDeduction}</span></div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+window.filterEASiteTab = function(siteKey) {
+  eaInvSiteFilter = siteKey;
+  eaPage = 1; renderEmployeeAssetTable(); renderEAInventoryStats();
+};
+window.filterEAByRow = function(type) {
+  eaTypeFilter = eaTypeFilter === type ? '' : type;
+  eaInvStatusFilter = '';
+  eaPage = 1; renderEmployeeAssetTable(); renderEAInventoryStats();
+};
+window.filterEAColHeader = function(code) {
+  eaInvStatusFilter = eaInvStatusFilter === code ? '' : code;
+  eaTypeFilter = '';
+  eaPage = 1; renderEmployeeAssetTable(); renderEAInventoryStats();
+};
+window.filterEACell = function(type, code) {
+  const same = eaTypeFilter === type && eaInvStatusFilter === code;
+  eaTypeFilter = same ? '' : type;
+  eaInvStatusFilter = same ? '' : code;
+  eaPage = 1; renderEmployeeAssetTable(); renderEAInventoryStats();
+};
+
 function renderEmployeeAssetTable() {
   const q = (document.getElementById('eaSearchInput')?.value || '').toLowerCase();
-  const raw = eaRecords;
-  const filtered = raw.filter(r => {
-    return !q || [r.employeeId, r.emailId, r.firstName, r.lastName, r.assetType,
-      r.makeModel, r.serialNumber, r.assetStatus, r.itAssetCondition].some(v => (v||'').toLowerCase().includes(q));
+  const obMap = buildEAObMap();
+  const filtered = eaRecords.filter(r => {
+    if (q && ![r.employeeId, r.emailId, r.firstName, r.lastName, r.assetType,
+      r.makeModel, r.serialNumber, r.assetStatus, r.itAssetCondition].some(v => (v||'').toLowerCase().includes(q))) return false;
+    if (eaTypeFilter && (r.assetType || '').trim() !== eaTypeFilter) return false;
+    if (eaInvStatusFilter) {
+      const ob = obMap[(r.offboardingRecordNumber || '').trim().toLowerCase()];
+      if (eaInvStatusFilter === 'For Clearance') {
+        if (!ob || (ob.itAssetClearanceStatus || 'For Clearance') !== 'For Clearance') return false;
+      } else if (eaInvStatusFilter === 'With Deduction') {
+        const v = parseFloat((r.amountToDeduct || '').toString().replace(/[^0-9.]/g, ''));
+        if (isNaN(v) || v <= 0) return false;
+      }
+    }
+    if (eaInvSiteFilter) {
+      const ob = obMap[(r.offboardingRecordNumber || '').trim().toLowerCase()];
+      if (!ob || ob.employeeLocation !== eaInvSiteFilter) return false;
+    }
+    return true;
   });
   const tbody = document.getElementById('eaTableBody');
   const pgEl  = document.getElementById('eaPagination');
@@ -2671,7 +2767,7 @@ function renderStats() {
 
   document.getElementById('statsGridIt').innerHTML = `
     <div class="stats-section-label" style="margin-bottom:8px">IT Tools Clearance</div>
-    <div class="ob-matrix-grid" style="grid-template-columns:repeat(2,1fr)">
+    <div class="ob-matrix-grid" style="grid-template-columns:repeat(2,auto)">
       <div class="ob-col-lbl${activeSt === 'Pending' ? ' col-active' : ''}" onclick="filterByStatus('Pending')">Pending</div>
       <div class="ob-col-lbl${activeSt === 'Cleared' ? ' col-active' : ''}" onclick="filterByStatus('Cleared')">Cleared</div>
       <div class="ob-cell${activeSt === 'Pending' ? ' cell-active' : (itPending === 0 ? ' cell-zero' : '')}" onclick="filterByStatus('Pending')">
@@ -3242,6 +3338,7 @@ window.deleteAllEARecords = async function() {
     setSyncStatus('Delete failed', true);
     showToast('Delete failed — check connection.', true);
   }
+  renderEAInventoryStats();
   renderEmployeeAssetTable();
 };
 
@@ -3341,6 +3438,7 @@ window.handleEACSVImport = async function(e) {
   } else {
     showToast(newRecords.length.toLocaleString() + ' records imported from ' + file.name + '.');
   }
+  renderEAInventoryStats();
   renderEmployeeAssetTable();
 };
 
