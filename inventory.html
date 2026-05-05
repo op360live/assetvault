@@ -613,6 +613,12 @@ body {
   transition:border-color 0.2s;
 }
 .filter-select:focus { border-color:var(--accent); }
+.site-filter-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:2px 0 6px; margin-bottom:10px; }
+.site-tab { display:inline-flex; align-items:center; gap:5px; padding:5px 14px; border-radius:999px; border:1px solid var(--glass-border); background:var(--glass-bg); color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+.site-tab:hover { color:var(--text); }
+.site-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 2px 10px var(--accent-glow); }
+[data-theme="light"] .site-tab { background:var(--card-bg); border-color:var(--sidebar-border); backdrop-filter:none; }
+[data-theme="light"] .site-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
 
 /* ══════════════════════════════
    TABLE
@@ -1306,9 +1312,17 @@ mark.gsr-highlight {
 /* ══════════════════════════════
    SCROLLBAR
 ══════════════════════════════ */
-::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar { width:7px; height:7px; }
 ::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--glass-border); border-radius:10px; }
+::-webkit-scrollbar-thumb { background:rgba(100,116,139,0.45); border-radius:10px; }
+::-webkit-scrollbar-thumb:hover { background:rgba(100,116,139,0.75); }
+.table-wrap::-webkit-scrollbar { width:8px; height:8px; }
+.table-wrap::-webkit-scrollbar-track { background:rgba(0,0,0,0.06); border-radius:0 0 var(--radius-lg) var(--radius-lg); }
+.table-wrap::-webkit-scrollbar-thumb { background:rgba(100,116,139,0.55); border-radius:10px; border:2px solid transparent; background-clip:padding-box; }
+.table-wrap::-webkit-scrollbar-thumb:hover { background:rgba(100,116,139,0.85); background-clip:padding-box; }
+[data-theme="dark"] .table-wrap::-webkit-scrollbar-track { background:rgba(255,255,255,0.04); }
+[data-theme="dark"] .table-wrap::-webkit-scrollbar-thumb { background:rgba(148,163,184,0.35); background-clip:padding-box; }
+[data-theme="dark"] .table-wrap::-webkit-scrollbar-thumb:hover { background:rgba(148,163,184,0.65); background-clip:padding-box; }
 
 /* ══════════════════════════════
    RESPONSIVE
@@ -2143,28 +2157,16 @@ mark.gsr-highlight {
       <!-- Loading bar -->
       <div class="asset-load-bar" id="assetLoadBar"><div class="asset-load-bar-fill"></div></div>
 
-      <!-- Site filter button (Overview filter bar, same pattern as laptop) -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap;">Overview</span>
-        <div style="position:relative;" id="assetSiteWrap">
-          <button id="assetSiteBtn" onclick="toggleAssetSiteMenu(event)" style="
-            background:var(--card-bg);border:1.5px solid var(--glass-border);border-radius:var(--radius);
-            padding:5px 10px;font-size:12px;color:var(--text);cursor:pointer;
-            min-width:120px;max-width:260px;display:inline-flex;align-items:center;gap:6px;line-height:1.4;
-            white-space:nowrap;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 6h18M7 12h10M11 18h2"/></svg>
-            <span id="assetSiteBtnLabel">All Sites</span>
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="margin-left:auto;flex-shrink:0;"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div id="assetSiteMenu" style="display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:1000;
-            background:var(--card-bg);border:1.5px solid var(--glass-border);border-radius:var(--radius);
-            box-shadow:var(--glass-shadow);padding:6px 0;min-width:180px;max-height:260px;overflow-y:auto;">
-          </div>
-        </div>
+      <!-- Site filter tabs -->
+      <div class="site-filter-row" id="assetSiteFilterRow">
+        <button class="site-tab active" id="assetSiteTab-all" onclick="setAssetSiteTab('')">All Sites</button>
+        <button class="site-tab" id="assetSiteTab-dmd" onclick="setAssetSiteTab('DMD')">DMD</button>
+        <button class="site-tab" id="assetSiteTab-eb2" onclick="setAssetSiteTab('EB2')">EB2</button>
+        <button class="site-tab" id="assetSiteTab-eb3" onclick="setAssetSiteTab('EB3')">EB3</button>
+        <button class="site-tab" id="assetSiteTab-et" onclick="setAssetSiteTab('ET')">ET</button>
+        <button class="site-tab" id="assetSiteTab-sdp" onclick="setAssetSiteTab('SDP')">SDP</button>
+        <button class="site-tab" id="assetSiteTab-wfh" onclick="setAssetSiteTab('WFH')">WFH</button>
       </div>
-
-      <!-- Active filter chips (below stats + toolbar) -->
-      <!-- placeholder removed; moved below toolbar -->
 
       <!-- Stats -->
       <div class="inv-stats-grid" id="assetStatsGrid"></div>
@@ -5357,6 +5359,20 @@ window._clearSiteScope = function() {
   renderAssets();
 };
 
+window.setAssetSiteTab = function(site) {
+  _assetSiteFilters.clear();
+  if (site) _assetSiteFilters.add(site);
+  const sel = document.getElementById('assetSiteFilter');
+  if (sel) sel.value = site;
+  _updateAssetSiteBtn();
+  document.querySelectorAll('.site-tab').forEach(btn => btn.classList.remove('active'));
+  const tabMap = { '': 'assetSiteTab-all', 'DMD': 'assetSiteTab-dmd', 'EB2': 'assetSiteTab-eb2', 'EB3': 'assetSiteTab-eb3', 'ET': 'assetSiteTab-et', 'SDP': 'assetSiteTab-sdp', 'WFH': 'assetSiteTab-wfh' };
+  const activeTab = document.getElementById(tabMap[site] || 'assetSiteTab-all');
+  if (activeTab) activeTab.classList.add('active');
+  _assetPage = 1;
+  renderAssets();
+};
+
 // Site dropdown button helpers (matching laptop overview pattern)
 window.toggleAssetSiteMenu = function(e) {
   e && e.stopPropagation();
@@ -5453,6 +5469,10 @@ window.clearAllAssetFilters = function() {
   if (vfSel) vfSel.value = '';
   const srch = document.getElementById('assetSearchInput');
   if (srch) srch.value = '';
+  // Reset site tabs
+  document.querySelectorAll('.site-tab').forEach(btn => btn.classList.remove('active'));
+  const allTab = document.getElementById('assetSiteTab-all');
+  if (allTab) allTab.classList.add('active');
   _updateAssetSiteBtn();
   _assetPage = 1;
   renderAssets();
