@@ -1696,6 +1696,7 @@ async function tursoInit() {
     { sql: 'CREATE TABLE IF NOT EXISTS offboarding (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
     { sql: 'CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, data TEXT NOT NULL)' },
     { sql: 'CREATE TABLE IF NOT EXISTS presence (username TEXT PRIMARY KEY, data TEXT NOT NULL)' },
+    { sql: 'CREATE TABLE IF NOT EXISTS employee_assets (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
   ]);
 }
 
@@ -1728,9 +1729,10 @@ function setSyncStatus(msg, isError = false) {
 async function tursoSyncAll() {
   setSyncStatus('Syncing…');
   try {
-    const [rRes, uRes] = await Promise.all([
+    const [rRes, uRes, eaRes] = await Promise.all([
       tursoExec('SELECT data FROM offboarding'),
       tursoExec('SELECT data FROM users'),
+      tursoExec('SELECT data FROM employee_assets'),
     ]);
 
     if (rRes) {
@@ -1764,8 +1766,11 @@ async function tursoSyncAll() {
       _usersCache = merged;
       localStorage.setItem(LS_USERS, JSON.stringify(_usersCache));
     }
+    if (eaRes) {
+      eaRecords = eaRes.rows.map(row => JSON.parse(row[0].value));
+    }
 
-    if (!rRes && !uRes) {
+    if (!rRes && !uRes && !eaRes) {
       setSyncStatus('Not connected — using local data', true);
     } else {
       setSyncStatus('Synced · ' + new Date().toLocaleTimeString());
@@ -1806,6 +1811,7 @@ let obPage           = 1;
 const OB_PAGE_SIZE   = 50;
 let eaPage           = 1;
 const EA_PAGE_SIZE   = 50;
+let eaRecords        = [];
 let currentUser      = null;
 let _usersCache      = null;
 let currentView      = 'offboarding';
@@ -2133,7 +2139,10 @@ window.switchView = function(view) {
     if (nea) nea.classList.add('active');
     if (title) title.textContent = 'Employee Asset';
     if (btnAdd) btnAdd.style.display = 'none';
-    renderEmployeeAssetTable();
+    tursoExec('SELECT data FROM employee_assets').then(res => {
+      if (res) eaRecords = res.rows.map(row => JSON.parse(row[0].value));
+      renderEmployeeAssetTable();
+    });
   } else {
     if (om) om.style.display = '';
     if (no) no.classList.add('active');
@@ -2164,7 +2173,7 @@ window.confirmEAImportNotice = function() {
    EMPLOYEE ASSET MODAL (from Offboarding ID click)
 ══════════════════════════════════════════ */
 window.openAssetModal = function(recordNumber, employeeName) {
-  const all = JSON.parse(localStorage.getItem('employeeAssets') || '[]');
+  const all = eaRecords;
   const matched = all.filter(r => (r.offboardingRecordNumber || '').trim().toLowerCase() === (recordNumber || '').trim().toLowerCase());
 
   document.getElementById('assetModalTitle').textContent = employeeName || recordNumber;
@@ -2298,7 +2307,7 @@ window.openAssetModal = function(recordNumber, employeeName) {
 ══════════════════════════════════════════ */
 function renderEmployeeAssetTable() {
   const q = (document.getElementById('eaSearchInput')?.value || '').toLowerCase();
-  const raw = JSON.parse(localStorage.getItem('employeeAssets') || '[]');
+  const raw = eaRecords;
   const filtered = raw.filter(r => {
     return !q || [r.employeeId, r.emailId, r.firstName, r.lastName, r.assetType,
       r.makeModel, r.serialNumber, r.assetStatus, r.itAssetCondition].some(v => (v||'').toLowerCase().includes(q));
@@ -3131,10 +3140,18 @@ window.handleCSVImport = async function(e) {
   renderTable();
 };
 
-window.deleteAllEARecords = function() {
+window.deleteAllEARecords = async function() {
   if (!confirm('Delete ALL Employee Asset records? This cannot be undone.')) return;
-  localStorage.setItem('employeeAssets', '[]');
-  showToast('All Employee Asset records deleted.');
+  setSyncStatus('Saving…');
+  const r = await tursoExec('DELETE FROM employee_assets');
+  if (r) {
+    eaRecords = [];
+    setSyncStatus('Saved · ' + new Date().toLocaleTimeString());
+    showToast('All Employee Asset records deleted.');
+  } else {
+    setSyncStatus('Delete failed', true);
+    showToast('Delete failed — check connection.', true);
+  }
   renderEmployeeAssetTable();
 };
 
@@ -3166,10 +3183,9 @@ window.handleEACSVImport = async function(e) {
   const fieldMap = headers.map(h => EA_CSV_MAP[h] || null);
   const newRecords = [];
 
-  const existing = JSON.parse(localStorage.getItem('employeeAssets') || '[]');
-  // Build lookup by serialNumber for deduplication (update existing instead of duplicating)
+  // Build lookup by serialNumber for deduplication
   const existingBySerial = {};
-  existing.forEach(r => { if (r.serialNumber) existingBySerial[r.serialNumber.trim().toLowerCase()] = r.id; });
+  eaRecords.forEach(r => { if (r.serialNumber) existingBySerial[r.serialNumber.trim().toLowerCase()] = r.id; });
 
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
@@ -3196,35 +3212,45 @@ window.handleEACSVImport = async function(e) {
   bar.style.width = '0%';
   pctEl.textContent = '0%';
   countEl.textContent = `0 / ${newRecords.length.toLocaleString()}`;
-  sub.textContent = `Saving ${newRecords.length.toLocaleString()} rows…`;
+  sub.textContent = `Uploading to database… (${newRecords.length.toLocaleString()} rows)`;
 
-  // Yield to allow the browser to paint the overlay before processing
   await new Promise(r => setTimeout(r, 50));
 
   const CHUNK = 500;
-  let processed = 0;
+  let uploaded = 0;
+  let errors = 0;
 
   for (let i = 0; i < newRecords.length; i += CHUNK) {
     const chunk = newRecords.slice(i, i + CHUNK);
-    chunk.forEach(rec => {
-      const idx = existing.findIndex(r => r.id === rec.id);
-      if (idx >= 0) existing[idx] = rec;
-      else existing.push(rec);
-    });
-    processed += chunk.length;
-    const pct = Math.round((processed / newRecords.length) * 100);
+    const stmts = chunk.map(a => ({
+      sql: 'INSERT OR REPLACE INTO employee_assets (id, data) VALUES (?, ?)',
+      args: [a.id, JSON.stringify(a)]
+    }));
+    const result = await tursoBatchLong(stmts);
+    if (!result) errors++;
+    uploaded += chunk.length;
+    const pct = Math.round((uploaded / newRecords.length) * 100);
     bar.style.width = pct + '%';
     pctEl.textContent = pct + '%';
-    countEl.textContent = `${processed.toLocaleString()} / ${newRecords.length.toLocaleString()}`;
-    sub.textContent = `Batch ${Math.ceil((i + CHUNK) / CHUNK)} of ${Math.ceil(newRecords.length / CHUNK)} saved…`;
-    // yield to UI between chunks so progress updates are visible
-    await new Promise(r => setTimeout(r, 30));
+    countEl.textContent = `${uploaded.toLocaleString()} / ${newRecords.length.toLocaleString()}`;
+    sub.textContent = `Batch ${Math.ceil((i + CHUNK) / CHUNK)} of ${Math.ceil(newRecords.length / CHUNK)} uploaded…`;
   }
 
-  localStorage.setItem('employeeAssets', JSON.stringify(existing));
   overlay.style.display = 'none';
   if (titleEl) titleEl.textContent = 'Importing Records…';
-  showToast(newRecords.length.toLocaleString() + ' records imported from ' + file.name + '.');
+
+  // Update in-memory cache
+  newRecords.forEach(rec => {
+    const idx = eaRecords.findIndex(r => r.id === rec.id);
+    if (idx >= 0) eaRecords[idx] = rec;
+    else eaRecords.push(rec);
+  });
+
+  if (errors > 0) {
+    showToast(`Import done with ${errors} failed batch(es). Check connection.`, true);
+  } else {
+    showToast(newRecords.length.toLocaleString() + ' records imported from ' + file.name + '.');
+  }
   renderEmployeeAssetTable();
 };
 
