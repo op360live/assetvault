@@ -570,6 +570,67 @@ body {
 .stats-section-group { display:flex; flex-direction:column; gap:4px; flex:1; min-width:160px; }
 .stats-section-group.full-row { flex:1 1 100%; }
 .stats-section-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:var(--text3); padding-left:2px; }
+/* ── Active filter pills ─────────────────────────────── */
+.filter-pills { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.filter-pill {
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--accent-glow); border:1px solid var(--accent);
+  color:var(--accent); border-radius:999px;
+  font-size:11px; font-weight:600; padding:3px 10px 3px 12px;
+  white-space:nowrap;
+}
+.filter-pill-x {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:14px; height:14px; border-radius:50%;
+  background:transparent; border:none; color:var(--accent);
+  cursor:pointer; font-size:13px; line-height:1; padding:0;
+  transition:background 0.12s;
+}
+.filter-pill-x:hover { background:rgba(99,102,241,0.18); }
+/* ── IT Asset matrix ─────────────────────────────── */
+.ob-matrix-wrap { width:100%; }
+.ob-matrix-grid { display:grid; gap:6px; }
+.ob-matrix-hdr { display:contents; }
+.ob-matrix-col-spacer { /* empty top-left cell */ }
+.ob-col-lbl {
+  font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
+  color:var(--text3); text-align:center; padding:0 4px 4px;
+  cursor:pointer; transition:color 0.12s; white-space:nowrap;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.ob-col-lbl:hover { color:var(--accent); }
+.ob-col-lbl.col-active { color:var(--accent); }
+.ob-row-lbl {
+  font-size:11px; font-weight:700; color:var(--text2);
+  display:flex; align-items:center;
+  padding-right:10px; cursor:pointer; transition:color 0.12s; white-space:nowrap;
+}
+.ob-row-lbl:hover { color:var(--accent); }
+.ob-row-lbl.row-active { color:var(--accent); }
+.ob-cell {
+  background:var(--glass-bg);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:10px 14px;
+  box-shadow:var(--glass-shadow-sm);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px; cursor:pointer; min-width:0;
+  transition:transform 0.2s, box-shadow 0.2s;
+}
+.ob-cell:hover { transform:translateY(-2px); box-shadow:var(--glass-shadow); }
+.ob-cell.cell-active { border-color:var(--accent); box-shadow:var(--glass-shadow),0 0 0 2px var(--accent-glow); }
+.ob-cell-num { font-size:20px; font-weight:700; line-height:1; color:var(--text); font-variant-numeric:tabular-nums; }
+.ob-cell.cell-active .ob-cell-num { color:var(--accent); }
+.ob-cell:hover .ob-cell-num { color:var(--accent); }
+.ob-cell.cell-zero .ob-cell-num { font-size:15px; font-weight:400; color:var(--text3); }
+.ob-cell.cell-overdue { background:var(--red) !important; border-color:var(--red) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; box-shadow:0 4px 14px rgba(217,90,106,0.35) !important; }
+.ob-cell.cell-overdue .ob-cell-num { color:#fff !important; }
+.ob-cell.cell-overdue:hover { transform:translateY(-2px); }
+[data-theme="light"] .ob-cell { background:var(--card-bg) !important; backdrop-filter:none !important; -webkit-backdrop-filter:none !important; border-color:var(--sidebar-border) !important; box-shadow:var(--card-shadow) !important; }
+[data-theme="light"] .ob-cell.cell-overdue,
+[data-theme="dark"] .ob-cell.cell-overdue { background:var(--red) !important; border-color:var(--red) !important; box-shadow:0 4px 14px rgba(217,90,106,0.35) !important; }
 .stat-card {
   background:var(--glass-bg);
   backdrop-filter:blur(20px) saturate(160%);
@@ -1190,77 +1251,29 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
           <button class="site-tab" id="siteTab-cebu" onclick="setSiteFilter('CEBU')">Cebu</button>
           <button class="site-tab" id="siteTab-davao" onclick="setSiteFilter('DAVAO')">Davao</button>
         </div>
-        <!-- Row 1: Alerts -->
-        <div class="stats-section-row" id="alertsRow" style="display:none">
-          <div class="stats-section-group full-row">
-            <div class="stats-section-label">Alerts</div>
-            <div class="stats-grid" id="statsGridAlerts"></div>
-          </div>
-        </div>
-        <!-- Row 2: Offboarding Status -->
-        <div class="stats-section-row">
-          <div class="stats-section-group full-row">
-            <div class="stats-section-label">Offboarding Status</div>
-            <div class="stats-grid" id="statsGridOb"></div>
-          </div>
-        </div>
-        <!-- Row 3: Offboarding per Location -->
-        <div class="stats-section-row">
-          <div class="stats-section-group full-row">
-            <div class="stats-section-label">Offboarding per Location</div>
-            <div class="stats-grid" id="statsGridLoc" style="grid-template-columns:repeat(3,1fr)"></div>
-          </div>
-        </div>
-        <!-- Row 4: IT Asset Clearance -->
-        <div class="stats-section-row">
-          <div class="stats-section-group full-row">
-            <div class="stats-section-label">IT Asset Clearance</div>
-            <div class="stats-grid" id="statsGridAsset" style="grid-template-columns:repeat(5,1fr)"></div>
-          </div>
-        </div>
-        <!-- Row 5: IT Tools Clearance -->
-        <div class="stats-section-row">
-          <div class="stats-section-group full-row">
-            <div class="stats-section-label">IT Tools Clearance</div>
-            <div class="stats-grid" id="statsGridIt" style="grid-template-columns:repeat(3,1fr)"></div>
-          </div>
+        <!-- IT Asset Clearance (left) + IT Tools Clearance (right) -->
+        <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px">
+          <div class="ob-matrix-wrap" id="statsMatrix" style="flex:1 1 auto;min-width:0"></div>
+          <div id="statsGridIt" style="flex:0 0 220px"></div>
         </div>
       </div>
+      <hr style="border:none;border-top:1px solid var(--glass-border);margin:0 0 16px">
 
       <div class="toolbar">
         <div class="search-wrap">
           <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" class="search-input" id="searchInput" placeholder="Search employee, type, job title…" oninput="obPage=1;renderTable();updateClearFiltersBtn()">
         </div>
-        <select class="filter-select" id="statusFilter" onchange="obPage=1;renderTable();renderStats();updateClearFiltersBtn()">
-          <option value="">All IT Clearance</option>
-          <option value="Pending">Pending</option>
-          <option value="Cleared">Cleared</option>
-          <option value="Blank">Blank</option>
-        </select>
-        <select class="filter-select" id="assetStatusFilter" onchange="obPage=1;renderTable();renderStats();updateClearFiltersBtn()">
-          <option value="">All Asset Clearance</option>
-          <option value="For Clearance">For Clearance</option>
-          <option value="Cleared - With Asset">Cleared - With Asset</option>
-          <option value="Cleared - Without Asset">Cleared - Without Asset</option>
-          <option value="With Deduction">With Deduction</option>
-          <option value="Pending">Pending</option>
-        </select>
-        <select class="filter-select" id="offboardingStatusFilter" onchange="obPage=1;renderTable();renderStats();updateClearFiltersBtn()">
-          <option value="">All Offboarding Status</option>
-          <option value="New">New</option>
-          <option value="Ongoing">Ongoing</option>
-          <option value="Retracted">Retracted</option>
-        </select>
-        <select class="filter-select" id="typeFilter" onchange="obPage=1;renderTable();updateClearFiltersBtn()">
-          <option value="">All Separation Types</option>
-          <option value="Voluntary">Voluntary</option>
-          <option value="Involuntary">Involuntary</option>
-        </select>
+        <div class="filter-pills" id="filterPills"></div>
         <button class="btn btn-sm btn-clear-filters" id="btnClearFilters" onclick="clearAllFilters()" style="display:none">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           Clear Filters
         </button>
+        <!-- Hidden filter state inputs used by JS -->
+        <input type="hidden" id="statusFilter" value="">
+        <input type="hidden" id="assetStatusFilter" value="">
+        <input type="hidden" id="offboardingStatusFilter" value="">
+        <input type="hidden" id="typeFilter" value="">
       </div>
 
       <div class="count-bar">
@@ -1276,6 +1289,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         </button>
       </div>
 
+      <hr style="border:none;border-top:1px solid var(--glass-border);margin:0 0 16px">
       <div class="table-wrap">
         <table>
           <thead>
@@ -2608,97 +2622,67 @@ function renderStats() {
   const assetClearedWithoutAsset= siteScope.filter(r => r.itAssetClearanceStatus === 'Cleared - Without Asset').length;
   const assetWithDeduction      = siteScope.filter(r => r.itAssetClearanceStatus === 'With Deduction').length;
   const assetPending            = siteScope.filter(r => r.itAssetClearanceStatus === 'Pending').length;
-  // Offboarding Status
-  const obNew       = siteScope.filter(r => (r.offboardingStatus || 'New') === 'New').length;
-  const obOngoing   = siteScope.filter(r => r.offboardingStatus === 'Ongoing').length;
-  const obRetracted = siteScope.filter(r => r.offboardingStatus === 'Retracted').length;
-  // Offboarding per Location (always from full records for location cards)
-  const locCebu   = records.filter(r => (r.employeeLocation || '').trim().toUpperCase() === 'CEBU').length;
-  const locCDO    = records.filter(r => (r.employeeLocation || '').trim().toUpperCase() === 'CAGAYAN DE ORO').length;
-  const locDavao  = records.filter(r => (r.employeeLocation || '').trim().toUpperCase() === 'DAVAO').length;
-
   const activeSt    = document.getElementById('statusFilter')?.value || '';
   const activeAsset = document.getElementById('assetStatusFilter')?.value || '';
-  const activeOb    = document.getElementById('offboardingStatusFilter')?.value || '';
   const activeLoc   = document.getElementById('locationFilter')?.value || '';
 
-  document.getElementById('statsGridOb').innerHTML = `
-    <div class="stat-card${activeOb === 'New' ? ' stat-active' : ''}" onclick="filterByOffboardingStatus('New')">
-      <div class="stat-lbl">New</div>
-      <div class="stat-val sv-pending">${obNew}</div>
-    </div>
-    <div class="stat-card${activeOb === 'Ongoing' ? ' stat-active' : ''}" onclick="filterByOffboardingStatus('Ongoing')">
-      <div class="stat-lbl">Ongoing</div>
-      <div class="stat-val sv-cleared">${obOngoing}</div>
-    </div>
-    <div class="stat-card${activeOb === 'Retracted' ? ' stat-active' : ''}" onclick="filterByOffboardingStatus('Retracted')">
-      <div class="stat-lbl">Retracted</div>
-      <div class="stat-val sv-complete">${obRetracted}</div>
-    </div>
-  `;
-
-  document.getElementById('statsGridLoc').innerHTML = `
-    <div class="stat-card${activeLoc === 'Cebu' ? ' stat-active' : ''}" onclick="filterByLocation('Cebu')">
-      <div class="stat-lbl">Cebu</div>
-      <div class="stat-val sv-pending">${locCebu}</div>
-    </div>
-    <div class="stat-card${activeLoc === 'Cagayan De Oro' ? ' stat-active' : ''}" onclick="filterByLocation('Cagayan De Oro')">
-      <div class="stat-lbl">Cagayan De Oro</div>
-      <div class="stat-val sv-cleared">${locCDO}</div>
-    </div>
-    <div class="stat-card${activeLoc === 'Davao' ? ' stat-active' : ''}" onclick="filterByLocation('Davao')">
-      <div class="stat-lbl">Davao</div>
-      <div class="stat-val sv-complete">${locDavao}</div>
+  // IT Asset Clearance cross-tab matrix (rows = locations, cols = asset statuses + overdue)
+  const matrixLocs     = ['Cebu', 'Davao', 'Cagayan De Oro'];
+  const matrixLocKeys  = ['CEBU', 'DAVAO', 'CAGAYAN DE ORO'];
+  const matrixStatuses = ['Pending', 'For Clearance', 'Cleared - With Asset', 'Cleared - Without Asset', 'With Deduction'];
+  const matrixLabels   = ['Pending', 'For Clearance', 'Cleared - With Asset', 'Cleared - Without Asset', 'With Deductions'];
+  const matrixData = matrixLocs.map((loc, li) =>
+    matrixStatuses.map(st =>
+      records.filter(r =>
+        (r.employeeLocation || '').trim().toUpperCase() === matrixLocKeys[li] &&
+        (r.itAssetClearanceStatus || 'For Clearance') === st
+      ).length
+    )
+  );
+  const overduePerSite = matrixLocKeys.map(key =>
+    records.filter(r => (r.employeeLocation || '').trim().toUpperCase() === key && isOverdue(r)).length
+  );
+  const cols = matrixStatuses.length + 1;
+  document.getElementById('statsMatrix').innerHTML = `
+    <div class="stats-section-label" style="margin-bottom:8px">IT Asset Clearance</div>
+    <div class="ob-matrix-grid" style="grid-template-columns:auto repeat(${cols},1fr)">
+      <div></div>
+      <div class="ob-col-lbl" style="color:var(--red)">Overdue 15d+</div>
+      ${matrixLabels.map((lbl, i) => `
+        <div class="ob-col-lbl${activeAsset === matrixStatuses[i] ? ' col-active' : ''}" onclick="filterByAssetStatus('${matrixStatuses[i]}')">${lbl}</div>
+      `).join('')}
+      ${matrixLocs.map((loc, li) => {
+        const odN = overduePerSite[li];
+        const isRed = odN > 0;
+        const isOdAct = overdueFilter && activeLoc === loc;
+        const odCells = `<div class="ob-cell${isOdAct ? ' cell-active' : ''}${isRed ? ' cell-overdue' : (odN === 0 ? ' cell-zero' : '')}" onclick="filterByOverdueAndSite('${loc}')">
+          <span class="ob-cell-num">${odN}</span>
+        </div>`;
+        const statusCells = matrixStatuses.map((st, si) => {
+          const n = matrixData[li][si];
+          const isActive = activeLoc === loc && activeAsset === st;
+          const cls = isActive ? ' cell-active' : (n === 0 ? ' cell-zero' : '');
+          return `<div class="ob-cell${cls}" onclick="filterByBoth('${loc}','${st}')"><span class="ob-cell-num">${n}</span></div>`;
+        }).join('');
+        return `<div class="ob-row-lbl${activeLoc === loc ? ' row-active' : ''}" onclick="filterByLocation('${loc}')">${loc}</div>${odCells}${statusCells}`;
+      }).join('')}
     </div>
   `;
 
   document.getElementById('statsGridIt').innerHTML = `
-    <div class="stat-card${activeSt === 'Pending' ? ' stat-active' : ''}" onclick="filterByStatus('Pending')">
-      <div class="stat-lbl">Pending</div>
-      <div class="stat-val sv-pending">${itPending}</div>
-    </div>
-    <div class="stat-card${activeSt === 'Cleared' ? ' stat-active' : ''}" onclick="filterByStatus('Cleared')">
-      <div class="stat-lbl">Cleared</div>
-      <div class="stat-val sv-cleared">${itCleared}</div>
-    </div>
-    <div class="stat-card${activeSt === 'Blank' ? ' stat-active' : ''}" onclick="filterByStatus('Blank')">
-      <div class="stat-lbl">Blank</div>
-      <div class="stat-val sv-total">${itBlank}</div>
-    </div>
-  `;
-
-  const overdueCount = siteScope.filter(r => isOverdue(r)).length;
-  const alertsRow = document.getElementById('alertsRow');
-  if (alertsRow) alertsRow.style.display = overdueCount > 0 ? '' : 'none';
-  document.getElementById('statsGridAlerts').innerHTML = `
-    <div class="stat-card stat-overdue${overdueFilter ? ' stat-active' : ''}" onclick="filterByOverdue()">
-      <div class="stat-lbl">Overdue 15d+</div>
-      <div class="stat-val sv-overdue">${overdueCount}</div>
+    <div class="stats-section-label" style="margin-bottom:8px">IT Tools Clearance</div>
+    <div class="ob-matrix-grid" style="grid-template-columns:repeat(2,1fr)">
+      <div class="ob-col-lbl${activeSt === 'Pending' ? ' col-active' : ''}" onclick="filterByStatus('Pending')">Pending</div>
+      <div class="ob-col-lbl${activeSt === 'Cleared' ? ' col-active' : ''}" onclick="filterByStatus('Cleared')">Cleared</div>
+      <div class="ob-cell${activeSt === 'Pending' ? ' cell-active' : (itPending === 0 ? ' cell-zero' : '')}" onclick="filterByStatus('Pending')">
+        <span class="ob-cell-num">${itPending}</span>
+      </div>
+      <div class="ob-cell${activeSt === 'Cleared' ? ' cell-active' : (itCleared === 0 ? ' cell-zero' : '')}" onclick="filterByStatus('Cleared')">
+        <span class="ob-cell-num">${itCleared}</span>
+      </div>
     </div>
   `;
 
-  document.getElementById('statsGridAsset').innerHTML = `
-    <div class="stat-card${activeAsset === 'For Clearance' ? ' stat-active' : ''}" onclick="filterByAssetStatus('For Clearance')">
-      <div class="stat-lbl">For Clearance</div>
-      <div class="stat-val sv-pending">${assetForClearance}</div>
-    </div>
-    <div class="stat-card${activeAsset === 'Cleared - With Asset' ? ' stat-active' : ''}" onclick="filterByAssetStatus('Cleared - With Asset')">
-      <div class="stat-lbl">Cleared w/ Asset</div>
-      <div class="stat-val sv-cleared">${assetClearedWithAsset}</div>
-    </div>
-    <div class="stat-card${activeAsset === 'Cleared - Without Asset' ? ' stat-active' : ''}" onclick="filterByAssetStatus('Cleared - Without Asset')">
-      <div class="stat-lbl">Cleared w/o Asset</div>
-      <div class="stat-val sv-complete">${assetClearedWithoutAsset}</div>
-    </div>
-    <div class="stat-card${activeAsset === 'With Deduction' ? ' stat-active' : ''}" onclick="filterByAssetStatus('With Deduction')">
-      <div class="stat-lbl">With Deduction</div>
-      <div class="stat-val sv-total" style="color:var(--red)">${assetWithDeduction}</div>
-    </div>
-    <div class="stat-card${activeAsset === 'Pending' ? ' stat-active' : ''}" onclick="filterByAssetStatus('Pending')">
-      <div class="stat-lbl">Pending</div>
-      <div class="stat-val sv-total">${assetPending}</div>
-    </div>
-  `;
 }
 
 function isOverdue(r) {
@@ -2708,9 +2692,10 @@ function isOverdue(r) {
   if (!r.separationDate) return false;
   const sep = new Date(r.separationDate);
   if (isNaN(sep)) return false;
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const diffDays = (today - sep) / 86400000;
+  // Use Philippine Standard Time (UTC+8) so overdue count is consistent across all devices
+  const nowPH = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  const todayPH = new Date(Date.UTC(nowPH.getUTCFullYear(), nowPH.getUTCMonth(), nowPH.getUTCDate()));
+  const diffDays = (todayPH - sep) / 86400000;
   return diffDays > 15;
 }
 
@@ -2720,6 +2705,19 @@ window.filterByOverdue = function() {
   renderTable();
   renderStats();
   updateClearFiltersBtn();
+};
+
+window.filterByOverdueAndSite = function(loc) {
+  // Toggle: if already filtering this site + overdue, clear both; else set both
+  const locEl = document.getElementById('locationFilter') || (() => {
+    const el = document.createElement('input');
+    el.type = 'hidden'; el.id = 'locationFilter'; el.value = '';
+    document.body.appendChild(el); return el;
+  })();
+  const sameActive = overdueFilter && locEl.value === loc;
+  overdueFilter = !sameActive;
+  locEl.value = sameActive ? '' : loc;
+  obPage = 1; renderTable(); renderStats(); updateClearFiltersBtn();
 };
 
 window.goObPage = function(p) {
@@ -2782,6 +2780,20 @@ window.filterByLocation = function(loc) {
   obPage = 1; renderTable(); renderStats(); updateClearFiltersBtn();
 };
 
+window.filterByBoth = function(loc, assetStatus) {
+  let locEl = document.getElementById('locationFilter');
+  if (!locEl) {
+    locEl = document.createElement('input');
+    locEl.type = 'hidden'; locEl.id = 'locationFilter'; locEl.value = '';
+    document.body.appendChild(locEl);
+  }
+  const assetEl = document.getElementById('assetStatusFilter');
+  const sameActive = locEl.value === loc && assetEl.value === assetStatus;
+  locEl.value = sameActive ? '' : loc;
+  assetEl.value = sameActive ? '' : assetStatus;
+  obPage = 1; renderTable(); renderStats(); updateClearFiltersBtn();
+};
+
 window.clearAllFilters = function() {
   document.getElementById('statusFilter').value = '';
   document.getElementById('assetStatusFilter').value = '';
@@ -2806,6 +2818,27 @@ function updateClearFiltersBtn() {
     (document.getElementById('searchInput')?.value || '') !== '';
   const btn = document.getElementById('btnClearFilters');
   if (btn) btn.style.display = active ? '' : 'none';
+  renderFilterPills();
+}
+
+function renderFilterPills() {
+  const container = document.getElementById('filterPills');
+  if (!container) return;
+  const pills = [];
+  const assetStatus = document.getElementById('assetStatusFilter')?.value || '';
+  const itStatus    = document.getElementById('statusFilter')?.value || '';
+  const loc         = document.getElementById('locationFilter')?.value || '';
+  const obStatus    = document.getElementById('offboardingStatusFilter')?.value || '';
+  const type        = document.getElementById('typeFilter')?.value || '';
+  if (overdueFilter) pills.push({ label: 'Overdue 15d+', clear: `window.overdueFilter=false;obPage=1;renderTable();renderStats();updateClearFiltersBtn();` });
+  if (loc)         pills.push({ label: `Location: ${loc}`,           clear: `document.getElementById('locationFilter').value='';obPage=1;renderTable();renderStats();updateClearFiltersBtn();` });
+  if (assetStatus) pills.push({ label: `Asset: ${assetStatus}`,       clear: `document.getElementById('assetStatusFilter').value='';obPage=1;renderTable();renderStats();updateClearFiltersBtn();` });
+  if (itStatus)    pills.push({ label: `IT: ${itStatus}`,             clear: `document.getElementById('statusFilter').value='';obPage=1;renderTable();renderStats();updateClearFiltersBtn();` });
+  if (obStatus)    pills.push({ label: `Status: ${obStatus}`,         clear: `document.getElementById('offboardingStatusFilter').value='';obPage=1;renderTable();renderStats();updateClearFiltersBtn();` });
+  if (type)        pills.push({ label: `Type: ${type}`,               clear: `document.getElementById('typeFilter').value='';obPage=1;renderTable();updateClearFiltersBtn();` });
+  container.innerHTML = pills.map(p =>
+    `<span class="filter-pill">${p.label}<button class="filter-pill-x" onclick="${p.clear}" title="Remove filter">&times;</button></span>`
+  ).join('');
 }
 
 /* ══════════════════════════════════════════
