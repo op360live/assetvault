@@ -116,10 +116,11 @@ body {
 
 /* SIDEBAR */
 #sidebar {
-  width: 240px;
+  width: 260px;
   flex-shrink: 0;
   background: var(--sidebar-bg, #ffffff);
-  border-right: 1px solid var(--sidebar-border, #e8eaed);
+  border-right: none;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.07);
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -128,19 +129,19 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 50;
-  transition: width 0.22s cubic-bezier(.4,0,.2,1), background 0.3s, border-color 0.3s;
+  transition: width 0.22s cubic-bezier(.4,0,.2,1), background 0.3s, box-shadow 0.3s;
 }
-#sidebar.collapsed { width: 60px; }
+#sidebar.collapsed { width: 64px; }
 [data-theme="dark"] #sidebar {
-  background: rgba(26,14,4,0.98);
-  border-right-color: var(--glass-border);
+  background: rgba(15,10,30,0.98);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.35);
 }
 
 .sb-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 20px 18px 18px;
+  gap: 14px;
+  padding: 24px 20px 20px;
   border-bottom: 1px solid var(--sidebar-border, #f0f2f5);
   flex-shrink: 0;
 }
@@ -149,7 +150,7 @@ body {
 .sb-collapse-btn {
   position: fixed;
   top: 50%;
-  left: calc(240px - 13px);
+  left: calc(260px - 13px);
   transform: translateY(-50%);
   z-index: 100;
   width: 26px; height: 26px;
@@ -174,13 +175,14 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.40);
 }
 #sidebar.collapsed ~ .sb-collapse-btn,
-.sb-collapse-btn.collapsed-pos { left: calc(60px - 13px); }
+.sb-collapse-btn.collapsed-pos { left: calc(64px - 13px); }
 .sb-collapse-btn svg {
   transition: transform 0.22s cubic-bezier(.4,0,.2,1);
 }
 .sb-collapse-btn.is-collapsed svg { transform: rotate(180deg); }
 
 #sidebar.collapsed .sb-brand-name,
+#sidebar.collapsed .sb-brand-sub,
 #sidebar.collapsed .sb-section-label,
 #sidebar.collapsed .sb-item-label,
 #sidebar.collapsed .sb-online-label,
@@ -190,7 +192,7 @@ body {
 #sidebar.collapsed .sb-item {
   justify-content: center;
   padding: 11px 0;
-  width: 60px;
+  width: 64px;
   border-radius: 0;
 }
 #sidebar.collapsed .sb-item-icon { opacity: 0.75; width: 20px; height: 20px; }
@@ -205,16 +207,17 @@ body {
 #sidebar.collapsed .sb-theme-row {
   padding: 10px 0;
   justify-content: center;
-  width: 60px;
+  width: 64px;
   border-radius: 0;
 }
 #sidebar.collapsed .sb-nav { padding: 8px 0; }
+#sidebar.collapsed .sb-brand-text { display: none; }
 
 #sidebar.collapsed .sb-item { position: relative; }
 #sidebar.collapsed .sb-item:hover::after {
   content: attr(title);
   position: absolute;
-  left: 66px;
+  left: 70px;
   top: 50%; transform: translateY(-50%);
   background: var(--card-bg, #fff);
   color: var(--text);
@@ -234,15 +237,17 @@ body {
 }
 
 .sb-logo {
-  width: 36px; height: 36px;
-  border-radius: 10px;
+  width: 44px; height: 44px;
+  border-radius: 14px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 10px var(--accent-glow);
+  box-shadow: 0 4px 14px var(--accent-glow);
   flex-shrink: 0;
 }
-.sb-brand-name { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; }
-.sb-brand-accent { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.sb-brand-text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.sb-brand-name { font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+.sb-brand-sub { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-brand-accent { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .sb-brand-version {
   font-size: 10px; font-weight: 600; color: var(--text3);
   background: var(--search-bg);
@@ -251,15 +256,16 @@ body {
   padding: 1px 5px;
   letter-spacing: 0.3px;
   flex-shrink: 0;
+  align-self: flex-start;
 }
 #sidebar.collapsed .sb-brand-version { display: none; }
 
 .sb-nav {
   flex: 1;
-  padding: 10px 10px;
+  padding: 14px 12px;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   overflow-y: auto;
 }
 .sb-search-wrap {
@@ -288,18 +294,18 @@ body {
 #sidebar.collapsed .sb-search-wrap { display: none; }
 .sb-section-label {
   font-size: 10px; font-weight: 700;
-  color: var(--text3);
-  text-transform: uppercase; letter-spacing: 0.8px;
-  padding: 10px 8px 5px;
+  color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.7px;
+  padding: 12px 10px 5px;
 }
 .sb-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
+  gap: 12px;
+  padding: 11px 16px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 13px; font-weight: 500;
+  font-size: 13.5px; font-weight: 500;
   color: var(--text2);
   transition: background 0.15s, color 0.15s;
   border: none;
@@ -313,7 +319,8 @@ body {
 .sb-item:hover { background: var(--sb-hover, rgba(0,0,0,0.05)); color: var(--text); }
 [data-theme="dark"] .sb-item:hover { background: var(--glass-bg); }
 .sb-item.active { background: var(--accent-glow); color: var(--accent); font-weight: 700; }
-.sb-item-icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; opacity: 0.7; }
+[data-theme="light"] .sb-item.active { background: rgba(29,78,216,0.10); }
+.sb-item-icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; opacity: 0.65; width: 18px; height: 18px; }
 .sb-item.active .sb-item-icon { opacity: 1; }
 .sb-divider { height: 1px; background: var(--sidebar-border, #f0f2f5); margin: 6px 4px; }
 [data-theme="dark"] .sb-divider { background: var(--glass-border2); }
@@ -570,6 +577,28 @@ body {
 .stats-section-group { display:flex; flex-direction:column; gap:4px; flex:1; min-width:160px; }
 .stats-section-group.full-row { flex:1 1 100%; }
 .stats-section-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:var(--text3); padding-left:2px; }
+/* ── Counter cards (Geex-style white card containers) ─────────── */
+.counter-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--sidebar-border, #eaecf0);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  padding: 20px 22px;
+}
+[data-theme="dark"] .counter-card {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.30);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+.counter-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  margin-bottom: 16px;
+}
 /* ── Active filter pills ─────────────────────────────── */
 .filter-pills { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
 .filter-pill {
@@ -683,7 +712,7 @@ body {
 /* ══════════════════════════════
    TOOLBAR
 ══════════════════════════════ */
-.toolbar { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
+.toolbar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
 .search-wrap { position:relative; flex:1; min-width:220px; }
 .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text3); pointer-events:none; display:flex; }
 .search-input {
@@ -691,13 +720,17 @@ body {
   background:var(--glass-bg);
   backdrop-filter:blur(16px);
   border:1px solid var(--glass-border);
-  border-radius:var(--radius);
+  border-radius:16px;
   padding:10px 14px 10px 42px;
   color:var(--text); font-size:14px; outline:none;
-  box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  box-shadow:none;
   transition:border-color 0.2s,box-shadow 0.2s;
 }
-[data-theme="dark"] .search-input { box-shadow:0 2px 6px rgba(0,0,0,0.35); }
+[data-theme="light"] .search-input {
+  background: var(--search-bg, #f4f6fa);
+  border-color: var(--sidebar-border);
+  box-shadow: none;
+}
 .search-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
 .search-input::placeholder { color:var(--text3); }
 .filter-select {
@@ -1064,18 +1097,17 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 <!-- APP SCREEN -->
 <div id="appScreen">
 
-  <button class="sb-collapse-btn" id="btnSidebarCollapse" onclick="toggleSidebar()" title="Toggle sidebar">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-  </button>
-
   <aside id="sidebar">
     <div class="sb-brand">
       <div class="sb-logo">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
           <path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/>
         </svg>
       </div>
-      <span class="sb-brand-name">Offboard<span class="sb-brand-accent">Vault</span></span>
+      <div class="sb-brand-text">
+        <span class="sb-brand-name">Offboard<span class="sb-brand-accent">Vault</span></span>
+        <span class="sb-brand-sub">Employee Offboarding</span>
+      </div>
       <span class="sb-brand-version">v1.5</span>
     </div>
 
@@ -1162,8 +1194,13 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         <div class="pill-track"><div class="pill-knob"></div></div>
         <span class="pill-label" id="themeLabel">Light</span>
       </div>
+      <div style="padding:8px 10px 2px;font-size:10px;color:var(--text3);line-height:1.5;" id="sbFooterCopy"></div>
     </div>
   </aside>
+
+  <button class="sb-collapse-btn" id="btnSidebarCollapse" onclick="toggleSidebar()" title="Toggle sidebar">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
 
   <div id="mainArea">
 
@@ -1175,12 +1212,6 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         <span id="dbStatusDot" class="db-status-dot" title="Database connection status">Connecting…</span>
         <button id="btnForceSync" class="btn btn-sm" onclick="tursoSyncAll()" title="Force sync" style="padding:5px 8px;">
           <svg id="syncIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.13-3.36L23 10M1 14l5.36 4.36A9 9 0 0020.49 15"/></svg>
-        </button>
-        <button class="btn btn-red" id="btnAdd" onclick="openAddModal()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          <span>Add Offboarding</span>
         </button>
         <div class="acct-wrap" id="acctWrap">
           <div class="acct-btn" onclick="toggleAcctMenu()">
@@ -1246,13 +1277,13 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
       <div class="stats-section">
         <!-- IT Asset Clearance (left) + IT Tools Clearance (right) -->
         <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px">
-          <div class="ob-matrix-wrap" id="statsMatrix" style="flex:1 1 auto;min-width:0"></div>
-          <div id="statsGridIt" style="flex:0 0 220px"></div>
+          <div class="counter-card ob-matrix-wrap" id="statsMatrix" style="flex:1 1 auto;min-width:0"></div>
+          <div class="counter-card" id="statsGridIt" style="flex:0 0 248px"></div>
         </div>
       </div>
       <div style="margin:0 0 16px"></div>
 
-      <div class="toolbar">
+      <div class="toolbar counter-card">
         <div class="search-wrap">
           <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" class="search-input" id="searchInput" placeholder="Search employee, type, job title…" oninput="obPage=1;renderTable();updateClearFiltersBtn()">
@@ -1312,9 +1343,9 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 
     <main class="main" id="employeeAssetMain" style="display:none;">
       <div class="stats-section" style="margin-bottom:16px">
-        <div id="eaInventoryStats"></div>
+        <div class="counter-card" id="eaInventoryStats"></div>
       </div>
-      <div class="toolbar">
+      <div class="toolbar counter-card">
         <div class="search-wrap">
           <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" class="search-input" id="eaSearchInput" placeholder="Search employee, asset…" oninput="eaPage=1;renderEmployeeAssetTable()">
@@ -1888,7 +1919,6 @@ window.toggleSidebar = function() {
   const btn = document.getElementById('btnSidebarCollapse');
   sidebar.classList.toggle('collapsed');
   const isCollapsed = sidebar.classList.contains('collapsed');
-  btn.style.left = (isCollapsed ? 60 : 240) - 13 + 'px';
   btn.classList.toggle('is-collapsed', isCollapsed);
 };
 
@@ -1906,6 +1936,8 @@ function loadTheme() {
   document.documentElement.setAttribute('data-theme', s);
   const l = document.getElementById('themeLabel');
   if (l) l.textContent = s === 'dark' ? 'Dark' : 'Light';
+  const fc = document.getElementById('sbFooterCopy');
+  if (fc) fc.innerHTML = `OffboardVault v1.5<br>&copy; ${new Date().getFullYear()} OP360 &mdash; IT Team`;
 }
 
 /* ══════════════════════════════════════════
@@ -2164,7 +2196,6 @@ window.switchView = function(view) {
   const nu  = document.getElementById('navUsers');
   const nea = document.getElementById('navEmployeeAsset');
   const title = document.getElementById('topbarTitle');
-  const btnAdd = document.getElementById('btnAdd');
 
   [om, um, eam].forEach(el => { if (el) el.style.display = 'none'; });
   [no, nu, nea].forEach(el => { if (el) el.classList.remove('active'); });
@@ -2173,13 +2204,11 @@ window.switchView = function(view) {
     if (um) um.style.display = '';
     if (nu) nu.classList.add('active');
     if (title) title.textContent = 'User Management';
-    if (btnAdd) btnAdd.style.display = 'none';
     renderUsers();
   } else if (view === 'employeeAsset') {
     if (eam) eam.style.display = '';
     if (nea) nea.classList.add('active');
     if (title) title.textContent = 'Employee Asset';
-    if (btnAdd) btnAdd.style.display = 'none';
     tursoExec('SELECT data FROM employee_assets').then(res => {
       if (res) eaRecords = res.rows.map(row => JSON.parse(row[0].value));
       renderEAInventoryStats();
@@ -2189,7 +2218,6 @@ window.switchView = function(view) {
     if (om) om.style.display = '';
     if (no) no.classList.add('active');
     if (title) title.textContent = 'Employee Offboarding';
-    if (btnAdd) btnAdd.style.display = '';
     renderStats();
     renderTable();
   }
@@ -2382,7 +2410,7 @@ function renderEAInventoryStats() {
     return { forClearance, withDeduction };
   });
   container.innerHTML = `
-    <div class="stats-section-label" style="margin-bottom:8px">Offboarding Asset Inventory</div>
+    <div class="counter-card-title">Offboarding Asset Inventory</div>
     <div class="site-filter-row" style="margin-bottom:10px">
       <button class="site-tab${!eaInvSiteFilter?' active':''}" onclick="filterEASiteTab('')">All Sites</button>
       ${siteKeys.map((key,i) => `<button class="site-tab${eaInvSiteFilter===key?' active':''}" onclick="filterEASiteTab('${key}')">${siteLabels[i]}</button>`).join('')}
@@ -2740,7 +2768,7 @@ function renderStats() {
   );
   const cols = matrixStatuses.length + 1;
   document.getElementById('statsMatrix').innerHTML = `
-    <div class="stats-section-label" style="margin-bottom:8px">IT Asset Clearance</div>
+    <div class="counter-card-title">IT Asset Clearance</div>
     <div class="ob-matrix-grid" style="grid-template-columns:auto repeat(${cols},1fr)">
       <div></div>
       <div class="ob-col-lbl" style="color:var(--red)">Overdue 15d+</div>
@@ -2766,7 +2794,7 @@ function renderStats() {
   `;
 
   document.getElementById('statsGridIt').innerHTML = `
-    <div class="stats-section-label" style="margin-bottom:8px">IT Tools Clearance</div>
+    <div class="counter-card-title">IT Tools Clearance</div>
     <div class="ob-matrix-grid" style="grid-template-columns:repeat(2,auto)">
       <div class="ob-col-lbl${activeSt === 'Pending' ? ' col-active' : ''}" onclick="filterByStatus('Pending')">Pending</div>
       <div class="ob-col-lbl${activeSt === 'Cleared' ? ' col-active' : ''}" onclick="filterByStatus('Cleared')">Cleared</div>
@@ -3848,13 +3876,6 @@ window.addEventListener('DOMContentLoaded', async function() {
       }
     }, 450);
   }, 1200);
-
-  const btn = document.getElementById('btnSidebarCollapse');
-  const isCollapsed = document.getElementById('sidebar')?.classList.contains('collapsed');
-  if (btn) {
-    btn.style.left = (isCollapsed ? 60 : 240) - 13 + 'px';
-    btn.classList.toggle('is-collapsed', !!isCollapsed);
-  }
 
 });
 </script>
