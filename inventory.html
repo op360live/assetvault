@@ -907,6 +907,7 @@ mark.gsr-highlight {
   gap: 10px;
   margin-bottom: 20px;
 }
+.audit-summary-wrap .al-summary { margin-bottom: 0; }
 .al-summary-card {
   background: var(--card-bg);
   border: 1px solid var(--sidebar-border);
@@ -1391,6 +1392,35 @@ mark.gsr-highlight {
    INVENTORY VIEW
 ══════════════════════════════ */
 .inv-stats-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-bottom:14px; }
+.po-stats-card,
+.asset-stats-card { overflow-x: visible; }
+#invStatsGrid,
+#assetStatsGrid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  min-width: 0;
+  gap: 12px;
+  margin-bottom: 0;
+}
+.inv-stat-card {
+  min-height: 84px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--search-bg, #f4f6fa);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.inv-stat-card .stat-lbl { margin-bottom:8px; }
+.inv-stat-card .stat-val { font-size:24px; }
+[data-theme="dark"] .inv-stat-card {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--glass-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.inv-stat-card:hover { transform: translateY(-2px); box-shadow: var(--glass-shadow-sm); }
 .asset-section-divider { grid-column:1/-1; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:var(--text3); padding:6px 2px 2px; border-top:1px solid var(--border); margin-top:4px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .asset-divider-pills { display:flex; flex-wrap:wrap; gap:5px; }
 .asset-divider-pill { display:inline-flex; align-items:center; gap:5px; background:color-mix(in srgb,var(--pill-color,var(--accent)) 12%,transparent); border:1px solid color-mix(in srgb,var(--pill-color,var(--accent)) 35%,transparent); border-radius:4px; padding:2px 7px 2px 6px; font-size:10px; font-weight:600; color:var(--pill-color,var(--accent)); letter-spacing:0.3px; text-transform:none; cursor:pointer; white-space:nowrap; }
@@ -1437,29 +1467,12 @@ mark.gsr-highlight {
 .asset-type-pill.active-filter .pill-cnt { color:var(--accent); }
 [data-theme="light"] .asset-type-pill { background:var(--card-bg); border-color:var(--sidebar-border); backdrop-filter:none; }
 [data-theme="light"] .asset-type-pill.active-filter { background:color-mix(in srgb,var(--accent) 12%,var(--card-bg)) !important; }
-.inv-stat-card {
-  background:var(--glass-bg);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  border:1px solid var(--glass-border);
-  border-radius:var(--radius-lg);
-  padding:14px 16px;
-  cursor:pointer;
-  transition:transform 0.15s,box-shadow 0.15s;
-}
-.inv-stat-card:hover { transform:translateY(-2px); box-shadow:var(--glass-shadow); }
 .inv-stat-card.active-filter {
   border-color:var(--accent) !important;
   box-shadow:0 0 0 2px var(--accent-glow) !important;
   background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent) 8%, transparent)) !important;
 }
 .inv-stat-card.active-filter .stat-lbl { color:var(--accent); font-weight:700; }
-[data-theme="light"] .inv-stat-card {
-  background:var(--card-bg) !important;
-  backdrop-filter:none !important;
-  border-color:var(--sidebar-border) !important;
-  box-shadow:var(--card-shadow) !important;
-}
 [data-theme="light"] .inv-stat-card.active-filter {
   border-color:var(--accent) !important;
   box-shadow:0 0 0 2px var(--accent-glow) !important;
@@ -2125,7 +2138,7 @@ mark.gsr-highlight {
     <!-- INVENTORY VIEW -->
     <main class="main" id="inventoryMain" style="display:none;">
       <!-- Inv Stats -->
-      <div class="counter-card">
+      <div class="counter-card po-stats-card">
         <div class="inv-stats-grid" id="invStatsGrid"></div>
       </div>
 
@@ -2196,7 +2209,7 @@ mark.gsr-highlight {
       </div>
 
       <!-- Stats -->
-      <div class="counter-card">
+      <div class="counter-card asset-stats-card">
         <div class="inv-stats-grid" id="assetStatsGrid"></div>
       </div>
 
@@ -2333,7 +2346,7 @@ mark.gsr-highlight {
     <!-- ═════════════════════════════════════════════════════════════════ -->
     <main class="main" id="usersMain" style="display:none;">
       <!-- Toolbar -->
-      <div class="toolbar">
+      <div class="toolbar counter-card">
         <div class="search-wrap">
           <span class="search-icon">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
@@ -2361,13 +2374,15 @@ mark.gsr-highlight {
         </button>
       </div>
 
-      <!-- Count bar -->
-      <div class="count-bar">
-        <span id="userRecordCount">0 users</span>
-      </div>
+      <div class="counter-card">
+        <!-- Count bar -->
+        <div class="count-bar">
+          <span id="userRecordCount">0 users</span>
+        </div>
 
-      <!-- User Cards -->
-      <div id="userBody"></div>
+        <!-- User Cards -->
+        <div id="userBody"></div>
+      </div>
     </main>
 
     <!-- ═════════════════════════════════════════════════════════════════ -->
@@ -4521,7 +4536,7 @@ function renderInvStats() {
   ];
 
   document.getElementById('invStatsGrid').innerHTML = cards.map(c => `
-    <div class="inv-stat-card${invStatusFilter === c.filter ? ' active-filter' : ''}" onclick="invFilterStatus('${c.filter}')">
+    <div class="stat-card inv-stat-card${invStatusFilter === c.filter ? ' active-filter' : ''}" onclick="invFilterStatus('${c.filter}')">
       <div class="stat-lbl">${c.label}</div>
       <div class="stat-val ${c.cls}">${c.val}</div>
     </div>
@@ -5106,12 +5121,14 @@ function renderAudit(resetPage) {
   }
 
   const summaryHtml = `
-    <div class="al-summary">
-      ${alCard('All Logs',  auditLogs.length, 'var(--text)',  'auditFilterQuick("all")',    !qfAction && !qfDate)}
-      ${alCard('Today',     todayLogs,         'var(--accent)','auditFilterQuick("today")',   !qfAction && qfDate === today)}
-      ${alCard('Logins',    loginCount,         'var(--green)', 'auditFilterQuick("Login")',   qfAction === 'Login')}
-      ${alCard('Creates',   createCount,        'var(--blue)',  'auditFilterQuick("Create")',  qfAction === 'Create')}
-      ${alCard('Deletes',   deleteCount,        'var(--red)',   'auditFilterQuick("Delete")',  qfAction === 'Delete')}
+    <div class="counter-card audit-summary-wrap">
+      <div class="al-summary">
+        ${alCard('All Logs',  auditLogs.length, 'var(--text)',  'auditFilterQuick("all")',    !qfAction && !qfDate)}
+        ${alCard('Today',     todayLogs,         'var(--accent)','auditFilterQuick("today")',   !qfAction && qfDate === today)}
+        ${alCard('Logins',    loginCount,         'var(--green)', 'auditFilterQuick("Login")',   qfAction === 'Login')}
+        ${alCard('Creates',   createCount,        'var(--blue)',  'auditFilterQuick("Create")',  qfAction === 'Create')}
+        ${alCard('Deletes',   deleteCount,        'var(--red)',   'auditFilterQuick("Delete")',  qfAction === 'Delete')}
+      </div>
     </div>`;
 
   if (!filtered.length) {
@@ -5332,7 +5349,7 @@ function renderAssetStats() {
       click    = `onclick="_clickTotalAssets()" style="cursor:pointer;"`;
       tip      = `title="Show breakdown by asset type"`;
     }
-    return `<div class="inv-stat-card${isActive}" ${click} ${tip}><div class="stat-lbl">${c.label}</div>${valHtml(c.val, c.cls)}</div>`;
+    return `<div class="stat-card inv-stat-card${isActive}" ${click} ${tip}><div class="stat-lbl">${c.label}</div>${valHtml(c.val, c.cls)}</div>`;
   }).join('');
 
   // Map active status(es) to a CSS color for accordion tinting
