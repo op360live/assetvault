@@ -1687,9 +1687,24 @@ mark.gsr-highlight {
 
 /* ── DASHBOARD PAGE ── */
 .dash-section-title {
-  font-size: 13px; font-weight: 700; color: var(--text3);
-  text-transform: uppercase; letter-spacing: 0.7px;
-  margin-bottom: 14px; margin-top: 28px;
+  font-size: 14px; font-weight: 700; color: var(--text);
+  letter-spacing: -0.2px;
+  margin-bottom: 14px; margin-top: 0;
+}
+.counter-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--sidebar-border, #eaecf0);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  padding: 20px 22px;
+  margin-bottom: 16px;
+}
+[data-theme="dark"] .counter-card {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.30);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
 .dash-big-grid {
   display: grid;
@@ -1776,22 +1791,37 @@ mark.gsr-highlight {
 .spec-section-empty { font-size: 13px; color: var(--text3); font-style: italic; }
 .spec-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
 .spec-card {
-  background: var(--glass-bg); border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg); padding: 16px 18px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  cursor: pointer; transition: background 0.18s, border-color 0.18s, transform 0.15s;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  cursor: pointer;
+  transition: border-color 0.18s, transform 0.15s, box-shadow 0.15s;
 }
-[data-theme="dark"] .spec-card {
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(255,255,255,0.1);
-  box-shadow: 0 1px 6px rgba(0,0,0,0.35);
-}
-.spec-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+.spec-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
 .spec-card:active { transform: translateY(0); }
-.spec-card.sp-deployed { border-top: 3px solid var(--green); }
-.spec-card.sp-spare    { border-top: 3px solid var(--blue); }
-.spec-card-label { font-size: 12px; color: var(--text2); font-weight: 600; line-height: 1.4; margin-bottom: 10px; }
-.spec-card-count { font-size: 26px; font-weight: 800; color: var(--accent); }
+.spec-card.sp-deployed { border-left: 3px solid var(--green); }
+.spec-card.sp-spare    { border-left: 3px solid var(--blue); }
+.spec-card-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+}
+.spec-card-count {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
 
 /* bar chart */
 .dash-bar-section { margin-top: 28px; }
@@ -2764,27 +2794,33 @@ mark.gsr-highlight {
 
     <!-- ══════════ DASHBOARD VIEW ══════════ -->
     <div class="view active" id="dashView">
-      <div class="dash-section-title">Asset Overview</div>
-      <div class="dash-big-grid" id="dashBigGrid"></div>
+      <div class="counter-card">
+        <div class="dash-section-title">Asset Overview</div>
+        <div class="dash-big-grid" id="dashBigGrid"></div>
+      </div>
 
-      <div class="dash-section-title" style="margin-top:24px;">Accountability Status</div>
-      <div class="acct-counter-grid" id="dashAcctGrid"></div>
+      <div class="counter-card" style="margin-top:16px;">
+        <div class="dash-section-title">Accountability Status</div>
+        <div class="acct-counter-grid" id="dashAcctGrid"></div>
+      </div>
 
-      <div class="dash-section-title" style="margin-top:24px;">Total Assets per Site</div>
-      <div class="site-grid" id="dashSiteGrid"></div>
-
-      <!-- All Assets per Site — full width, directly under overview -->
-      <div class="dash-section-title" style="margin-top:24px;">All Assets per Site</div>
-      <div class="site-status-table-wrap" id="dashSiteStatusTable"></div>
+      <div class="counter-card" style="margin-top:16px;">
+        <div class="dash-section-title">Total Assets per Site</div>
+        <div class="site-grid" id="dashSiteGrid"></div>
+      </div>
 
       <div class="dash-two-col" style="margin-top:28px;">
         <div>
-          <div class="dash-section-title">Additional Statistics</div>
-          <div class="dash-extra-grid" id="dashExtraGrid"></div>
+          <div class="counter-card">
+            <div class="dash-section-title">Additional Statistics</div>
+            <div class="dash-extra-grid" id="dashExtraGrid"></div>
+          </div>
         </div>
         <div>
-          <div class="dash-section-title">Recent Modified Asset</div>
-          <div class="activity-list" id="dashRecentModified"></div>
+          <div class="counter-card">
+            <div class="dash-section-title">Recent Modified Asset</div>
+            <div class="activity-list" id="dashRecentModified"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -2800,7 +2836,9 @@ mark.gsr-highlight {
         <button class="site-tab" id="laptopSiteTab-offsite" onclick="setLaptopSiteTab('OFFSITE')">OFFSITE</button>
         <button class="site-tab" id="laptopSiteTab-sdp" onclick="setLaptopSiteTab('SDP')">SDP</button>
       </div>
-      <div class="stats-grid" id="statsGrid"></div>
+      <div class="counter-card">
+        <div class="stats-grid" id="statsGrid" style="margin-bottom:0"></div>
+      </div>
 
       <div class="toolbar">
         <div class="search-wrap" style="flex:1;min-width:260px;">
@@ -2871,8 +2909,10 @@ mark.gsr-highlight {
 
     <!-- ══════════ CATEGORY VIEW ══════════ -->
     <div class="view" id="catView">
-      <div class="dash-section-title">Brand Overview</div>
-      <div class="brand-grid" id="catBrandGrid"></div>
+      <div class="counter-card">
+        <div class="dash-section-title">Brand Overview</div>
+        <div class="brand-grid" id="catBrandGrid"></div>
+      </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:28px;">
         <div class="spec-section">
@@ -2894,30 +2934,32 @@ mark.gsr-highlight {
 
     <!-- ══════════ AUDIT VIEW ══════════ -->
     <div class="view" id="auditView">
-      <div class="audit-toolbar">
-        <div class="audit-filters">
-          <select class="filter-select" id="auditTypeFilter" onchange="renderAudit()">
-            <option value="">All Activities</option>
-            <option value="login">Logins</option>
-            <option value="add">Added</option>
-            <option value="edit">Modified</option>
-            <option value="delete">Deleted</option>
-            <option value="import">Imports</option>
-          </select>
-          <select class="filter-select" id="auditUserFilter" onchange="renderAudit()">
-            <option value="">All Users</option>
-          </select>
+      <div class="counter-card">
+        <div class="audit-toolbar">
+          <div class="audit-filters">
+            <select class="filter-select" id="auditTypeFilter" onchange="renderAudit()">
+              <option value="">All Activities</option>
+              <option value="login">Logins</option>
+              <option value="add">Added</option>
+              <option value="edit">Modified</option>
+              <option value="delete">Deleted</option>
+              <option value="import">Imports</option>
+            </select>
+            <select class="filter-select" id="auditUserFilter" onchange="renderAudit()">
+              <option value="">All Users</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span class="audit-total-badge" id="auditTotalBadge">0 events</span>
+            <button class="btn btn-sm btn-primary" onclick="exportAuditLog()" title="Download audit log as CSV">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
+              Export Logs
+            </button>
+          </div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <span class="audit-total-badge" id="auditTotalBadge">0 events</span>
-          <button class="btn btn-sm btn-primary" onclick="exportAuditLog()" title="Download audit log as CSV">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0018 9h-1.26A8 8 0 104 16.29"/></svg>
-            Export Logs
-          </button>
-        </div>
+        <div class="audit-list" id="auditList"></div>
+        <div class="audit-pagination" id="auditPagination"></div>
       </div>
-      <div class="audit-list" id="auditList"></div>
-      <div class="audit-pagination" id="auditPagination"></div>
     </div>
 
     <!-- ══════════ USERS VIEW ══════════ -->
