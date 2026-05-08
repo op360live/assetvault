@@ -1532,11 +1532,10 @@ mark.gsr-highlight {
   letter-spacing:0.2px;
 }
 .pcc-deployed  { background:var(--green-bg); color:var(--green); }
-.pcc-borrowed  { background:var(--amber-bg); color:var(--amber); }
-.pcc-defective { background:var(--red-bg);   color:var(--red); }
-.pcc-repair    { background:var(--amber-bg); color:var(--amber); }
-.pcc-lost      { background:rgba(128,128,128,0.12); color:var(--text3); }
 .pcc-spare     { background:var(--blue-bg);  color:var(--blue); }
+.pcc-docked    { background:rgba(61,180,140,0.12); color:var(--green); }
+.pcc-for-repair { background:var(--amber-bg); color:var(--amber); }
+.pcc-for-disposal { background:var(--red-bg); color:var(--red); }
 .pcc-untagged  { background:var(--glass-border); color:var(--text3); }
 
 /* Multi-item sub-section within a PO card */
@@ -1609,11 +1608,10 @@ mark.gsr-highlight {
   font-family:inherit;
 }
 .asset-status-select[data-status="Deployed"]  { background-color:var(--green-bg); color:var(--green); border-color:var(--green); }
-.asset-status-select[data-status="Defective"] { background-color:var(--red-bg);   color:var(--red);   border-color:var(--red); }
-.asset-status-select[data-status="Repair"]    { background-color:var(--amber-bg); color:var(--amber); border-color:var(--amber); }
-.asset-status-select[data-status="Lost"]      { background-color:rgba(128,128,128,0.10); color:var(--text3); border-color:var(--text3); }
 .asset-status-select[data-status="Spare"]     { background-color:var(--blue-bg);  color:var(--blue);  border-color:var(--blue); }
-.asset-status-select[data-status="Borrowed"]  { background-color:var(--amber-bg); color:var(--amber); border-color:var(--amber); }
+.asset-status-select[data-status="Docked"]    { background-color:rgba(61,180,140,0.12); color:var(--green); border-color:var(--green); }
+.asset-status-select[data-status="For Repair"] { background-color:var(--amber-bg); color:var(--amber); border-color:var(--amber); }
+.asset-status-select[data-status="For Disposal"] { background-color:var(--red-bg); color:var(--red); border-color:var(--red); }
 .asset-status-select[data-status="Untagged"]  { background-color:var(--glass-bg); color:var(--text3); border-color:var(--glass-border); }
 .inv-serial { font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--text2); }
 .inv-unit   { font-size:12px; color:var(--text3); font-style:italic; }
@@ -2155,10 +2153,10 @@ mark.gsr-highlight {
         <select class="filter-select" id="invStatusFilter" onchange="renderInventory()">
           <option value="">All Status</option>
           <option>Deployed</option>
-          <option>Defective</option>
-          <option>Repair</option>
-          <option>Lost</option>
           <option>Spare</option>
+          <option>Docked</option>
+          <option>For Repair</option>
+          <option>For Disposal</option>
           <option>Untagged</option>
         </select>
         <select class="filter-select" id="invTypeFilter" onchange="renderInventory()">
@@ -2226,7 +2224,6 @@ mark.gsr-highlight {
         <select class="filter-select" id="assetStatusFilter" onchange="_assetStatusFilters.clear();_assetPage=1;renderAssets()">
           <option value="">All Status</option>
           <option>Deployed</option>
-          <option>Borrowed</option>
           <option>Spare</option>
           <option>Docked</option>
           <option>For Repair</option>
@@ -2516,7 +2513,15 @@ mark.gsr-highlight {
         </div>
         <div class="fg full">
           <label>To <span style="color:var(--red)">*</span></label>
-          <input type="text" id="f_to" placeholder="e.g. Department / Site / Person receiving the asset" required>
+          <select id="f_to" required>
+            <option value="">Select Site</option>
+            <option>DMD</option>
+            <option>EB2</option>
+            <option>EB3</option>
+            <option>ET</option>
+            <option>SDP</option>
+            <option>WFH</option>
+          </select>
         </div>
         <div class="fg full">
           <label>Notes / Remarks</label>
@@ -2826,7 +2831,7 @@ mark.gsr-highlight {
           <label>Status</label>
           <select id="af_status">
             <option value="">— Select —</option>
-            <option>Deployed</option><option>Borrowed</option><option>Spare</option><option>Docked</option>
+            <option>Deployed</option><option>Spare</option><option>Docked</option>
             <option>For Repair</option><option>For Disposal</option>
           </select>
         </div>
@@ -3770,17 +3775,17 @@ function renderDashboard() {
   // Inventory counters
   const allInv = Object.values(invItems);
   const invTotal = allInv.length;
-  const invCounts = { Deployed:0, Defective:0, Repair:0, Lost:0, Spare:0, Untagged:0, Borrowed:0 };
+  const invCounts = makeInventoryStatusCounts();
   allInv.forEach(v => { if (invCounts[v.status] !== undefined) invCounts[v.status]++; });
 
   document.getElementById('dashInvGrid').innerHTML = [
     { lbl: 'Total Assets', val: invTotal,              cls: 'sv-total',    filter: '' },
     { lbl: 'Deployed',     val: invCounts.Deployed,    cls: 'sv-received', filter: 'Deployed' },
-    { lbl: 'Borrowed',     val: invCounts.Borrowed,    cls: 'sv-pending',  filter: 'Borrowed' },
+    { lbl: 'Spare',        val: invCounts.Spare,       cls: 'sv-partial',  filter: 'Spare' },
+    { lbl: 'Docked',       val: invCounts.Docked,      cls: 'sv-received', filter: 'Docked' },
+    { lbl: 'For Repair',   val: invCounts['For Repair'], cls: 'sv-pending', filter: 'For Repair' },
+    { lbl: 'For Disposal', val: invCounts['For Disposal'], cls: 'sv-cancelled', filter: 'For Disposal' },
     { lbl: 'Untagged',     val: invCounts.Untagged,    cls: 'sv-returned', filter: 'Untagged' },
-    { lbl: 'Repair',       val: invCounts.Repair,      cls: 'sv-pending',  filter: 'Repair' },
-    { lbl: 'Defective',    val: invCounts.Defective,   cls: 'sv-cancelled',filter: 'Defective' },
-    { lbl: 'Spare',        val: invCounts.Spare,        cls: 'sv-partial',  filter: 'Spare' },
   ].map(c => `
     <div class="dash-stat" onclick="switchView('inventory');invFilterStatus('${c.filter}')">
       <div class="dash-stat-lbl">${c.lbl}</div>
@@ -4001,7 +4006,7 @@ window.openEditModal = function(id) {
   document.getElementById('f_status').value       = r.status       || '';
   document.getElementById('f_itTech').value       = r.itTech       || '';
   document.getElementById('f_from').value         = r.from         || '';
-  document.getElementById('f_to').value           = r.to           || '';
+  ensureSelectValue('f_to', r.to || '');
   document.getElementById('f_notes').value        = r.notes        || '';
   // Populate items
   const _itemsCont = document.getElementById('itemsContainer');
@@ -4018,6 +4023,26 @@ window.openEditModal = function(id) {
 };
 
 window.closeFormModal = function() { document.getElementById('formOverlay').classList.remove('open'); };
+
+function ensureSelectValue(selectId, value) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  Array.from(select.querySelectorAll('option[data-legacy="true"]')).forEach(option => option.remove());
+  const nextValue = (value || '').trim();
+  if (!nextValue) {
+    select.value = '';
+    return;
+  }
+  const hasOption = Array.from(select.options).some(option => option.value === nextValue);
+  if (!hasOption) {
+    const option = document.createElement('option');
+    option.value = nextValue;
+    option.textContent = nextValue;
+    option.dataset.legacy = 'true';
+    select.appendChild(option);
+  }
+  select.value = nextValue;
+}
 
 function clearForm() {
   ['f_po','f_deliveryDate','f_status','f_itTech','f_from','f_to','f_notes']
@@ -4182,6 +4207,7 @@ window.saveRecord = async function() {
   }
 
   const items = getItemsFromDOM();
+  const seenSerials = new Map();
   for (let i = 0; i < items.length; i++) {
     if (!items[i].assetType) { showToast('Item ' + (i+1) + ': Asset Type is required.', true); return; }
     if (!items[i].quantity || items[i].quantity < 1) { showToast('Item ' + (i+1) + ': Quantity is required.', true); return; }
@@ -4189,6 +4215,15 @@ window.saveRecord = async function() {
     if (enteredSerials.length === 0) { showToast('Item ' + (i+1) + ': At least one serial number is required.', true); return; }
     if (enteredSerials.length < items[i].quantity) { showToast('Item ' + (i+1) + ': Serial numbers incomplete — ' + enteredSerials.length + ' entered but ' + items[i].quantity + ' required.', true); return; }
     if (enteredSerials.length > items[i].quantity) { showToast('Item ' + (i+1) + ': Too many serials entered — ' + enteredSerials.length + ' entered but only ' + items[i].quantity + ' allowed.', true); return; }
+    for (const serial of enteredSerials) {
+      const key = serial.toLowerCase();
+      if (seenSerials.has(key)) {
+        const firstItem = seenSerials.get(key);
+        showToast('Duplicate serial number in this PO: ' + serial + ' (Items ' + firstItem + ' and ' + (i + 1) + ').', true);
+        return;
+      }
+      seenSerials.set(key, i + 1);
+    }
   }
 
   // Aggregate top-level compat fields from all items
@@ -4408,11 +4443,80 @@ let invItems = {};   // key: `${recordId}__${serial}` → { status, notes, updat
 let currentView = 'deliveries';
 let invStatusFilter = ''; // active stat-card filter
 
+const INVENTORY_STATUS_OPTIONS = ['Deployed','Spare','Docked','For Repair','For Disposal','Untagged'];
+
+function makeInventoryStatusCounts() {
+  return { Deployed:0, Spare:0, Docked:0, 'For Repair':0, 'For Disposal':0, Untagged:0 };
+}
+
+function normalizeInventoryStatus(status) {
+  const mapped = {
+    Borrowed: 'Spare',
+    Defective: 'For Disposal',
+    Repair: 'For Repair',
+    Lost: 'For Disposal'
+  };
+  const nextStatus = mapped[status] || status || 'Untagged';
+  return INVENTORY_STATUS_OPTIONS.includes(nextStatus) ? nextStatus : 'Untagged';
+}
+
+function inventoryStatusClass(status) {
+  const classMap = {
+    Deployed: 'pcc-deployed',
+    Spare: 'pcc-spare',
+    Docked: 'pcc-docked',
+    'For Repair': 'pcc-for-repair',
+    'For Disposal': 'pcc-for-disposal',
+    Untagged: 'pcc-untagged'
+  };
+  return classMap[normalizeInventoryStatus(status)] || 'pcc-untagged';
+}
+
+function findAssetBySerial(serial) {
+  const key = (serial || '').trim().toLowerCase();
+  if (!key) return null;
+  return assetsDb.find(asset => (asset.serialNumber || '').trim().toLowerCase() === key) || null;
+}
+
+async function ensureAssetRegisterEntryFromInventory(key) {
+  const item = invItems[key];
+  const serial = (item?._serial || '').trim();
+  if (!serial) return;
+
+  if (findAssetBySerial(serial)) {
+    showToast('Serial already in Asset Register', true);
+    return;
+  }
+
+  const record = records.find(entry => entry.id === item._rec);
+  const asset = {
+    id: 'ast_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    site: (record?.to || '').trim(),
+    quantity: '1',
+    serialNumber: serial,
+    status: 'Deployed',
+    updatedAt: new Date().toISOString(),
+    updatedBy: currentUser?.username || '',
+  };
+
+  try {
+    await _persistAsset(asset);
+    logAudit('Auto Add Asset', serial + ' added to Asset Register');
+    if (currentView === 'assets') renderAssets();
+    showToast('Serial added to Asset Register.');
+  } catch {
+    showToast('Failed to add serial to Asset Register.', true);
+  }
+}
+
 function loadInventory() {
   try {
     const s = JSON.parse(localStorage.getItem(LS_INV));
     if (s && typeof s === 'object') invItems = s;
   } catch {}
+  Object.values(invItems).forEach(item => {
+    if (item && typeof item === 'object') item.status = normalizeInventoryStatus(item.status);
+  });
 }
 
 function persistInventory() {
@@ -4431,10 +4535,13 @@ function persistInventory() {
 // Creates new entries for any serial/unit not yet tracked; preserves existing statuses.
 function syncInventoryFromRecords() {
   loadInventory();
+  const validKeys = new Set();
   records.forEach(r => {
     // Helper to upsert one unit into invItems
     function upsert(key, assetType, brand, serial, unit, itemIdx) {
+      validKeys.add(key);
       if (!invItems[key]) invItems[key] = { status: 'Untagged', notes: '', updatedBy: '', updatedAt: '' };
+      invItems[key].status = normalizeInventoryStatus(invItems[key].status);
       invItems[key]._rec      = r.id;
       invItems[key]._assetType = assetType || '';
       invItems[key]._brand     = brand     || '';
@@ -4466,24 +4573,25 @@ function syncInventoryFromRecords() {
     }
   });
   // Remove orphan keys (records deleted)
-  const validIds = new Set(records.map(r => r.id));
   Object.keys(invItems).forEach(k => {
-    const recId = k.split('__')[0];
-    if (!validIds.has(recId)) delete invItems[k];
+    if (!validKeys.has(k)) delete invItems[k];
   });
   persistInventory();
 }
 
-window.setAssetStatus = function(key, value) {
+window.setAssetStatus = async function(key, value) {
   if (!invItems[key]) return;
-  invItems[key].status = value;
+  const nextStatus = normalizeInventoryStatus(value);
+  const prevStatus = normalizeInventoryStatus(invItems[key].status);
+  invItems[key].status = nextStatus;
   invItems[key].updatedBy = currentUser?.displayName || currentUser?.username || '';
   invItems[key].updatedAt = new Date().toISOString();
   persistInventory();
   // Update the select's data-status for CSS color
   const sel = document.querySelector(`.asset-status-select[data-key="${key.replace(/"/g,'&quot;')}"]`);
   if (sel) {
-    sel.setAttribute('data-status', value);
+    sel.value = nextStatus;
+    sel.setAttribute('data-status', nextStatus);
     // Update "last updated" cell — find by sibling structure
     const tr = sel.closest('tr');
     if (tr) {
@@ -4491,6 +4599,7 @@ window.setAssetStatus = function(key, value) {
       if (updEl) updEl.textContent = 'by ' + (invItems[key].updatedBy || '—') + ' · just now';
     }
   }
+  if (prevStatus !== 'Deployed' && nextStatus === 'Deployed') await ensureAssetRegisterEntryFromInventory(key);
   renderInvStats();
 };
 
@@ -4514,24 +4623,30 @@ window.deleteInvUnit = function(key) {
 };
 
 function invStatusColor(s) {
-  const map = { Deployed:'b-received', Defective:'b-cancelled', Repair:'b-pending', Lost:'b-returned', Spare:'b-partial', Untagged:'b-returned', Borrowed:'b-pending' };
-  return map[s] || 'b-returned';
+  const map = {
+    Deployed:'b-received',
+    Spare:'b-partial',
+    Docked:'b-received',
+    'For Repair':'b-pending',
+    'For Disposal':'b-cancelled',
+    Untagged:'b-returned'
+  };
+  return map[normalizeInventoryStatus(s)] || 'b-returned';
 }
 
 function renderInvStats() {
   const all   = Object.values(invItems);
   const total = all.length;
-  const counts = { Deployed:0, Defective:0, Repair:0, Lost:0, Spare:0, Untagged:0, Borrowed:0 };
+  const counts = makeInventoryStatusCounts();
   all.forEach(v => { if (counts[v.status] !== undefined) counts[v.status]++; });
 
   const cards = [
     { label:'Total Assets', val:total,            cls:'sv-total',    filter:'' },
     { label:'Deployed',     val:counts.Deployed,  cls:'sv-received', filter:'Deployed' },
-    { label:'Borrowed',     val:counts.Borrowed,  cls:'sv-pending',  filter:'Borrowed' },
-    { label:'Defective',    val:counts.Defective, cls:'sv-returned', filter:'Defective' },
-    { label:'Repair',       val:counts.Repair,    cls:'sv-pending',  filter:'Repair' },
-    { label:'Lost',         val:counts.Lost,      cls:'sv-returned', filter:'Lost' },
     { label:'Spare',        val:counts.Spare,     cls:'sv-partial',  filter:'Spare' },
+    { label:'Docked',       val:counts.Docked,    cls:'sv-received', filter:'Docked' },
+    { label:'For Repair',   val:counts['For Repair'], cls:'sv-pending', filter:'For Repair' },
+    { label:'For Disposal', val:counts['For Disposal'], cls:'sv-cancelled', filter:'For Disposal' },
     { label:'Untagged',     val:counts.Untagged,  cls:'sv-returned', filter:'Untagged' },
   ];
 
@@ -4607,11 +4722,11 @@ function renderInventory() {
 
   document.getElementById('invBody').innerHTML = filtered.map(g => {
     const r = g.rec;
-    const counts = { Deployed:0, Defective:0, Repair:0, Lost:0, Spare:0, Untagged:0 };
+    const counts = makeInventoryStatusCounts();
     g.items.forEach(item => { if (counts[item.status] !== undefined) counts[item.status]++; });
     const countChips = Object.entries(counts)
       .filter(([,v]) => v > 0)
-      .map(([s, v]) => `<span class="po-count-chip pcc-${s.toLowerCase()}">${s} ${v}</span>`)
+      .map(([s, v]) => `<span class="po-count-chip ${inventoryStatusClass(s)}">${s} ${v}</span>`)
       .join('');
 
     // Filter items for display
@@ -4632,7 +4747,7 @@ function renderInventory() {
       const unitLabel = item._serial
         ? `<span class="inv-serial">${esc(item._serial)}</span>`
         : `<span class="inv-unit">Unit ${item._unit}</span>`;
-      const statusOpts = ['Deployed','Borrowed','Defective','Repair','Lost','Spare','Untagged']
+      const statusOpts = INVENTORY_STATUS_OPTIONS
         .map(s => `<option value="${s}"${item.status===s?' selected':''}>${s}</option>`).join('');
       const safeKey = item.key.replace(/"/g,'&quot;');
       const recId   = item._rec || '';
@@ -5305,7 +5420,7 @@ function renderAssetStats() {
     : all;
 
   const total = scoped.length;
-  const counts = { Deployed:0, Borrowed:0, Spare:0, Docked:0, 'For Repair':0, 'For Disposal':0 };
+  const counts = { Deployed:0, Spare:0, Docked:0, 'For Repair':0, 'For Disposal':0 };
   scoped.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
 
   // By-Asset-Type counts — scoped to BOTH site AND active status filters
@@ -5331,7 +5446,6 @@ function renderAssetStats() {
   const statusCards = [
     { label:'Total Assets', val:total,                  cls:'sv-total',    status:null },
     { label:'Deployed',     val:counts.Deployed,        cls:'sv-partial',  status:'Deployed' },
-    { label:'Borrowed',     val:counts.Borrowed,        cls:'sv-pending',  status:'Borrowed' },
     { label:'Spare',        val:counts.Spare,           cls:'sv-received', status:'Spare' },
     { label:'Docked',       val:counts.Docked,          cls:'sv-received', status:'Docked' },
     { label:'For Repair',   val:counts['For Repair'],   cls:'sv-pending',  status:'For Repair' },
@@ -5728,8 +5842,8 @@ function renderAssets(skipStats) {
   _renderAssetPagination(total, start, end);
 
   const statusColors = {
-    Active:'var(--green)', Deployed:'var(--accent)', Borrowed:'var(--blue)', Spare:'var(--amber)',
-    Defective:'var(--red)', Repair:'var(--amber)', Decommissioned:'var(--text3)', Lost:'var(--red)'
+    Active:'var(--green)', Deployed:'var(--accent)', Spare:'var(--amber)',
+    Docked:'var(--green)', 'For Repair':'var(--amber)', 'For Disposal':'var(--red)', Decommissioned:'var(--text3)'
   };
 
   if (!total) {
@@ -6404,8 +6518,19 @@ function renderGlobalResults(query) {
   );
   const recHits = allRecHits.slice(0, serialHits.length ? 4 : 8);
 
-  if (!assetHits.length && !serialHits.length && !recHits.length) {
-    results.innerHTML = `<div class="gsr-empty">No results for "<strong>${esc(query)}</strong>"</div>`;
+  const noResults = !assetHits.length && !serialHits.length && !recHits.length;
+  if (noResults) {
+    const safeQ = query.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    results.innerHTML = `<div class="gsr-empty">No results for "<strong>${esc(query)}</strong>"</div>
+      <div class="gsr-section-label">Add to Asset Register</div>
+      <div class="gsr-serial-item">
+        <div style="flex:1;min-width:0">
+          <div class="gsr-serial-num">${esc(query)}</div>
+          <div class="gsr-serial-po">Serial not found in any record</div>
+        </div>
+        <button class="btn btn-primary" style="font-size:11px;padding:4px 10px;white-space:nowrap;flex-shrink:0"
+          onclick="openAssetFormForSerial('${safeQ}','','')">Add Asset</button>
+      </div>`;
     positionSearchResults();
     results.classList.add('open');
     return;
@@ -6418,7 +6543,7 @@ function renderGlobalResults(query) {
     return esc(str.slice(0, idx)) + '<mark class="gsr-highlight">' + esc(str.slice(idx, idx + q.length)) + '</mark>' + esc(str.slice(idx + q.length));
   };
 
-const statusOpts = ['Deployed','Borrowed','Defective','Repair','Lost','Spare','Untagged']
+const statusOpts = INVENTORY_STATUS_OPTIONS
     .map(s => `<option value="${s}">`+s+'</option>').join('');
 
   let html = '';
@@ -6427,35 +6552,54 @@ const statusOpts = ['Deployed','Borrowed','Defective','Repair','Lost','Spare','U
   if (assetHits.length) {
     html += `<div class="gsr-section-label">Asset Register (${assetHits.length})</div>`;
     html += assetHits.map(a => {
-      const assetStatuses = ['Deployed','Borrowed','Spare','Docked','For Repair','For Disposal'];
+      const assetStatuses = ['Deployed','Spare','Docked','For Repair','For Disposal'];
       const line2 = [a.assetType, a.deviceModel, a.site, a.custodian].filter(Boolean).map(esc).join(' &middot; ');
       return `<div class="gsr-serial-item">
         <div style="flex:1;min-width:0;cursor:pointer" onclick="goToAsset('${a.id}')" title="Open in Asset Register">
           <div class="gsr-serial-num">${hl(a.serialNumber || a.assetTag || '—')}</div>
           <div class="gsr-serial-po">${line2 || '—'}</div>
         </div>
-        <select class="gsr-status-select" data-assetid="${a.id}"
-          onchange="quickUpdateAssetStatus('${a.id}',this.value)">
+        <select class="gsr-status-select" data-status="${a.status}"
+          onchange="openAssetFormForSerial('${(a.serialNumber||a.assetTag||'').replace(/'/g,String.fromCharCode(92,39))}','${(a.site||'').replace(/'/g,String.fromCharCode(92,39))}',this.value);this.value=this.dataset.status">
           ${assetStatuses.map(s=>`<option value="${s}"${a.status===s?' selected':''}>${s}</option>`).join('')}
         </select>
       </div>`;
     }).join('');
   }
 
-  // Serial section
+  // Serial section — or Add Asset suggestion when serial not found anywhere
+  if (!serialHits.length && !assetHits.length) {
+    const safeQ = query.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    html += `<div class="gsr-section-label">Add to Asset Register</div>
+      <div class="gsr-serial-item">
+        <div style="flex:1;min-width:0">
+          <div class="gsr-serial-num">${esc(query)}</div>
+          <div class="gsr-serial-po">Serial not found in any record</div>
+        </div>
+        <button class="btn btn-primary" style="font-size:11px;padding:4px 10px;white-space:nowrap;flex-shrink:0"
+          onclick="openAssetFormForSerial('${safeQ}','','')">Add Asset</button>
+      </div>`;
+  }
   if (serialHits.length) {
     html += `<div class="gsr-section-label">Serial Numbers (${serialHits.length})</div>`;
+    const _arStatuses = ['Deployed','Spare','Docked','For Repair','For Disposal'];
     html += serialHits.slice(0, 6).map(({ key, item, rec }) => {
-      const safeKey = key.replace(/"/g, '&quot;');
+      const safeSerial = (item._serial || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const safeSite   = (rec.to || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      const existingAsset = findAssetBySerial(item._serial);
+      const rightControl = existingAsset
+        ? `<select class="gsr-status-select" data-status="${existingAsset.status}"
+              onchange="openAssetFormForSerial('${safeSerial}','${safeSite}',this.value);this.value=this.dataset.status">
+              ${_arStatuses.map(s => `<option value="${s}"${existingAsset.status === s ? ' selected' : ''}>${s}</option>`).join('')}
+            </select>`
+        : `<button class="btn btn-primary" style="font-size:11px;padding:4px 10px;white-space:nowrap;flex-shrink:0"
+              onclick="openAssetFormForSerial('${safeSerial}','${safeSite}','')">Add Asset</button>`;
       return `<div class="gsr-serial-item">
         <div style="flex:1;min-width:0">
           <div class="gsr-serial-num">${hl(item._serial)}</div>
           <div class="gsr-serial-po">${esc(rec.po || '—')} &middot; ${esc(rec.assetType || '—')} &middot; ${esc(rec.brand || '—')}</div>
         </div>
-        <select class="gsr-status-select" data-status="${item.status}" data-key="${safeKey}"
-          onchange="setAssetStatus(this.dataset.key,this.value);this.setAttribute('data-status',this.value)">
-          ${['Deployed','Borrowed','Defective','Repair','Lost','Spare','Untagged'].map(s=>`<option value="${s}"${item.status===s?' selected':''}>${s}</option>`).join('')}
-        </select>
+        ${rightControl}
       </div>`;
     }).join('');
   }
@@ -6507,6 +6651,31 @@ window.goToAsset = function(id) {
   }
   // Open edit modal after view renders
   setTimeout(() => openEditAssetModal(id), 120);
+};
+
+// Open Asset Register form from global search serial result
+window.openAssetFormForSerial = function(serial, site, status) {
+  document.getElementById('globalSearchInput').value = '';
+  document.getElementById('globalSearchResults').classList.remove('open');
+  switchView('assets');
+  const existing = findAssetBySerial(serial);
+  if (existing) {
+    setTimeout(() => {
+      openEditAssetModal(existing.id);
+      const statusEl = document.getElementById('af_status');
+      if (statusEl && status) statusEl.value = status;
+    }, 120);
+  } else {
+    setTimeout(() => {
+      openAddAssetModal();
+      const serialEl = document.getElementById('af_serialNumber');
+      if (serialEl) serialEl.value = serial;
+      const siteEl = document.getElementById('af_site');
+      if (siteEl && site) siteEl.value = site;
+      const statusEl = document.getElementById('af_status');
+      if (statusEl && status) statusEl.value = status;
+    }, 120);
+  }
 };
 
 // Flip asset status directly from global search without navigating
