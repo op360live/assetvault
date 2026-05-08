@@ -1135,6 +1135,14 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         </svg>
         <span class="sb-item-label">Employee Asset</span>
       </button>
+      <button class="sb-item" id="navDeploymentReturnedAssets" onclick="switchView('deploymentReturnedAssets')" title="Deployment & Returns">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 7h16" />
+          <path d="M4 12h16" />
+          <path d="M4 17h16" />
+        </svg>
+        <span class="sb-item-label">Deployment & Returns</span>
+      </button>
 
       <div class="sb-divider"></div>
       <div class="sb-section-label">IT Tools</div>
@@ -1313,31 +1321,6 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         </button>
       </div>
 
-      <div style="margin:0 0 16px"></div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th onclick="sortBy('recordNumber')">Record #</th>
-              <th onclick="sortBy('offboardingId')">Employee ID</th>
-              <th onclick="sortBy('employeeName')">Employee Full Name</th>
-              <th onclick="sortBy('separationFiledDateTime')">Filed Date &amp; Time (EST)</th>
-              <th onclick="sortBy('businessUnit')">Business Unit</th>
-              <th onclick="sortBy('employeeLocation')">Location</th>
-              <th onclick="sortBy('lastDayOfWork')">Last Day of Work</th>
-              <th onclick="sortBy('separationDate')">Separation Date</th>
-              <th onclick="sortBy('separationType')">Separation Type</th>
-              <th onclick="sortBy('personalEmail')">Personal Email</th>
-              <th onclick="sortBy('clearanceStatus')">IT Tools Clearance</th>
-              <th onclick="sortBy('itAssetClearanceStatus')">IT Asset Clearance</th>
-              <th onclick="sortBy('offboardingStatus')">Offboarding Status</th>
-              <th onclick="sortBy('jobTitle')">Job Title</th>
-              <th class="no-sort">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
       <div id="obPagination"></div>
     </main>
 
@@ -1363,6 +1346,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
           Delete All
         </button>
       </div>
+      <div style="margin:0 0 16px"></div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -1386,6 +1370,41 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         </table>
       </div>
       <div id="eaPagination"></div>
+    </main>
+
+    <main class="main" id="deploymentReturnedAssetsMain" style="display:none;">
+      <div class="toolbar counter-card">
+        <div class="search-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="search-input" id="draSearchInput" placeholder="Search location, name, asset…" oninput="draPage=1;renderDeploymentReturnedAssetsTable()">
+        </div>
+      </div>
+      <div class="count-bar">
+        <span id="draRecordCount">0 records</span>
+        <input type="file" id="draCsvInput" accept=".csv" style="display:none" onchange="handleDRACSVImport(event)">
+        <button class="btn btn-sm" id="btnDRAImportCSV" onclick="openDRAImportNoticeModal()" style="margin-left:10px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Import CSV
+        </button>
+        <button class="btn btn-sm" onclick="openDRAAddModal()" style="margin-left:10px;">Add Record</button>
+        <button class="btn btn-sm btn-danger" id="btnDRADelAll" onclick="deleteAllDRARecords()" style="margin-left:10px; display:none;">Delete All</button>
+      </div>
+      <div style="margin:0 0 16px"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Location</th>
+              <th>Name</th>
+              <th>Asset</th>
+              <th>Date Returned</th>
+              <th>Asset Return Created</th>
+            </tr>
+          </thead>
+          <tbody id="draTableBody"></tbody>
+        </table>
+      </div>
+      <div id="draPagination"></div>
     </main>
 
   </div>
@@ -1429,6 +1448,75 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
     <div class="modal-footer">
       <button class="btn" onclick="closeEAImportNoticeModal()">Cancel</button>
       <button class="btn btn-primary" onclick="confirmEAImportNotice()">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- DRA IMPORT NOTICE MODAL -->
+<div class="overlay" id="draImportNoticeOverlay" onclick="if(event.target===this)closeDRAImportNoticeModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">Deployment & Returns Import</div>
+      <button class="modal-close" onclick="closeDRAImportNoticeModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px;color:var(--text2);line-height:1.55;">
+        Please upload <strong>Deployment & Returns.csv</strong> here.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeDRAImportNoticeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmDRAImportNotice()">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- DRA ADD RECORD MODAL -->
+<div class="overlay" id="draFormOverlay" onclick="if(event.target===this)closeDRAAddModal()">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title" id="draFormTitle">Add Deployment & Returns Record</div>
+      <button class="modal-close" onclick="closeDRAAddModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg">
+          <label>Location</label>
+          <select id="draLocation">
+            <option value="">Select Location</option>
+            <option value="CEBU">CEBU</option>
+            <option value="DAVAO">DAVAO</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Name</label>
+          <input type="text" id="draName" placeholder="Employee Name">
+        </div>
+        <div class="fg full">
+          <label>Asset</label>
+          <input type="text" id="draAsset" placeholder="Asset description">
+        </div>
+        <div class="fg">
+          <label>Date Returned</label>
+          <input type="date" id="draDateReturned">
+        </div>
+        <div class="fg">
+          <label>Asset Return Created</label>
+          <select id="draReturnCreated">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+            <option value="Not Applicable">Not Applicable</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeDRAAddModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDRARecord()">Save</button>
     </div>
   </div>
 </div>
@@ -1765,6 +1853,7 @@ async function tursoInit() {
     { sql: 'CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, data TEXT NOT NULL)' },
     { sql: 'CREATE TABLE IF NOT EXISTS presence (username TEXT PRIMARY KEY, data TEXT NOT NULL)' },
     { sql: 'CREATE TABLE IF NOT EXISTS employee_assets (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
+    { sql: 'CREATE TABLE IF NOT EXISTS deployment_returns (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
   ]);
 }
 
@@ -1797,10 +1886,11 @@ function setSyncStatus(msg, isError = false) {
 async function tursoSyncAll() {
   setSyncStatus('Syncing…');
   try {
-    const [rRes, uRes, eaRes] = await Promise.all([
+    const [rRes, uRes, eaRes, draRes] = await Promise.all([
       tursoExec('SELECT data FROM offboarding'),
       tursoExec('SELECT data FROM users'),
       tursoExec('SELECT data FROM employee_assets'),
+      tursoExec('SELECT data FROM deployment_returns'),
     ]);
 
     if (rRes) {
@@ -1821,6 +1911,9 @@ async function tursoSyncAll() {
       }
       records = loaded;
       localStorage.setItem(LS_DATA, JSON.stringify(records));
+    }
+    if (draRes) {
+      draRecords = draRes.rows.map(row => JSON.parse(row[0].value));
     }
     if (uRes) {
       const tursoUsers = uRes.rows.map(row => JSON.parse(row[0].value));
@@ -1884,6 +1977,9 @@ let eaRecords        = [];
 let eaTypeFilter     = '';
 let eaInvStatusFilter = '';
 let eaInvSiteFilter  = '';
+let draPage          = 1;
+const DRA_PAGE_SIZE  = 50;
+let draRecords       = [];
 let currentUser      = null;
 let _usersCache      = null;
 let currentView      = 'offboarding';
@@ -2192,13 +2288,15 @@ window.switchView = function(view) {
   const om  = document.getElementById('offboardingMain');
   const um  = document.getElementById('usersMain');
   const eam = document.getElementById('employeeAssetMain');
+  const dram = document.getElementById('deploymentReturnedAssetsMain');
   const no  = document.getElementById('navOffboarding');
   const nu  = document.getElementById('navUsers');
   const nea = document.getElementById('navEmployeeAsset');
+  const ndra = document.getElementById('navDeploymentReturnedAssets');
   const title = document.getElementById('topbarTitle');
 
-  [om, um, eam].forEach(el => { if (el) el.style.display = 'none'; });
-  [no, nu, nea].forEach(el => { if (el) el.classList.remove('active'); });
+  [om, um, eam, dram].forEach(el => { if (el) el.style.display = 'none'; });
+  [no, nu, nea, ndra].forEach(el => { if (el) el.classList.remove('active'); });
 
   if (view === 'users') {
     if (um) um.style.display = '';
@@ -2213,6 +2311,15 @@ window.switchView = function(view) {
       if (res) eaRecords = res.rows.map(row => JSON.parse(row[0].value));
       renderEAInventoryStats();
       renderEmployeeAssetTable();
+    });
+  } else if (view === 'deploymentReturnedAssets') {
+    if (dram) dram.style.display = '';
+    if (ndra) ndra.classList.add('active');
+    if (title) title.textContent = 'Deployment & Returns';
+    draPage = 1;
+    tursoExec('SELECT data FROM deployment_returns').then(res => {
+      if (res) draRecords = res.rows.map(row => JSON.parse(row[0].value));
+      renderDeploymentReturnedAssetsTable();
     });
   } else {
     if (om) om.style.display = '';
@@ -2237,6 +2344,90 @@ window.closeEAImportNoticeModal = function() {
 window.confirmEAImportNotice = function() {
   closeEAImportNoticeModal();
   document.getElementById('eaCsvInput')?.click();
+};
+
+window.openDRAImportNoticeModal = function() {
+  document.getElementById('draImportNoticeOverlay')?.classList.add('open');
+};
+
+window.closeDRAImportNoticeModal = function() {
+  document.getElementById('draImportNoticeOverlay')?.classList.remove('open');
+};
+
+window.confirmDRAImportNotice = function() {
+  closeDRAImportNoticeModal();
+  document.getElementById('draCsvInput')?.click();
+};
+
+window.goDraPage = function(page) {
+  draPage = page;
+  if (draPage < 1) draPage = 1;
+  renderDeploymentReturnedAssetsTable();
+};
+
+window.deleteAllDRARecords = async function() {
+  if (!confirm('Delete ALL Deployment & Returns records? This cannot be undone.')) return;
+  setSyncStatus('Saving…');
+  const r = await tursoExec('DELETE FROM deployment_returns');
+  if (r) {
+    draRecords = [];
+    setSyncStatus('Saved · ' + new Date().toLocaleTimeString());
+    showToast('All Deployment & Returns records deleted.');
+  } else {
+    setSyncStatus('Delete failed', true);
+    showToast('Delete failed — check connection.', true);
+  }
+  renderDeploymentReturnedAssetsTable();
+};
+
+window.openDRAAddModal = function() {
+  document.getElementById('draFormTitle').textContent = 'Add Deployment & Returns Record';
+  document.getElementById('draLocation').value = '';
+  document.getElementById('draName').value = '';
+  document.getElementById('draAsset').value = '';
+  document.getElementById('draDateReturned').value = '';
+  document.getElementById('draReturnCreated').value = 'Yes';
+  document.getElementById('draFormOverlay').classList.add('open');
+};
+
+window.closeDRAAddModal = function() {
+  document.getElementById('draFormOverlay')?.classList.remove('open');
+};
+
+window.saveDRARecord = async function() {
+  const location = document.getElementById('draLocation')?.value || '';
+  const name = document.getElementById('draName')?.value || '';
+  const asset = document.getElementById('draAsset')?.value || '';
+  const dateReturned = document.getElementById('draDateReturned')?.value || '';
+  const assetReturnCreated = document.getElementById('draReturnCreated')?.value || '';
+
+  if (!location || !name || !asset) {
+    showToast('Location, Name, and Asset are required.', true);
+    return;
+  }
+
+  const rec = {
+    id: 'dra_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    location: location,
+    name: name.trim(),
+    asset: asset.trim(),
+    dateReturned: dateReturned || '',
+    assetReturnCreated: assetReturnCreated || 'Not Applicable',
+  };
+
+  setSyncStatus('Saving…');
+  const r = await tursoExec('INSERT OR REPLACE INTO deployment_returns (id, data) VALUES (?, ?)', [rec.id, JSON.stringify(rec)]);
+  if (r) {
+    draRecords.unshift(rec);
+    setSyncStatus('Saved · ' + new Date().toLocaleTimeString());
+    showToast('Record added.');
+    closeDRAAddModal();
+    draPage = 1;
+    renderDeploymentReturnedAssetsTable();
+  } else {
+    setSyncStatus('Save failed', true);
+    showToast('Save failed — check connection.', true);
+  }
 };
 
 /* ══════════════════════════════════════════
@@ -2530,6 +2721,63 @@ function renderEmployeeAssetTable() {
   </tr>`).join('');
 
   if (pgEl) pgEl.innerHTML = eaPaginationHtml();
+}
+
+function renderDeploymentReturnedAssetsTable() {
+  const q = (document.getElementById('draSearchInput')?.value || '').toLowerCase();
+  const filtered = draRecords.filter(r => {
+    if (!q) return true;
+    return [r.location, r.name, r.asset, r.dateReturned, r.assetReturnCreated]
+      .some(v => (v||'').toString().toLowerCase().includes(q));
+  });
+  const tbody = document.getElementById('draTableBody');
+  const countEl = document.getElementById('draRecordCount');
+  const pgEl = document.getElementById('draPagination');
+  if (countEl) countEl.textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '');
+  if (!tbody) return;
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:32px">No deployment or returned asset records found.</td></tr>';
+    if (pgEl) pgEl.innerHTML = '';
+    document.getElementById('btnDRADelAll').style.display = draRecords.length ? '' : 'none';
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / DRA_PAGE_SIZE));
+  if (draPage > totalPages) draPage = totalPages;
+  const pageStart = (draPage - 1) * DRA_PAGE_SIZE;
+  const paginated = filtered.slice(pageStart, pageStart + DRA_PAGE_SIZE);
+
+  function draPaginationHtml() {
+    if (totalPages <= 1) return '';
+    const pages = [];
+    for (let p = 1; p <= totalPages; p++) {
+      if (p === 1 || p === totalPages || Math.abs(p - draPage) <= 2) pages.push(p);
+      else if (pages[pages.length - 1] !== '...') pages.push('...');
+    }
+    const btns = pages.map(p => p === '...'
+      ? `<span class="al-pg-ellipsis">…</span>`
+      : `<button class="al-pg-btn${p === draPage ? ' active' : ''}" onclick="goDraPage(${p})">${p}</button>`
+    ).join('');
+    return `<div class="al-pagination">
+      <button class="al-pg-btn" onclick="goDraPage(${draPage - 1})" ${draPage === 1 ? 'disabled' : ''}>‹ Prev</button>
+      ${btns}
+      <button class="al-pg-btn" onclick="goDraPage(${draPage + 1})" ${draPage === totalPages ? 'disabled' : ''}>Next ›</button>
+      <span class="al-pg-info">${pageStart + 1}–${Math.min(pageStart + DRA_PAGE_SIZE, filtered.length)} of ${filtered.length}</span>
+    </div>`;
+  }
+
+  tbody.innerHTML = paginated.map(r => {
+    return `<tr>
+      <td>${esc(r.location || '—')}</td>
+      <td style="font-weight:600;">${esc(r.name || '—')}</td>
+      <td>${esc(r.asset || '—')}</td>
+      <td>${r.dateReturned ? fmtDate(r.dateReturned) : '—'}</td>
+      <td>${r.assetReturnCreated ? fmtDate(r.assetReturnCreated) : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  if (pgEl) pgEl.innerHTML = draPaginationHtml();
+  document.getElementById('btnDRADelAll').style.display = draRecords.length ? '' : 'none';
 }
 
 /* ══════════════════════════════════════════
@@ -2998,6 +3246,8 @@ function renderTable() {
   });
 
   document.getElementById('recordCount').textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '');
+  const pgEl = document.getElementById('obPagination');
+  if (pgEl) pgEl.style.display = '';
 
   document.querySelectorAll('thead th').forEach(th => {
     th.classList.remove('sort-asc','sort-desc');
@@ -3007,7 +3257,6 @@ function renderTable() {
   });
 
   const tb = document.getElementById('tableBody');
-  const pgEl = document.getElementById('obPagination');
 
   if (!filtered.length) {
     tb.innerHTML = `<tr><td colspan="15"><div class="empty-state"><div class="empty-icon">📋</div><div style="font-size:15px;font-weight:600;margin-bottom:6px;">No offboarding records found</div><div style="font-size:13px;">Add a record or adjust your search filters.</div></div></td></tr>`;
@@ -3468,6 +3717,88 @@ window.handleEACSVImport = async function(e) {
   }
   renderEAInventoryStats();
   renderEmployeeAssetTable();
+};
+
+window.handleDRACSVImport = async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+  const text = await file.text();
+  const rows = _parseCSV(text);
+  if (rows.length < 2) { showToast('CSV is empty or has no data rows.', true); return; }
+
+  const DRA_CSV_MAP = {
+    'location': 'location',
+    'name': 'name',
+    'asset': 'asset',
+    'date returned': 'dateReturned',
+    'asset return created': 'assetReturnCreated',
+  };
+
+  const headers  = rows[0].map(h => h.trim().toLowerCase());
+  const fieldMap = headers.map(h => DRA_CSV_MAP[h] || null);
+  const newRecords = [];
+
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    if (row.every(c => !c.trim())) continue;
+    const rec = { id: 'dra_' + Date.now() + '_' + r + '_' + Math.random().toString(36).slice(2,5) };
+    fieldMap.forEach((field, i) => { if (field) rec[field] = (row[i] || '').trim(); });
+    newRecords.push(rec);
+  }
+
+  if (!newRecords.length) { showToast('No valid rows found in CSV.', true); return; }
+
+  const overlay  = document.getElementById('importProgressOverlay');
+  const bar      = document.getElementById('importProgressBar');
+  const sub      = document.getElementById('importProgressSub');
+  const countEl  = document.getElementById('importProgressCount');
+  const pctEl    = document.getElementById('importProgressPct');
+  const titleEl  = document.getElementById('importProgressTitle');
+  if (titleEl) titleEl.textContent = 'Importing Deployment & Returns Records…';
+  overlay.style.display = 'flex';
+  bar.style.width = '0%';
+  pctEl.textContent = '0%';
+  countEl.textContent = `0 / ${newRecords.length.toLocaleString()}`;
+  sub.textContent = `Uploading to database… (${newRecords.length.toLocaleString()} rows)`;
+
+  await new Promise(r => setTimeout(r, 50));
+
+  const CHUNK = 500;
+  let uploaded = 0;
+  let errors = 0;
+
+  for (let i = 0; i < newRecords.length; i += CHUNK) {
+    const chunk = newRecords.slice(i, i + CHUNK);
+    const stmts = chunk.map(a => ({
+      sql: 'INSERT OR REPLACE INTO deployment_returns (id, data) VALUES (?, ?)',
+      args: [a.id, JSON.stringify(a)]
+    }));
+    const result = await tursoBatchLong(stmts);
+    if (!result) errors++;
+    uploaded += chunk.length;
+    const pct = Math.round((uploaded / newRecords.length) * 100);
+    bar.style.width = pct + '%';
+    pctEl.textContent = pct + '%';
+    countEl.textContent = `${uploaded.toLocaleString()} / ${newRecords.length.toLocaleString()}`;
+    sub.textContent = `Batch ${Math.ceil((i + CHUNK) / CHUNK)} of ${Math.ceil(newRecords.length / CHUNK)} uploaded…`;
+  }
+
+  overlay.style.display = 'none';
+  if (titleEl) titleEl.textContent = 'Importing Records…';
+
+  newRecords.forEach(rec => {
+    const idx = draRecords.findIndex(r => r.id === rec.id);
+    if (idx >= 0) draRecords[idx] = rec;
+    else draRecords.push(rec);
+  });
+
+  if (errors > 0) {
+    showToast(`Import done with ${errors} failed batch(es). Check connection.`, true);
+  } else {
+    showToast(newRecords.length.toLocaleString() + ' records imported from ' + file.name + '.');
+  }
+  renderDeploymentReturnedAssetsTable();
 };
 
 /* ══════════════════════════════════════════
