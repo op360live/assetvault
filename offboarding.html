@@ -1135,13 +1135,13 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         </svg>
         <span class="sb-item-label">Employee Asset</span>
       </button>
-      <button class="sb-item" id="navDeploymentReturnedAssets" onclick="switchView('deploymentReturnedAssets')" title="Deployment & Returns">
+      <button class="sb-item" id="navDeploymentReturnedAssets" onclick="switchView('deploymentReturnedAssets')" title="Returned Assets">
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 7h16" />
           <path d="M4 12h16" />
           <path d="M4 17h16" />
         </svg>
-        <span class="sb-item-label">Deployment & Returns</span>
+        <span class="sb-item-label">Returned Assets</span>
       </button>
 
       <div class="sb-divider"></div>
@@ -1394,11 +1394,16 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         <table>
           <thead>
             <tr>
-              <th>Location</th>
-              <th>Name</th>
-              <th>Asset</th>
+              <th>Employee Status</th>
+              <th>Employee ID</th>
+              <th>Employee Name</th>
+              <th>Asset Type</th>
+              <th>Asset Brand</th>
+              <th>Asset Serial No</th>
+              <th>Asset Status</th>
               <th>Date Returned</th>
-              <th>Asset Return Created</th>
+              <th>Site</th>
+              <th>Date Returned</th>
             </tr>
           </thead>
           <tbody id="draTableBody"></tbody>
@@ -1456,14 +1461,14 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 <div class="overlay" id="draImportNoticeOverlay" onclick="if(event.target===this)closeDRAImportNoticeModal()">
   <div class="modal" style="max-width:420px">
     <div class="modal-header">
-      <div class="modal-title">Deployment & Returns Import</div>
+      <div class="modal-title">Returned Assets Import</div>
       <button class="modal-close" onclick="closeDRAImportNoticeModal()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <div class="modal-body">
       <div style="font-size:13px;color:var(--text2);line-height:1.55;">
-        Please upload <strong>Deployment & Returns.csv</strong> here.
+        Please upload <strong>Returned Assets.csv</strong> here.
       </div>
     </div>
     <div class="modal-footer">
@@ -1477,7 +1482,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 <div class="overlay" id="draFormOverlay" onclick="if(event.target===this)closeDRAAddModal()">
   <div class="modal" style="max-width:520px">
     <div class="modal-header">
-      <div class="modal-title" id="draFormTitle">Add Deployment & Returns Record</div>
+      <div class="modal-title" id="draFormTitle">Add Returned Assets Record</div>
       <button class="modal-close" onclick="closeDRAAddModal()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -1485,24 +1490,44 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
     <div class="modal-body">
       <div class="form-grid">
         <div class="fg">
-          <label>Location</label>
-          <select id="draLocation">
-            <option value="">Select Location</option>
-            <option value="CEBU">CEBU</option>
-            <option value="DAVAO">DAVAO</option>
-          </select>
+          <label>Employee Status</label>
+          <input type="text" id="draEmployeeStatus" placeholder="e.g. Active">
         </div>
         <div class="fg">
-          <label>Name</label>
-          <input type="text" id="draName" placeholder="Employee Name">
+          <label>Employee ID</label>
+          <input type="text" id="draEmployeeId" placeholder="Employee ID">
         </div>
-        <div class="fg full">
-          <label>Asset</label>
-          <input type="text" id="draAsset" placeholder="Asset description">
+        <div class="fg">
+          <label>Employee Name</label>
+          <input type="text" id="draEmployeeName" placeholder="Employee Name">
+        </div>
+        <div class="fg">
+          <label>Asset Type</label>
+          <input type="text" id="draAssetType" placeholder="Asset Type">
+        </div>
+        <div class="fg">
+          <label>Asset Brand</label>
+          <input type="text" id="draAssetBrand" placeholder="Asset Brand">
+        </div>
+        <div class="fg">
+          <label>Asset Serial No</label>
+          <input type="text" id="draAssetSerialNo" placeholder="Serial Number">
+        </div>
+        <div class="fg">
+          <label>Asset Status</label>
+          <input type="text" id="draAssetStatus" placeholder="Asset Status">
         </div>
         <div class="fg">
           <label>Date Returned</label>
           <input type="date" id="draDateReturned">
+        </div>
+        <div class="fg">
+          <label>Site</label>
+          <select id="draSite">
+            <option value="">Select Site</option>
+            <option value="CEBU">CEBU</option>
+            <option value="DAVAO">DAVAO</option>
+          </select>
         </div>
         <div class="fg">
           <label>Asset Return Created</label>
@@ -2315,7 +2340,7 @@ window.switchView = function(view) {
   } else if (view === 'deploymentReturnedAssets') {
     if (dram) dram.style.display = '';
     if (ndra) ndra.classList.add('active');
-    if (title) title.textContent = 'Deployment & Returns';
+    if (title) title.textContent = 'Returned Assets';
     draPage = 1;
     tursoExec('SELECT data FROM deployment_returns').then(res => {
       if (res) draRecords = res.rows.map(row => JSON.parse(row[0].value));
@@ -2366,13 +2391,13 @@ window.goDraPage = function(page) {
 };
 
 window.deleteAllDRARecords = async function() {
-  if (!confirm('Delete ALL Deployment & Returns records? This cannot be undone.')) return;
+  if (!confirm('Delete ALL Returned Assets records? This cannot be undone.')) return;
   setSyncStatus('Saving…');
   const r = await tursoExec('DELETE FROM deployment_returns');
   if (r) {
     draRecords = [];
     setSyncStatus('Saved · ' + new Date().toLocaleTimeString());
-    showToast('All Deployment & Returns records deleted.');
+    showToast('All Returned Assets records deleted.');
   } else {
     setSyncStatus('Delete failed', true);
     showToast('Delete failed — check connection.', true);
@@ -2381,11 +2406,16 @@ window.deleteAllDRARecords = async function() {
 };
 
 window.openDRAAddModal = function() {
-  document.getElementById('draFormTitle').textContent = 'Add Deployment & Returns Record';
-  document.getElementById('draLocation').value = '';
-  document.getElementById('draName').value = '';
-  document.getElementById('draAsset').value = '';
+  document.getElementById('draFormTitle').textContent = 'Add Returned Assets Record';
+  document.getElementById('draEmployeeStatus').value = '';
+  document.getElementById('draEmployeeId').value = '';
+  document.getElementById('draEmployeeName').value = '';
+  document.getElementById('draAssetType').value = '';
+  document.getElementById('draAssetBrand').value = '';
+  document.getElementById('draAssetSerialNo').value = '';
+  document.getElementById('draAssetStatus').value = '';
   document.getElementById('draDateReturned').value = '';
+  document.getElementById('draSite').value = '';
   document.getElementById('draReturnCreated').value = 'Yes';
   document.getElementById('draFormOverlay').classList.add('open');
 };
@@ -2395,24 +2425,34 @@ window.closeDRAAddModal = function() {
 };
 
 window.saveDRARecord = async function() {
-  const location = document.getElementById('draLocation')?.value || '';
-  const name = document.getElementById('draName')?.value || '';
-  const asset = document.getElementById('draAsset')?.value || '';
+  const employeeStatus = document.getElementById('draEmployeeStatus')?.value || '';
+  const employeeId = document.getElementById('draEmployeeId')?.value || '';
+  const employeeName = document.getElementById('draEmployeeName')?.value || '';
+  const assetType = document.getElementById('draAssetType')?.value || '';
+  const assetBrand = document.getElementById('draAssetBrand')?.value || '';
+  const assetSerialNo = document.getElementById('draAssetSerialNo')?.value || '';
+  const assetStatus = document.getElementById('draAssetStatus')?.value || '';
   const dateReturned = document.getElementById('draDateReturned')?.value || '';
+  const site = document.getElementById('draSite')?.value || '';
   const assetReturnCreated = document.getElementById('draReturnCreated')?.value || '';
 
-  if (!location || !name || !asset) {
-    showToast('Location, Name, and Asset are required.', true);
+  if (!employeeStatus || !employeeId || !employeeName || !assetType || !assetBrand || !assetSerialNo || !assetStatus || !site) {
+    showToast('Employee Status, ID, Name, Asset Type, Asset Brand, Serial No, Asset Status and Site are required.', true);
     return;
   }
 
   const rec = {
     id: 'dra_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-    location: location,
-    name: name.trim(),
-    asset: asset.trim(),
-    dateReturned: dateReturned || '',
-    assetReturnCreated: assetReturnCreated || 'Not Applicable',
+    employeeStatus: employeeStatus.trim(),
+    employeeId: employeeId.trim(),
+    employeeName: employeeName.trim(),
+    assetType: assetType.trim(),
+    assetBrand: assetBrand.trim(),
+    assetSerialNo: assetSerialNo.trim(),
+    assetStatus: assetStatus.trim(),
+    dateReturned: dateReturned.trim() || '',
+    site: site.trim(),
+    assetReturnCreated: assetReturnCreated.trim() || 'Not Applicable',
   };
 
   setSyncStatus('Saving…');
@@ -2727,7 +2767,7 @@ function renderDeploymentReturnedAssetsTable() {
   const q = (document.getElementById('draSearchInput')?.value || '').toLowerCase();
   const filtered = draRecords.filter(r => {
     if (!q) return true;
-    return [r.location, r.name, r.asset, r.dateReturned, r.assetReturnCreated]
+    return [r.employeeStatus, r.employeeId, r.employeeName, r.assetType, r.assetBrand, r.assetSerialNo, r.assetStatus, r.dateReturned, r.site, r.assetReturnCreated]
       .some(v => (v||'').toString().toLowerCase().includes(q));
   });
   const tbody = document.getElementById('draTableBody');
@@ -2768,11 +2808,16 @@ function renderDeploymentReturnedAssetsTable() {
 
   tbody.innerHTML = paginated.map(r => {
     return `<tr>
-      <td>${esc(r.location || '—')}</td>
-      <td style="font-weight:600;">${esc(r.name || '—')}</td>
-      <td>${esc(r.asset || '—')}</td>
+      <td>${esc(r.employeeStatus || '—')}</td>
+      <td>${esc(r.employeeId || '—')}</td>
+      <td style="font-weight:600;">${esc(r.employeeName || '—')}</td>
+      <td>${esc(r.assetType || '—')}</td>
+      <td>${esc(r.assetBrand || '—')}</td>
+      <td>${esc(r.assetSerialNo || '—')}</td>
+      <td>${esc(r.assetStatus || '—')}</td>
       <td>${r.dateReturned ? fmtDate(r.dateReturned) : '—'}</td>
-      <td>${r.assetReturnCreated ? fmtDate(r.assetReturnCreated) : '—'}</td>
+      <td>${esc(r.site || '—')}</td>
+      <td>${esc(r.assetReturnCreated || '—')}</td>
     </tr>`;
   }).join('');
 
@@ -3728,10 +3773,16 @@ window.handleDRACSVImport = async function(e) {
   if (rows.length < 2) { showToast('CSV is empty or has no data rows.', true); return; }
 
   const DRA_CSV_MAP = {
-    'location': 'location',
-    'name': 'name',
-    'asset': 'asset',
+    'employee status': 'employeeStatus',
+    'employee id': 'employeeId',
+    'employee name': 'employeeName',
+    'asset type': 'assetType',
+    'asset brand': 'assetBrand',
+    'asset serial no': 'assetSerialNo',
+    'asset status': 'assetStatus',
     'date returned': 'dateReturned',
+    'site': 'site',
+    'date added': 'assetReturnCreated',
     'asset return created': 'assetReturnCreated',
   };
 
@@ -3755,7 +3806,7 @@ window.handleDRACSVImport = async function(e) {
   const countEl  = document.getElementById('importProgressCount');
   const pctEl    = document.getElementById('importProgressPct');
   const titleEl  = document.getElementById('importProgressTitle');
-  if (titleEl) titleEl.textContent = 'Importing Deployment & Returns Records…';
+  if (titleEl) titleEl.textContent = 'Importing Returned Assets Records…';
   overlay.style.display = 'flex';
   bar.style.width = '0%';
   pctEl.textContent = '0%';
