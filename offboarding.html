@@ -1143,6 +1143,14 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         </svg>
         <span class="sb-item-label">Returned Assets</span>
       </button>
+      <button class="sb-item" id="navDeductionCalculator" onclick="switchView('deductionCalculator')" title="Deduction Calculator">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v18" />
+          <path d="M3 12h18" />
+          <path d="M6 6l12 12" />
+        </svg>
+        <span class="sb-item-label">Deduction Calculator</span>
+      </button>
 
       <div class="sb-divider"></div>
       <div class="sb-section-label">IT Tools</div>
@@ -1411,6 +1419,67 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
       </div>
       <div id="draPagination"></div>
     </main>
+
+    <main class="main" id="deductionCalculatorMain" style="display:none;">
+      <div class="toolbar counter-card">
+        <div style="display:flex; flex-direction:column; gap:16px; width:100%; align-items:center;">
+          <div style="width:100%; max-width:640px; padding:18px 20px; border-radius:18px; background:rgba(241,245,255,0.95); border:1px solid rgba(92,106,255,0.18); text-align:center; color:var(--text);">
+            <div style="font-weight:700; font-size:15px; margin-bottom:6px;">Enter the initial amount and asset age, then click Calculate.</div>
+            <div style="font-size:13px; color:var(--text3);">The deduction details will appear in a popup so you can easily continue with a new calculation.</div>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; width:100%;">
+            <div style="flex:1; min-width:200px;">
+              <label class="field-label">Initial Amount</label>
+              <input type="number" id="deductionOriginalAmount" class="field-input" placeholder="Enter initial amount" min="0" step="0.01" onkeydown="if(event.key==='Enter') calculateDeduction()">
+            </div>
+            <div style="flex:1; min-width:200px;">
+              <label class="field-label">Asset Age (Months)</label>
+              <input type="number" id="deductionAgeMonths" class="field-input" placeholder="Enter asset age in months" min="0" step="1" onkeydown="if(event.key==='Enter') calculateDeduction()">
+            </div>
+            <button class="btn btn-primary" style="height:42px; margin-top:24px;" onclick="calculateDeduction()">Calculate</button>
+          </div>
+          <div class="deduction-note" style="padding:12px; border:1px solid var(--border); border-radius:8px; background:var(--surface);">
+            <strong>Deduction rules</strong>: 0–6 months = 100% recovered, 7–12 = 85%, 13–18 = 70%, 19–24 = 60%, 25–36 = 50%, 37–42 = 40%.
+          </div>
+          <div style="margin-top:12px;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);">Age (Months)</th>
+                  <th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);">Recovery %</th>
+                  <th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);">Recovered Amount*</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding:8px 10px;border-bottom:1px solid var(--border);">0–6</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);">100%</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);">Initial Amount</td></tr>
+                <tr><td style="padding:8px 10px;border-bottom:1px solid var(--border);">7–12</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);">85%</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);">Initial × 0.85</td></tr>
+                <tr><td style="padding:8px 10px;border-bottom:1px solid var(--border);">13–18</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);">70%</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);">Initial × 0.70</td></tr>
+                <tr><td style="padding:8px 10px;border-bottom:1px solid var(--border);">19–24</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);">60%</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);">Initial × 0.60</td></tr>
+                <tr><td style="padding:8px 10px;border-bottom:1px solid var(--border);">25–36</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);">50%</td><td style="padding:8px 10px;border-bottom:1px solid var(--border);">Initial × 0.50</td></tr>
+                <tr><td style="padding:8px 10px;">37–42</td><td style="padding:8px 10px;">40%</td><td style="padding:8px 10px;">Initial × 0.40</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="count-bar" style="margin-top:16px;">
+        <div id="deductionResult" style="padding:18px; border-radius:12px; background:var(--surface); box-shadow:var(--shadow-sm); min-height:80px; color:var(--text);">
+          <!-- Results appear here after calculation -->
+        </div>
+      </div>
+    </main>
+
+    <div class="overlay" id="deductionResultOverlay" onclick="if(event.target===this)closeDeductionResultModal()">
+      <div class="modal" style="max-width:520px;">
+        <div class="modal-header">
+          <div class="modal-title">Deduction Details</div>
+          <button class="modal-close" onclick="closeDeductionResultModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body" id="deductionModalBody" style="padding:0 20px 20px;"></div>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -2314,14 +2383,16 @@ window.switchView = function(view) {
   const um  = document.getElementById('usersMain');
   const eam = document.getElementById('employeeAssetMain');
   const dram = document.getElementById('deploymentReturnedAssetsMain');
+  const dcm = document.getElementById('deductionCalculatorMain');
   const no  = document.getElementById('navOffboarding');
   const nu  = document.getElementById('navUsers');
   const nea = document.getElementById('navEmployeeAsset');
   const ndra = document.getElementById('navDeploymentReturnedAssets');
+  const ndc = document.getElementById('navDeductionCalculator');
   const title = document.getElementById('topbarTitle');
 
-  [om, um, eam, dram].forEach(el => { if (el) el.style.display = 'none'; });
-  [no, nu, nea, ndra].forEach(el => { if (el) el.classList.remove('active'); });
+  [om, um, eam, dram, dcm].forEach(el => { if (el) el.style.display = 'none'; });
+  [no, nu, nea, ndra, ndc].forEach(el => { if (el) el.classList.remove('active'); });
 
   if (view === 'users') {
     if (um) um.style.display = '';
@@ -2346,6 +2417,10 @@ window.switchView = function(view) {
       if (res) draRecords = res.rows.map(row => JSON.parse(row[0].value));
       renderDeploymentReturnedAssetsTable();
     });
+  } else if (view === 'deductionCalculator') {
+    if (dcm) dcm.style.display = '';
+    if (ndc) ndc.classList.add('active');
+    if (title) title.textContent = 'Deduction Calculator';
   } else {
     if (om) om.style.display = '';
     if (no) no.classList.add('active');
@@ -2353,6 +2428,79 @@ window.switchView = function(view) {
     renderStats();
     renderTable();
   }
+};
+
+window.calculateDeduction = function() {
+  const amount = parseFloat(document.getElementById('deductionOriginalAmount')?.value || '');
+  const months = parseInt(document.getElementById('deductionAgeMonths')?.value || '', 10);
+  const resultEl = document.getElementById('deductionResult');
+
+  if (!resultEl) return;
+  if (Number.isNaN(amount) || amount < 0) {
+    resultEl.innerHTML = '<strong style="color:var(--danger);">Enter a valid original amount.</strong>';
+    return;
+  }
+  if (Number.isNaN(months) || months < 0) {
+    resultEl.innerHTML = '<strong style="color:var(--danger);">Enter a valid asset age in months.</strong>';
+    return;
+  }
+
+  let pct = 0;
+  if (months <= 6) pct = 100;
+  else if (months <= 12) pct = 85;
+  else if (months <= 18) pct = 70;
+  else if (months <= 24) pct = 60;
+  else if (months <= 36) pct = 50;
+  else pct = 40;
+
+  const recovered = amount * pct / 100;
+  const deduction = amount - recovered;
+  const note = months > 42 ? 'Note: age over 42 months uses 40% recovery.' : '';
+
+  const modalHtml = `
+    <div style="display:grid;gap:18px;">
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:12px;">
+        <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.90);border:1px solid rgba(0,0,0,0.06);box-shadow:0 10px 30px rgba(0,0,0,0.05);">
+          <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">Initial Amount</div>
+          <div style="font-size:22px;font-weight:800;color:var(--text);">${amount.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        </div>
+        <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.90);border:1px solid rgba(0,0,0,0.06);box-shadow:0 10px 30px rgba(0,0,0,0.05);">
+          <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">Asset Age</div>
+          <div style="font-size:22px;font-weight:800;color:var(--text);">${months} month${months === 1 ? '' : 's'}</div>
+        </div>
+        <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.90);border:1px solid rgba(0,0,0,0.06);box-shadow:0 10px 30px rgba(0,0,0,0.05);">
+          <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">Recovery Rate</div>
+          <div style="font-size:22px;font-weight:800;color:var(--text);">${pct}%</div>
+        </div>
+        <div style="padding:18px;border-radius:18px;background:rgba(255,255,255,0.90);border:1px solid rgba(0,0,0,0.06);box-shadow:0 10px 30px rgba(0,0,0,0.05);">
+          <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">Recovered Amount</div>
+          <div style="font-size:22px;font-weight:800;color:var(--success);">${deduction.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        </div>
+      </div>
+      <div style="padding:18px;border-radius:18px;background:rgba(255,235,238,0.95);border:1px solid rgba(255,0,0,0.15);">
+        <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--danger);margin-bottom:8px;">Deducted Amount</div>
+        <div style="font-size:24px;font-weight:800;color:var(--danger);">${recovered.toLocaleString(undefined, {minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+      </div>
+      ${note ? `<div style="font-size:13px;color:var(--text3);line-height:1.6;padding:14px 18px;border-radius:14px;background:rgba(248,248,255,0.95);border:1px solid rgba(0,0,0,0.04);">${note}</div>` : ''}
+    </div>
+  `;
+
+  document.getElementById('deductionResult')?.classList.add('dimmed');
+  openDeductionResultModal(modalHtml);
+};
+
+window.openDeductionResultModal = function(contentHtml) {
+  const overlay = document.getElementById('deductionResultOverlay');
+  const body = document.getElementById('deductionModalBody');
+  if (!overlay || !body) return;
+  body.innerHTML = contentHtml;
+  overlay.classList.add('open');
+};
+
+window.closeDeductionResultModal = function() {
+  document.getElementById('deductionResultOverlay')?.classList.remove('open');
+  const resultEl = document.getElementById('deductionResult');
+  if (resultEl) resultEl.classList.remove('dimmed');
 };
 
 /* ══════════════════════════════════════════
@@ -2776,7 +2924,7 @@ function renderDeploymentReturnedAssetsTable() {
   if (countEl) countEl.textContent = filtered.length + ' record' + (filtered.length !== 1 ? 's' : '');
   if (!tbody) return;
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:32px">No deployment or returned asset records found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:32px">No deployment or returned asset records found.</td></tr>';
     if (pgEl) pgEl.innerHTML = '';
     document.getElementById('btnDRADelAll').style.display = draRecords.length ? '' : 'none';
     return;
