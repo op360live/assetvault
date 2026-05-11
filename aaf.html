@@ -1529,6 +1529,7 @@ function renderDeployments() {
             <th>Asset Brand</th>
             <th>Serial No.</th>
             <th>Date Release</th>
+            <th>Date Added</th>
             <th>IT Personnel</th>
             <th>Status</th>
             <th>Signed</th>
@@ -1536,7 +1537,7 @@ function renderDeployments() {
           </tr>
         </thead>
         <tbody>
-          ${filtered.length === 0 ? `<tr><td colspan="10"><div class="empty-state">
+          ${filtered.length === 0 ? `<tr><td colspan="11"><div class="empty-state">
             <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M8 14a8 8 0 0116 0"/><rect x="6" y="14" width="4" height="7" rx="2"/><rect x="22" y="14" width="4" height="7" rx="2"/></svg></div>
             <p>${all.length === 0 ? 'No deployments yet — click Add Deployment to get started.' : 'No records match your search.'}</p>
           </div></td></tr>` :
@@ -1547,6 +1548,7 @@ function renderDeployments() {
             <td style="color:var(--text2)">${(() => { const aa = getAssets(d); const first = aa[0]; const label = first.brand||first.type||'—'; return aa.length > 1 ? `${label} <span style="font-size:11px;color:var(--text3);font-weight:600">+${aa.length-1}</span>` : label; })()}</td>
             <td class="mono">${(() => { const aa = getAssets(d); return aa.map(a=>a.serialNo||'—').join(', '); })()}</td>
             <td style="font-size:12px;color:var(--text3)">${fmtDate(d.dateRelease)}</td>
+            <td style="font-size:12px;color:var(--text3)">${d.createdAt ? fmtDate(d.createdAt) : '—'}</td>
             <td style="color:var(--text2)">${d.itPersonnel||'—'}</td>
             <td>${statusBadge(d.status)}</td>
             <td>${d.signature ? `<span class="badge b-active" title="Signed on ${fmtDate(d.signedAt)}">✓ Signed</span>` : `<span class="badge b-inactive">Unsigned</span>`}</td>
@@ -1558,7 +1560,7 @@ function renderDeployments() {
                 <button class="btn-icon" title="Download Accountability Form" onclick="downloadFilledPDF(deployments.find(x=>x.id==='${d.id}'))">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 </button>
-                <button class="btn-icon" title="Edit" onclick="openDeployModal('${d.id}')">
+                <button class="btn-icon" title="${d.signature ? 'Cannot edit a signed form' : 'Edit'}" ${d.signature ? 'disabled style="color:var(--text3);opacity:.35;cursor:not-allowed"' : `onclick="openDeployModal('${d.id}')"`}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
                 <button class="btn-icon" title="Delete" style="color:var(--text3)" onclick="openDeleteModal('${d.id}')">
@@ -1681,7 +1683,7 @@ async function saveDeployment() {
       record = deployments[idx];
     }
   } else {
-    record = { id: uid(), ...obj, signature: null, signedAt: null };
+    record = { id: uid(), ...obj, createdAt: new Date().toISOString().slice(0,10), signature: null, signedAt: null };
     deployments.unshift(record);
   }
 
