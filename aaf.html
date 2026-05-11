@@ -1592,6 +1592,17 @@ function renderDeployments() {
   });
 
   document.getElementById('pageContent').innerHTML = `
+    ${unsigned > 0 ? `
+    <div style="display:flex;align-items:flex-start;gap:12px;background:var(--amber-bg);border:1px solid rgba(217,119,6,.30);border-radius:var(--radius-lg);padding:13px 16px;margin-bottom:16px">
+      <div style="flex-shrink:0;margin-top:1px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:3px">${unsigned} deployment${unsigned > 1 ? 's' : ''} pending signature</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.55">Send the signing link to each employee so they can review and e-sign their accountability form from their own device. Click the <span style="display:inline-flex;align-items:center;gap:3px;vertical-align:middle"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span> link icon on any unsigned record to generate and share the signing link.</div>
+      </div>
+      <button onclick="setSiteFilter('');setSignedFilter('unsigned')" style="flex-shrink:0;background:var(--amber);color:#fff;border:none;border-radius:var(--radius);padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">View all</button>
+    </div>` : ''}
     <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px;box-shadow:var(--card-shadow)">
       <!-- Top summary row -->
       <div class="stat-grid" style="margin-bottom:16px">
