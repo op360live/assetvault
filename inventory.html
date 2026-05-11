@@ -175,7 +175,7 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.40);
 }
 #sidebar.collapsed ~ .sb-collapse-btn,
-#appScreen > .sb-collapse-btn { /* default — set by JS */ }
+#appScreen > .sb-collapse-btn { left: calc(240px - 13px); }
 #sidebar.collapsed + .sb-collapse-btn,
 .sb-collapse-btn.collapsed-pos { left: calc(60px - 13px); }
 .sb-collapse-btn svg {
@@ -251,7 +251,7 @@ body {
   flex-shrink: 0;
 }
 .sb-brand-name { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.4px; }
-.sb-brand-accent { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.sb-brand-accent { background: linear-gradient(90deg, var(--accent), var(--accent2)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .sb-brand-version {
   font-size: 10px; font-weight: 600; color: var(--text3);
   background: var(--search-bg);
@@ -376,6 +376,20 @@ body {
   border-bottom-color: var(--glass-border);
   box-shadow: 0 1px 0 var(--glass-border2);
 }
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--sidebar-border, #e8eaed);
+  background: var(--glass-bg);
+  color: var(--text2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.mobile-menu-btn:hover { background: var(--glass-bg-hover); color: var(--text); }
 .topbar-left { flex: 1; min-width: 0; }
 .topbar-title {
   font-size: 20px; font-weight: 700;
@@ -487,8 +501,6 @@ body {
 .login-app-nav-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 .login-footer { border-top: 1px solid rgba(0,0,0,0.07); padding-top: 20px; margin-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 [data-theme="dark"] .login-footer { border-top-color: rgba(255,255,255,0.08); }
-@media (max-width: 768px) { .login-left { display: none; } .login-right { padding: 24px 16px; } }
-@media (max-width: 480px) { .login-form-wrap { padding: 32px 24px; border-radius: 8px; } }
 
 /* ══════════════════════════════
    GLASS MIXIN
@@ -1345,38 +1357,167 @@ mark.gsr-highlight {
 /* ══════════════════════════════
    RESPONSIVE
 ══════════════════════════════ */
+@media (max-width: 1100px) {
+  #loginScreen {
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .login-left {
+    width: 100%;
+    min-height: auto;
+    padding: 36px 28px;
+  }
+  .login-left-brand { margin-bottom: 20px; }
+  .login-left-content { justify-content: flex-start; }
+  .login-left-headline {
+    max-width: none;
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+  .login-left-tagline {
+    max-width: none;
+    margin-bottom: 0;
+  }
+  .login-right {
+    width: 100%;
+    min-height: 0;
+    padding: 28px 22px 32px;
+    justify-content: flex-start;
+  }
+}
 @media (max-width: 768px) {
-  #sidebar { width:56px; overflow:hidden; }
-  .sb-brand { padding:16px 10px; justify-content:center; }
-  .sb-brand-name { display:none; }
-  .sb-item { padding:12px; justify-content:center; }
-  .sb-item-label { display:none; }
-  .sb-section-label { display:none; }
-  .sb-footer { padding:8px; }
-  .sb-theme-row > .pill-label,
-  .sb-theme-row > .pill-track { display:none; }
+  #appScreen.active { height: 100dvh; }
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 240px;
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform 0.22s cubic-bezier(.4,0,.2,1), background 0.3s, border-color 0.3s;
+    z-index: 120;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  #sidebar.mobile-open { transform: translateX(0); }
+  #sidebar.collapsed { width: 240px; }
+  #sidebar.collapsed .sb-brand-name,
+  #sidebar.collapsed .sb-section-label,
+  #sidebar.collapsed .sb-item-label,
+  #sidebar.collapsed .sb-theme-row > .pill-track,
+  #sidebar.collapsed .sb-theme-row > .icon-sun,
+  #sidebar.collapsed .sb-theme-row > .icon-moon,
+  #sidebar.collapsed .sb-theme-row > .pill-label,
+  #sidebar.collapsed .sb-online-label,
+  #sidebar.collapsed .sb-online-list,
+  #sidebar.collapsed .sb-divider { display: initial; }
+  #sidebar.collapsed .sb-item {
+    justify-content: flex-start;
+    padding: 10px 12px;
+    width: 100%;
+    border-radius: 10px;
+  }
+  #sidebar.collapsed .sb-item-icon { width: auto; height: auto; opacity: 0.7; }
+  #sidebar.collapsed .sb-brand {
+    padding: 20px 18px 18px;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+  #sidebar.collapsed .sb-logo { margin: 0; }
+  #sidebar.collapsed .sb-footer { padding: 10px 12px 14px; align-items: stretch; }
+  #sidebar.collapsed .sb-theme-row {
+    padding: 9px 12px;
+    justify-content: flex-start;
+    width: 100%;
+    border-radius: 10px;
+  }
+  #sidebar.collapsed .sb-nav { padding: 10px 10px; }
+  #sidebar.collapsed .sb-item:hover::after { display: none; }
+  #btnSidebarCollapse,
+  .sb-collapse-btn { display: none !important; }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 110;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-menu-btn { display: inline-flex; }
   #topBar { padding:0 14px; gap:8px; }
   .topbar-title { font-size:16px; }
+  .db-status-dot { display: none; }
   .main { padding:16px 14px; }
   .stats-grid { grid-template-columns:repeat(3,1fr); gap:6px; }
   .inv-stats-grid { grid-template-columns:repeat(3,1fr); gap:6px; }
   .stat-val { font-size:18px; }
   .toolbar { flex-direction:column; gap:8px; }
   .toolbar .search-wrap { min-width:unset; width:100%; }
+  .toolbar .btn { width: 100%; justify-content: center; }
   .filter-select { width:100%; }
+  .count-bar { flex-wrap: wrap; gap: 8px; align-items: center; }
   .form-grid { grid-template-columns:1fr; }
   .fg.full { grid-column:1; }
   .detail-panels { grid-template-columns:1fr; }
   .overlay { padding:12px; }
   .modal { border-radius:var(--radius-lg); max-height:95vh; }
+  .modal-footer { flex-wrap: wrap; }
+  .modal-footer .btn { flex: 1 1 100%; justify-content: center; }
   .toast { bottom:16px; right:16px; left:16px; }
   .chip-name { display:none; }
   .chip-role { display:none; }
   .acct-btn { padding:4px 8px 4px 4px; }
+
+  .login-left {
+    padding: 24px 18px;
+  }
+  .login-left-deco1,
+  .login-left-deco2,
+  .login-left-deco3,
+  .login-left-deco4,
+  .login-left-tagline,
+  .login-left-dots,
+  .login-left-illustration { display: none; }
+  .login-left-brand {
+    margin-bottom: 0;
+    justify-content: center;
+  }
+  .login-left-headline {
+    font-size: 24px;
+    text-align: center;
+    margin-top: 10px;
+  }
+  .login-right {
+    padding: 14px 14px 24px;
+  }
+  .login-form-wrap {
+    max-width: 100%;
+    padding: 24px 18px;
+    border-radius: 10px;
+  }
+  .login-form-title { font-size: 24px; }
+  .login-form-sub { margin-bottom: 20px; }
 }
 @media (max-width: 480px) {
+  #topBar { height: 56px; padding: 0 12px; }
+  .topbar-title { font-size: 15px; }
+  .topbar-right { gap: 6px; }
+  .btn.btn-sm { padding: 5px 7px; }
   .stats-grid { grid-template-columns:repeat(2,1fr); }
   .inv-stats-grid { grid-template-columns:repeat(2,1fr); }
+  .login-form-wrap { padding: 20px 14px; border-radius: 8px; }
+  .login-form-title { font-size: 22px; }
+  .login-app-nav-btn { width: 100%; justify-content: center; }
+  .login-footer { flex-direction: column; align-items: flex-start; }
   .overlay { padding:8px; align-items:flex-end; }
   .modal { border-radius:var(--radius-xl) var(--radius-xl) 0 0; max-height:96vh; border-bottom:none; }
   .toast { bottom:0; right:0; left:0; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
@@ -1539,7 +1680,7 @@ mark.gsr-highlight {
 .pcc-untagged  { background:var(--glass-border); color:var(--text3); }
 
 /* Multi-item sub-section within a PO card */
-.inv-item-group { }
+.inv-item-group { display:block; }
 .inv-item-group-header {
   display:flex; align-items:center; gap:8px;
   padding:8px 16px;
@@ -1825,6 +1966,8 @@ mark.gsr-highlight {
 ════════════════════════════════ -->
 <div id="appScreen">
 
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
   <!-- Sidebar collapse toggle — sits on the border line between sidebar and main -->
   <button class="sb-collapse-btn" id="btnSidebarCollapse" onclick="toggleSidebar()" title="Toggle sidebar">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -1970,7 +2113,12 @@ mark.gsr-highlight {
     <!-- TOP BAR (sticky) -->
     <div id="topBar">
       <div class="topbar-left">
-        <h1 class="topbar-title" id="topbarTitle">Delivery Inventory</h1>
+        <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+          <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Open menu" title="Menu">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <h1 class="topbar-title" id="topbarTitle">Delivery Inventory</h1>
+        </div>
       </div>
       <div class="topbar-right">
         <!-- DB status dot -->
@@ -2503,9 +2651,7 @@ mark.gsr-highlight {
         <textarea id="f_serialNumbers" style="display:none"></textarea>
         <div class="fg">
           <label>IT Tech <span style="color:var(--red)">*</span></label>
-          <select id="f_itTech" required>
-            <option value="">Select IT Tech</option>
-          </select>
+          <input type="text" id="f_itTech" placeholder="Auto-filled from signed-in user" readonly required>
         </div>
         <div class="fg">
           <label>From <span style="color:var(--red)">*</span></label>
@@ -3155,6 +3301,10 @@ function can(action) {
 
 // ── SIDEBAR ──
 window.toggleSidebar = function() {
+  if (window.innerWidth <= 768) {
+    toggleMobileSidebar();
+    return;
+  }
   const sidebar = document.getElementById('sidebar');
   const btn = document.getElementById('btnSidebarCollapse');
   sidebar.classList.toggle('collapsed');
@@ -3162,6 +3312,36 @@ window.toggleSidebar = function() {
   btn.style.left = (isCollapsed ? 60 : 240) - 13 + 'px';
   btn.classList.toggle('is-collapsed', isCollapsed);
 };
+
+window.toggleMobileSidebar = function() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar || !overlay || window.innerWidth > 768) return;
+  const willOpen = !sidebar.classList.contains('mobile-open');
+  sidebar.classList.toggle('mobile-open', willOpen);
+  overlay.classList.toggle('open', willOpen);
+  document.body.style.overflow = willOpen ? 'hidden' : '';
+};
+
+window.closeMobileSidebar = function() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar || !overlay) return;
+  sidebar.classList.remove('mobile-open');
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+function syncResponsiveSidebarState() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar || !overlay) return;
+  if (window.innerWidth > 768) {
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
 
 // Position the button correctly once DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -3693,16 +3873,11 @@ function stopPresence() {
 }
 
 function populateTechDropdown() {
-  const sel = document.getElementById('f_itTech');
-  if (!sel) return;
-  const users = getUsers();
-  while (sel.options.length > 1) sel.remove(1);
-  users.forEach(u => {
-    const opt = document.createElement('option');
-    opt.value = u.displayName || u.username;
-    opt.textContent = (u.displayName || u.username) + ' (' + (u.role === 'superadmin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : 'Member') + ')';
-    sel.appendChild(opt);
-  });
+  const input = document.getElementById('f_itTech');
+  if (!input) return;
+  if (!editId) {
+    input.value = currentUser?.displayName || currentUser?.username || '';
+  }
 }
 
 // ── DATA (Turso + localStorage cache) ──
@@ -3987,6 +4162,7 @@ window.openAddModal = function() {
   document.getElementById('modalTitle').textContent = 'Log Delivery';
   document.getElementById('dateStrip').style.display = 'none';
   clearForm();
+  populateTechDropdown();
   document.getElementById('f_deliveryDate').value = new Date().toISOString().slice(0, 10);
   document.getElementById('formOverlay').classList.add('open');
 };
@@ -4053,17 +4229,14 @@ function clearForm() {
 
 // ── ITEM ROW HELPERS ──
 const ASSET_TYPES_LIST = ['Access Point','Desktop','Docking Station','Headset','Keyboard','Laptop','Monitor','Mouse','Network Switch','Printer','UPS','Webcam','YubiKey','Other'];
-const ASSET_BRANDS_LIST = ['Acer','Apple','Asus','Canon','Cisco','Dell','Epson','HP','Lenovo','Logitech','Microsoft','MSI','Samsung','TP-Link','Ubiquiti','Other'];
 
 function _typeOpts(sel) {
   return ASSET_TYPES_LIST.map(t => `<option value="${t}"${sel===t?' selected':''}>${t}</option>`).join('');
 }
-function _brandOpts(sel) {
-  return '<option value="">Select Brand</option>' + ASSET_BRANDS_LIST.map(b => `<option value="${b}"${sel===b?' selected':''}>${b}</option>`).join('');
-}
 
 function _itemRowHtml(idx, d) {
   d = d || {};
+  const brandVal = (d.brand||'').replace(/"/g,'&quot;');
   const specVal = (d.specifications||'').replace(/"/g,'&quot;');
   return `<div class="item-row">
     <div class="item-row-label">Item ${idx + 1}</div>
@@ -4078,7 +4251,7 @@ function _itemRowHtml(idx, d) {
       </div>
       <div class="fg">
         <label>Brand</label>
-        <select class="i_brand">${_brandOpts(d.brand||'')}</select>
+        <input type="text" class="i_brand" placeholder="e.g. Dell, Lenovo, HP" value="${brandVal}">
       </div>
       <div class="fg">
         <label>Quantity <span style="color:var(--red)">*</span></label>
@@ -6415,6 +6588,10 @@ window.switchView = function(view) {
     renderStats();
     renderTable();
   }
+
+  if (window.innerWidth <= 768) {
+    closeMobileSidebar();
+  }
 };
 
 // ── INIT ──
@@ -6701,6 +6878,7 @@ document.addEventListener('click', function(e) {
 });
 
 window.addEventListener('resize', function() {
+  syncResponsiveSidebarState();
   if (document.getElementById('globalSearchResults')?.classList.contains('open')) {
     positionSearchResults();
   }
