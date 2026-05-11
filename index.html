@@ -537,56 +537,6 @@ body{
 </main>
 
 <div class="overlay" id="indexDeductionCalculatorOverlay" onclick="if(event.target===this)closeIndexDeductionCalculator()">
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          Search Records
-        </span>
-      </div>
-      <div class="card-body">
-        <div class="search-row">
-          <div class="search-input-wrap">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input id="searchInput" class="search-input" type="search" placeholder="Search by name, asset tag, email, department&hellip;" autocomplete="off">
-          </div>
-          <select id="tableSelect" class="table-select">
-            <option value="all">All tables</option>
-            <optgroup label="People">
-              <option value="offboarding">offboarding</option>
-              <option value="presence">presence</option>
-            </optgroup>
-            <optgroup label="Assets">
-              <option value="laptops">laptops</option>
-              <option value="records">records</option>
-              <option value="inventory">inventory</option>
-              <option value="assets">assets</option>
-            </optgroup>
-          </select>
-          <button id="searchBtn" class="search-btn" type="button">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            Search
-          </button>
-        </div>
-        <div class="search-footer">
-          <span class="search-status" id="statusText">Type a keyword and press Enter or click Search.</span>
-          <span class="search-hint"><kbd>&#8629; Enter</kbd> to search</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Results -->
-    <section id="resultsArea">
-      <div class="results-header">
-        <span class="results-title">Results</span>
-        <span class="results-count" id="resultsCount">0 records</span>
-      </div>
-      <div class="results-grid" id="resultsGrid"></div>
-    </section>
-
-</main>
-
-<div class="overlay" id="indexDeductionCalculatorOverlay" onclick="if(event.target===this)closeIndexDeductionCalculator()">
       <div class="modal" style="width:calc(100vw - 40px); max-width:900px; min-width:320px;">
         <div class="modal-header">
           <div class="modal-title">Deduction Calculator</div>
