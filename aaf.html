@@ -1028,7 +1028,7 @@ async function setPresence(online) {
     username: currentUser.username,
     displayName: currentUser.displayName || currentUser.username,
     role: currentUser.role,
-    page: 'AssetSign',
+    page: 'Asset Accountability',
     avatar: currentUser.avatar || null,
     lastSeen: new Date().toISOString(),
     online
@@ -1059,7 +1059,9 @@ async function loadPresence() {
         ${avatarHtml}
         <div class="sb-online-info">
           <div class="sb-online-name">${u.displayName||u.username}</div>
-          <div class="sb-online-role">${roleLabel(u.role)}</div>
+          <div class="sb-online-role" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+            ${u.page ? `<span style="background:var(--accent-light);color:var(--accent);border-radius:4px;padding:1px 5px;font-size:10px;font-weight:600">${u.page}</span>` : roleLabel(u.role)}
+          </div>
         </div>
         <div class="sb-online-dot" title="Online · ${relativeTime(u.lastSeen)}"></div>
       </div>`;
