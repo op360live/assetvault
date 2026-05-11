@@ -5,18 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Autoplay YouTube Video Muted</title>
   <style>
-    body {
+    * {
       margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
       background: #000;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
     }
     .video-container {
-      width: 100%;
-      max-width: 960px;
-      aspect-ratio: 16 / 9;
+      width: 100vw;
+      height: 100vh;
     }
     iframe {
       width: 100%;
