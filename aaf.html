@@ -662,9 +662,9 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
           Copy Token
         </button>
-        <button class="btn btn-sm" id="esvEmailBtn" onclick="esvEmailToken()">
+        <button class="btn btn-sm" id="esvEmailBtn" onclick="esvEmailToken()" title="Opens your email app — paste the token manually into the email body">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Email Token to IT
+          Email IT (paste token manually)
         </button>
       </div>
     </div>
@@ -1351,8 +1351,8 @@ function openMailtoSignLink() {
   const email = btn._mailto || '';
   const name = btn._name || 'Employee';
   const subject = encodeURIComponent('Please sign your IT Asset Accountability Form');
-  const body = encodeURIComponent(`Hi ${name},\n\nPlease click the link below to review and sign your IT Asset Accountability Form:\n\n${url}\n\nOnce signed, please send the confirmation token back to IT.\n\nThank you.`);
-  window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_self');
+  const body = encodeURIComponent(`Hi ${name},\n\nPlease click the link below to review and sign your IT Asset Accountability Form:\n\n${url}\n\nOnce signed, please copy the confirmation token shown on the page and send it back to IT.\n\nThank you.`);
+  window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
 }
 
 function importSignatureToken() {
@@ -1582,11 +1582,12 @@ function esvCopyToken() {
 
 function esvEmailToken() {
   const btn = document.getElementById('esvEmailBtn');
-  const token = btn._token || document.getElementById('esvTokenBox').textContent;
   const name = btn._name || 'Employee';
+  // The token contains a base64 PNG and is too large for a mailto: body.
+  // Instead open a blank email with instructions to paste the token manually.
   const subject = encodeURIComponent('Signed IT Asset Accountability Form — Signature Token');
-  const body = encodeURIComponent(`Hi,\n\nI, ${name}, have reviewed and signed the IT Asset Accountability Form.\n\nPlease find my signature token below:\n\n${token}\n\nThank you.`);
-  window.open(`mailto:?subject=${subject}&body=${body}`, '_self');
+  const body = encodeURIComponent(`Hi,\n\nI, ${name}, have reviewed and signed the IT Asset Accountability Form.\n\nPlease find my signature token pasted below (copy it from the page and paste it here before sending):\n\n[PASTE TOKEN HERE]\n\nThank you.`);
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 
 /* ══════════════════════════════════════════
