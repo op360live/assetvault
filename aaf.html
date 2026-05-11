@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Crect x='8' y='5' width='16' height='20' rx='2' fill='white' opacity='.95'/%3E%3Crect x='11' y='9' width='10' height='1.5' rx='.75' fill='%234f46e5' opacity='.5'/%3E%3Crect x='11' y='13' width='10' height='1.5' rx='.75' fill='%234f46e5' opacity='.5'/%3E%3Crect x='11' y='17' width='6' height='1.5' rx='.75' fill='%234f46e5' opacity='.5'/%3E%3Cpolyline points='11,22 13.5,25 21,19' stroke='%2316a34a' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--accent:#4f46e5;--accent2:#7c3aed;--accent-glow:rgba(79,70,229,.22);--accent-light:rgba(79,70,229,.08);--bg:#f5f5f7;--surface:#ffffff;--surface2:#f9fafb;--surface-tint:rgba(79,70,229,.04);--text:#111827;--text2:#374151;--text3:#6b7280;--border:#e5e7eb;--border2:#f3f4f6;--sidebar-bg:#ffffff;--sidebar-border:#e5e7eb;--card-shadow:0 1px 4px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);--radius:10px;--radius-lg:14px;--green:#16a34a;--green-bg:rgba(22,163,74,.1);--red:#dc2626;--red-bg:rgba(220,38,38,.1);--amber:#d97706;--amber-bg:rgba(217,119,6,.1);--blue:#2563eb;--blue-bg:rgba(37,99,235,.1);--glass-border:rgba(0,0,0,.08);--glass-border2:rgba(0,0,0,.05)}
+:root{--accent:#4f46e5;--accent-rgb:79,70,229;--accent2:#7c3aed;--accent-glow:rgba(79,70,229,.22);--accent-light:rgba(79,70,229,.08);--bg:#f5f5f7;--surface:#ffffff;--surface2:#f9fafb;--surface-tint:rgba(79,70,229,.04);--text:#111827;--text2:#374151;--text3:#6b7280;--border:#e5e7eb;--border2:#f3f4f6;--sidebar-bg:#ffffff;--sidebar-border:#e5e7eb;--card-shadow:0 1px 4px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);--radius:10px;--radius-lg:14px;--green:#16a34a;--green-bg:rgba(22,163,74,.1);--red:#dc2626;--red-bg:rgba(220,38,38,.1);--amber:#d97706;--amber-bg:rgba(217,119,6,.1);--blue:#2563eb;--blue-bg:rgba(37,99,235,.1);--glass-border:rgba(0,0,0,.08);--glass-border2:rgba(0,0,0,.05)}
 [data-theme="dark"]{--bg:#0f0f13;--surface:#1a1a24;--surface2:#22222e;--surface-tint:rgba(79,70,229,.06);--text:#f3f4f6;--text2:#d1d5db;--text3:#9ca3af;--border:#2d2d3d;--border2:#1f1f2b;--sidebar-bg:#13131a;--sidebar-border:#22222e;--card-shadow:0 2px 8px rgba(0,0,0,.4);--glass-border:rgba(255,255,255,.08);--glass-border2:rgba(255,255,255,.04)}
 html{scroll-behavior:smooth}
 body{font-family:'Segoe UI',Arial,'Helvetica Neue',Helvetica,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
@@ -289,7 +289,7 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
 .esv-header p{font-size:12px;opacity:.8}
 .esv-body{max-width:860px;margin:0 auto;padding:24px 16px}
 #esvFormContent{overflow:visible}
-.esv-notice{background:var(--amber-bg);border:1px solid rgba(217,119,6,.25);border-radius:var(--radius);padding:12px 16px;font-size:13px;color:var(--amber);margin-bottom:20px}
+.esv-notice{background:var(--amber-bg);border:1px solid rgba(217,119,6,.25);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--amber);margin-bottom:20px;display:flex;align-items:center;gap:8px}
 .esv-signed-banner{background:var(--green-bg);border:1px solid rgba(22,163,74,.25);border-radius:var(--radius);padding:16px 20px;font-size:14px;color:var(--green);margin-bottom:20px;text-align:center}
 
 /* ── DB SYNC STATUS ── */
@@ -300,6 +300,75 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
 .db-status-dot::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinning{animation:spin .8s linear infinite}
+@keyframes scanLineAnim{0%,100%{top:0}50%{top:calc(100% - 2px)}}
+.btn-scan{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;flex-shrink:0;transition:color .15s,border-color .15s}
+.btn-scan:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ── MOBILE RESPONSIVE ── */
+#sbOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:499;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+#sbOverlay.active{display:block}
+#btnMobileMenu{display:none!important}
+@media(max-width:768px){
+  #btnMobileMenu{display:flex!important}
+  .sb-collapse-btn{display:none!important}
+  #sidebar,#sidebar.collapsed{position:fixed;left:0;top:0;height:100vh;width:240px!important;min-width:240px!important;z-index:500;transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:4px 0 24px rgba(0,0,0,.2)}
+  #sidebar.mobile-open,#sidebar.collapsed.mobile-open{transform:translateX(0)}
+  #mainArea{width:100%;min-width:0}
+  .topbar{padding:0 12px;gap:8px}
+  .topbar-title{font-size:14px}
+  .page-content{padding:12px}
+  .stat-grid{grid-template-columns:repeat(3,1fr)!important;gap:8px;margin-bottom:12px}
+  .stat-val{font-size:20px}
+  .stat-card{padding:10px 12px}
+  /* Table → card layout */
+  .table-wrap{overflow-x:visible!important;border:none!important;box-shadow:none!important;background:transparent!important;border-radius:0!important}
+  table{min-width:unset!important;display:block}
+  thead{display:none}
+  tbody{display:flex;flex-direction:column;gap:10px}
+  tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;box-shadow:var(--card-shadow)}
+  tbody tr:hover{background:var(--surface)}
+  td{display:block;padding:3px 0;border-bottom:none!important;font-size:12px;color:var(--text2)}
+  td::before{content:attr(data-label);display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:2px}
+  td[data-label="Employee"]{grid-column:span 2;font-size:13px!important;color:var(--text)!important;font-weight:600}
+  td[data-label="Employee"]::before{display:none}
+  td[data-label="Job Title"],td[data-label="Date Added"],td[data-label="IT Personnel"]{display:none}
+  td[data-label="Actions"]{grid-column:span 2;display:flex!important;gap:4px;flex-wrap:wrap;padding-top:10px;margin-top:6px;border-top:1px solid var(--border)}
+  td[data-label="Actions"]::before{display:none}
+  /* Toolbar */
+  .table-toolbar{gap:8px}
+  .search-input{width:100%}
+  .search-wrap{flex:1;min-width:0}
+  /* Modals → bottom sheet */
+  .overlay{align-items:flex-end!important}
+  .modal{width:100%!important;max-width:100%!important;border-radius:var(--radius-lg) var(--radius-lg) 0 0!important;max-height:92vh!important}
+  #formOverlay{align-items:flex-start!important;overflow-y:auto!important;padding:0!important}
+  #formOverlay .modal{border-radius:0!important;max-height:none!important;min-height:100%}
+  .modal-body{padding:16px!important}
+  .modal-header{padding:14px 16px 10px!important;flex-wrap:wrap;gap:6px}
+  .modal-footer{padding:12px 16px!important}
+  /* Form grid → single column */
+  .form-grid{grid-template-columns:1fr!important}
+  .form-grid .span2{grid-column:1!important}
+  /* Asset row → stacked */
+  .asset-row{grid-template-columns:1fr 26px!important}
+  .asset-row>*:nth-child(2){grid-column:1/-1;grid-row:2}
+  .asset-row>*:nth-child(3){grid-column:1/-1;grid-row:3}
+  .asset-row>*:nth-child(4){grid-column:2;grid-row:1}
+  /* DB status → icon only */
+  #dbStatusDot{font-size:0!important;padding:5px 7px!important;border-radius:50%!important}
+  /* Toast */
+  .toast-container{bottom:12px;right:12px;left:12px}
+  .toast{max-width:100%}
+  /* Signature canvas */
+  #signCanvas,#esvCanvas{width:100%!important;height:120px!important}
+  .sign-canvas-wrap{min-height:130px}
+}
+@media(max-width:480px){
+  .stat-grid{grid-template-columns:1fr 1fr!important}
+  .page-content{padding:10px}
+  .topbar-actions .btn span{display:none}
+  .topbar-actions .btn{padding:6px 8px}
+}
 
 /* ── PRINT STYLES ── */
 @media print{
@@ -316,6 +385,7 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
 }
 </style>
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/@zxing/browser@0.1.5/umd/index.min.js"></script>
 </head>
 <body>
 
@@ -480,9 +550,13 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
       </div>
     </div>
   </aside>
+  <div id="sbOverlay" onclick="toggleSidebar()"></div>
 
   <div id="mainArea">
     <div class="topbar">
+      <button id="btnMobileMenu" class="btn-icon" onclick="toggleSidebar()" title="Open menu" style="flex-shrink:0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
       <div class="topbar-title" id="topbarTitle">Deployments</div>
       <div class="topbar-actions" id="topbarActions"></div>
       <div id="dbStatusDot" class="db-status-dot" style="margin-left:8px" title="Database sync status">Connecting…</div>
@@ -491,6 +565,50 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
       </button>
     </div>
     <div class="page-content" id="pageContent"></div>
+  </div>
+</div>
+
+<!-- BARCODE SCAN MODAL -->
+<div class="overlay" id="scanOverlay">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Scan Barcode / QR Code</div>
+        <div class="modal-sub" id="scanModalSub">Point camera at the asset barcode or QR code</div>
+      </div>
+      <button class="modal-close" onclick="closeScanModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div id="scanViewfinder" style="position:relative;background:#000;overflow:hidden;border-radius:0;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center">
+        <video id="scanVideo" style="width:100%;height:100%;object-fit:cover;display:block" playsinline muted></video>
+        <!-- targeting reticle -->
+        <div style="position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center">
+          <div id="scanReticle" style="width:65%;height:38%;position:relative">
+            <span style="position:absolute;top:0;left:0;width:18px;height:18px;border-top:2.5px solid #fff;border-left:2.5px solid #fff;border-radius:2px 0 0 0"></span>
+            <span style="position:absolute;top:0;right:0;width:18px;height:18px;border-top:2.5px solid #fff;border-right:2.5px solid #fff;border-radius:0 2px 0 0"></span>
+            <span style="position:absolute;bottom:0;left:0;width:18px;height:18px;border-bottom:2.5px solid #fff;border-left:2.5px solid #fff;border-radius:0 0 0 2px"></span>
+            <span style="position:absolute;bottom:0;right:0;width:18px;height:18px;border-bottom:2.5px solid #fff;border-right:2.5px solid #fff;border-radius:0 0 2px 0"></span>
+            <div id="scanLine" style="position:absolute;left:0;right:0;height:2px;background:var(--accent);box-shadow:0 0 6px rgba(79,70,229,.9);animation:scanLineAnim 2s ease-in-out infinite"></div>
+          </div>
+        </div>
+        <!-- fallback: no camera -->
+        <div id="scanNoCamera" style="display:none;flex-direction:column;align-items:center;gap:10px;color:#fff;padding:24px;text-align:center">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <div style="font-size:13px">Camera not available</div>
+        </div>
+      </div>
+      <!-- camera selector -->
+      <div style="padding:12px 16px;display:flex;align-items:center;gap:10px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <select id="scanCameraSelect" class="form-select" style="flex:1;font-size:12px" onchange="switchScanCamera(this.value)"></select>
+      </div>
+    </div>
+    <div class="modal-footer" style="padding:10px 16px">
+      <button class="btn" onclick="closeScanModal()">Cancel</button>
+      <div id="scanResult" style="flex:1;font-size:12px;color:var(--text3);text-align:center"></div>
+    </div>
   </div>
 </div>
 
@@ -765,7 +883,7 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
     </div>
   </div>
   <div class="esv-body">
-    <div class="esv-notice" id="esvNotice">⚠️ Please review the asset details carefully before signing.</div>
+    <div class="esv-notice" id="esvNotice"></div>
     <div id="esvFormContent"></div>
     <div id="esvSignSection" style="margin-top:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px">
       <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">Your Signature</div>
@@ -1374,12 +1492,18 @@ function switchView(view) {
 function toggleSidebar() {
   const sb = document.getElementById('sidebar');
   const btn = document.getElementById('btnSidebarCollapse');
+  if (window.innerWidth <= 768) {
+    const isOpen = sb.classList.toggle('mobile-open');
+    document.getElementById('sbOverlay').classList.toggle('active', isOpen);
+    return;
+  }
   const isCollapsed = sb.classList.toggle('collapsed');
   localStorage.setItem(SB_KEY, isCollapsed ? '1' : '0');
   btn.style.left = (isCollapsed ? 60 : 240) - 13 + 'px';
   btn.classList.toggle('is-collapsed', isCollapsed);
 }
 function loadSidebarState() {
+  if (window.innerWidth <= 768) return;
   const btn = document.getElementById('btnSidebarCollapse');
   const isCollapsed = localStorage.getItem(SB_KEY) === '1';
   if (isCollapsed) document.getElementById('sidebar').classList.add('collapsed');
@@ -1542,17 +1666,17 @@ function renderDeployments() {
             <p>${all.length === 0 ? 'No deployments yet — click Add Deployment to get started.' : 'No records match your search.'}</p>
           </div></td></tr>` :
           filtered.map(d => `<tr>
-            <td><div style="font-weight:600;color:var(--text)">${d.employeeName||'—'}</div><div style="font-size:11px;color:var(--text3)">${d.emailAddress||''}</div></td>
-            <td style="color:var(--text2)">${d.jobTitle||'—'}</td>
-            <td style="color:var(--text2)">${d.site||'—'}${d.floor?' · '+d.floor:''}</td>
-            <td style="color:var(--text2)">${(() => { const aa = getAssets(d); const first = aa[0]; const label = first.brand||first.type||'—'; return aa.length > 1 ? `${label} <span style="font-size:11px;color:var(--text3);font-weight:600">+${aa.length-1}</span>` : label; })()}</td>
-            <td class="mono">${(() => { const aa = getAssets(d); return aa.map(a=>a.serialNo||'—').join(', '); })()}</td>
-            <td style="font-size:12px;color:var(--text3)">${fmtDate(d.dateRelease)}</td>
-            <td style="font-size:12px;color:var(--text3)">${d.createdAt ? fmtDate(d.createdAt) : '—'}</td>
-            <td style="color:var(--text2)">${d.itPersonnel||'—'}</td>
-            <td>${statusBadge(d.status)}</td>
-            <td>${d.signature ? `<span class="badge b-active" title="Signed on ${fmtDate(d.signedAt)}">✓ Signed</span>` : `<span class="badge b-inactive">Unsigned</span>`}</td>
-            <td>
+            <td data-label="Employee"><div style="font-weight:600;color:var(--text)">${d.employeeName||'—'}</div><div style="font-size:11px;color:var(--text3)">${d.emailAddress||''}</div></td>
+            <td data-label="Job Title" style="color:var(--text2)">${d.jobTitle||'—'}</td>
+            <td data-label="Site" style="color:var(--text2)">${d.site||'—'}${d.floor?' · '+d.floor:''}</td>
+            <td data-label="Asset" style="color:var(--text2)">${(() => { const aa = getAssets(d); const first = aa[0]; const label = first.brand||first.type||'—'; return aa.length > 1 ? `${label} <span style="font-size:11px;color:var(--text3);font-weight:600">+${aa.length-1}</span>` : label; })()}</td>
+            <td data-label="Serial No." class="mono">${(() => { const aa = getAssets(d); return aa.map(a=>a.serialNo||'—').join(', '); })()}</td>
+            <td data-label="Released" style="font-size:12px;color:var(--text3)">${fmtDate(d.dateRelease)}</td>
+            <td data-label="Date Added" style="font-size:12px;color:var(--text3)">${d.createdAt ? fmtDate(d.createdAt) : '—'}</td>
+            <td data-label="IT Personnel" style="color:var(--text2)">${d.itPersonnel||'—'}</td>
+            <td data-label="Status">${statusBadge(d.status)}</td>
+            <td data-label="Signed">${d.signature ? `<span class="badge b-active" title="Signed on ${fmtDate(d.signedAt)}">✓ Signed</span>` : `<span class="badge b-inactive">Unsigned</span>`}</td>
+            <td data-label="Actions">
               <div style="display:flex;gap:4px;justify-content:center">
                 <button class="btn-icon" title="Send Signing Link" onclick="openSendLink('${d.id}')" style="color:var(--accent)">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
@@ -1610,7 +1734,12 @@ function addAssetRow(asset) {
   row.innerHTML = `
     <select title="Asset Type">${_assetTypeOptions(a.type)}</select>
     <input type="text" placeholder="Brand / Model" value="${a.brand || ''}" title="Brand / Model">
-    <input type="text" placeholder="Serial No." value="${a.serialNo || ''}" title="Serial Number">
+    <div style="display:flex;gap:4px;align-items:center">
+      <input type="text" placeholder="Serial No." value="${a.serialNo || ''}" title="Serial Number" style="flex:1;min-width:0">
+      <button type="button" class="btn-scan" title="Scan barcode / QR" onclick="openScanModal(this.closest('.asset-row').querySelector('input[placeholder=\\'Serial No.\\']'))">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </button>
+    </div>
     <button type="button" class="asset-row-remove" title="Remove" onclick="this.closest('.asset-row').remove()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>`;
@@ -1621,7 +1750,10 @@ function collectAssets() {
   const rows = document.querySelectorAll('#assetRows .asset-row');
   const assets = [];
   rows.forEach(row => {
-    const [typeEl, brandEl, serialEl] = row.querySelectorAll('select, input');
+    const typeEl   = row.querySelector('select');
+    const inputs   = row.querySelectorAll('input[type=text]');
+    const brandEl  = inputs[0];
+    const serialEl = inputs[1];
     const type = typeEl?.value || '';
     const brand = brandEl?.value?.trim() || '';
     const serialNo = serialEl?.value?.trim() || '';
@@ -1961,6 +2093,140 @@ function updateTypePreview() {
   prev.style.fontFamily = font;
   prev.textContent = val;
 }
+
+/* ══════════════════════════════════════════
+   BARCODE / QR SCANNER
+══════════════════════════════════════════ */
+let _scanTargetInput = null;
+let _scanReader = null;
+let _scanStream = null;
+let _scanNativeRunning = false;
+let _scanNativeRaf = null;
+
+async function openScanModal(inputEl) {
+  _scanTargetInput = inputEl;
+  document.getElementById('scanResult').textContent = '';
+  document.getElementById('scanModalSub').textContent = 'Point camera at the asset barcode or QR code';
+  document.getElementById('scanNoCamera').style.display = 'none';
+
+  const overlay = document.getElementById('scanOverlay');
+  overlay.classList.add('open');
+
+  // Enumerate cameras
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cams = devices.filter(d => d.kind === 'videoinput');
+    const sel = document.getElementById('scanCameraSelect');
+    sel.innerHTML = cams.length
+      ? cams.map((c, i) => `<option value="${c.deviceId}">${c.label || 'Camera ' + (i + 1)}</option>`).join('')
+      : '<option value="">Default camera</option>';
+    // Prefer back/environment camera on mobile
+    const backIdx = cams.findIndex(c => /back|rear|environment/i.test(c.label));
+    if (backIdx > 0) sel.selectedIndex = backIdx;
+    await _startScanCamera(sel.value || null);
+  } catch (err) {
+    _showScanNoCamera();
+  }
+}
+
+async function _startScanCamera(deviceId) {
+  _stopScanCamera();
+  const constraints = {
+    video: deviceId
+      ? { deviceId: { exact: deviceId }, facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+      : { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+  };
+  try {
+    _scanStream = await navigator.mediaDevices.getUserMedia(constraints);
+    const video = document.getElementById('scanVideo');
+    video.srcObject = _scanStream;
+    await video.play();
+
+    // Try native BarcodeDetector first
+    if (typeof BarcodeDetector !== 'undefined') {
+      const supported = await BarcodeDetector.getSupportedFormats();
+      const detector = new BarcodeDetector({ formats: supported });
+      _scanNativeRunning = true;
+      const scanFrame = async () => {
+        if (!_scanNativeRunning) return;
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+          try {
+            const results = await detector.detect(video);
+            if (results.length > 0) {
+              _onScanResult(results[0].rawValue);
+              return;
+            }
+          } catch (_) {}
+        }
+        _scanNativeRaf = requestAnimationFrame(scanFrame);
+      };
+      _scanNativeRaf = requestAnimationFrame(scanFrame);
+    } else if (window.ZXingBrowser) {
+      // ZXing fallback
+      const hints = new Map();
+      const formats = [
+        ZXingBrowser.BarcodeFormat.CODE_128,
+        ZXingBrowser.BarcodeFormat.CODE_39,
+        ZXingBrowser.BarcodeFormat.QR_CODE,
+        ZXingBrowser.BarcodeFormat.EAN_13,
+        ZXingBrowser.BarcodeFormat.UPC_A,
+        ZXingBrowser.BarcodeFormat.DATA_MATRIX,
+        ZXingBrowser.BarcodeFormat.PDF_417,
+      ];
+      hints.set(ZXingBrowser.DecodeHintType.POSSIBLE_FORMATS, formats);
+      _scanReader = new ZXingBrowser.BrowserMultiFormatReader(hints);
+      _scanReader.decodeFromVideoElement(video, (result, err) => {
+        if (result) _onScanResult(result.getText());
+      });
+    } else {
+      document.getElementById('scanModalSub').textContent = 'Scanner library loading…';
+    }
+  } catch (err) {
+    _showScanNoCamera(err);
+  }
+}
+
+function _onScanResult(value) {
+  if (!value) return;
+  _stopScanCamera();
+  if (_scanTargetInput) {
+    _scanTargetInput.value = value;
+    _scanTargetInput.dispatchEvent(new Event('input'));
+    _scanTargetInput.focus();
+  }
+  document.getElementById('scanResult').innerHTML =
+    `<span style="color:var(--green);font-weight:600">✓ ${value}</span>`;
+  document.getElementById('scanModalSub').textContent = 'Scanned successfully';
+  setTimeout(closeScanModal, 900);
+}
+
+function _stopScanCamera() {
+  _scanNativeRunning = false;
+  if (_scanNativeRaf) { cancelAnimationFrame(_scanNativeRaf); _scanNativeRaf = null; }
+  if (_scanReader) { try { _scanReader.reset(); } catch (_) {} _scanReader = null; }
+  if (_scanStream) { _scanStream.getTracks().forEach(t => t.stop()); _scanStream = null; }
+  const video = document.getElementById('scanVideo');
+  if (video) { video.srcObject = null; }
+}
+
+function _showScanNoCamera(err) {
+  _stopScanCamera();
+  const nc = document.getElementById('scanNoCamera');
+  nc.style.display = 'flex';
+  document.getElementById('scanModalSub').textContent =
+    err && err.name === 'NotAllowedError' ? 'Camera permission denied' : 'Camera not available on this device';
+}
+
+function switchScanCamera(deviceId) {
+  _startScanCamera(deviceId || null);
+}
+
+function closeScanModal() {
+  _stopScanCamera();
+  document.getElementById('scanOverlay').classList.remove('open');
+  _scanTargetInput = null;
+}
+
 async function applySignature() {
   let dataUrl = null;
   if (signTabActive === 'draw') {
@@ -2036,6 +2302,27 @@ function copySigningLink() {
 ══════════════════════════════════════════ */
 let esvData = null;
 let esvTabActive = 'draw';
+
+function setEsvNotice(type, text) {
+  const el = document.getElementById('esvNotice');
+  const icons = {
+    warning: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    success: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+    error:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    loading: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>`,
+  };
+  const styles = {
+    warning: { bg: 'var(--amber-bg)', color: 'var(--amber)', border: 'rgba(217,119,6,.25)' },
+    success: { bg: 'var(--green-bg)', color: 'var(--green)', border: 'rgba(22,163,74,.25)' },
+    error:   { bg: 'var(--red-bg)',   color: 'var(--red)',   border: 'rgba(220,38,38,.25)' },
+    loading: { bg: 'var(--surface2)', color: 'var(--text2)', border: 'var(--border)' },
+  };
+  const s = styles[type] || styles.warning;
+  el.style.background = s.bg;
+  el.style.color = s.color;
+  el.style.borderColor = s.border;
+  el.innerHTML = (icons[type] || '') + `<span>${text}</span>`;
+}
 let esvIsDrawing = false;
 let esvLastX = 0, esvLastY = 0;
 let esvCtx = null;
@@ -2052,7 +2339,7 @@ async function checkSignParam() {
   document.getElementById('appScreen').style.display = 'none';
   const esv = document.getElementById('employeeSignView');
   esv.classList.add('active');
-  document.getElementById('esvNotice').textContent = '⏳ Loading your form…';
+  setEsvNotice('loading', 'Loading your form…');
   document.getElementById('esvFormContent').innerHTML = '';
   document.getElementById('esvSignSection').style.display = 'none';
 
@@ -2061,9 +2348,7 @@ async function checkSignParam() {
     await tursoInit();
     const result = await tursoExec('SELECT data FROM headset_deployments WHERE id = ?', [id]);
     if (!result || !result.rows.length) {
-      document.getElementById('esvNotice').textContent = '❌ Form not found. This link may be invalid or expired.';
-      document.getElementById('esvNotice').style.background = 'var(--red-bg)';
-      document.getElementById('esvNotice').style.color = 'var(--red)';
+      setEsvNotice('error', 'Form not found. This link may be invalid or expired.');
       return true;
     }
     const d = JSON.parse(result.rows[0][0].value);
@@ -2071,24 +2356,17 @@ async function checkSignParam() {
 
     if (d.signature) {
       // Already signed
-      document.getElementById('esvNotice').textContent = `✅ This form was already signed on ${fmtDate(d.signedAt)}.`;
-      document.getElementById('esvNotice').style.background = 'var(--green-bg)';
-      document.getElementById('esvNotice').style.color = 'var(--green)';
-      document.getElementById('esvNotice').style.borderColor = 'rgba(22,163,74,.25)';
+      setEsvNotice('success', `This form was already signed on ${fmtDate(d.signedAt)}.`);
       showEmployeeSignView(d);
       document.getElementById('esvSignSection').style.display = 'none';
       return true;
     }
 
     showEmployeeSignView(d);
-    document.getElementById('esvNotice').textContent = '⚠️ Please review the asset details carefully before signing.';
-    document.getElementById('esvNotice').style.background = '';
-    document.getElementById('esvNotice').style.color = '';
+    setEsvNotice('warning', 'Please review the asset details carefully before signing.');
     document.getElementById('esvSignSection').style.display = '';
   } catch(e) {
-    document.getElementById('esvNotice').textContent = '❌ Failed to load form. Please check your connection and try again.';
-    document.getElementById('esvNotice').style.background = 'var(--red-bg)';
-    document.getElementById('esvNotice').style.color = 'var(--red)';
+    setEsvNotice('error', 'Failed to load form. Please check your connection and try again.');
   }
   return true;
 }
@@ -2103,10 +2381,33 @@ function showEmployeeSignView(d) {
 
   const assetName = [d.assetBrand, d.assetType].filter(Boolean).join(' ');
   const _esvAssets = getAssets(d);
+
+  function esvAssetIcon(type) {
+    const t = (type || '').toLowerCase();
+    if (t.includes('headset') || t.includes('headphone'))
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3z"/><path d="M3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>`;
+    if (t.includes('laptop') || t.includes('notebook'))
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`;
+    if (t.includes('mouse'))
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2" width="12" height="20" rx="6"/><path d="M12 2v8M6 10h12"/></svg>`;
+    if (t.includes('keyboard'))
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>`;
+    if (t.includes('monitor') || t.includes('lcd') || t.includes('screen') || t.includes('display'))
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`;
+    if (t.includes('phone') || t.includes('polycom'))
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>`;
+    if (t.includes('tablet') || t.includes('ipad'))
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>`;
+    if (t.includes('cable') || t.includes('cord'))
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 7l-10 10M7 7l3-3 3 3M14 17l3 3 3-3"/></svg>`;
+    // default: briefcase
+    return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>`;
+  }
+
   const assetCards = _esvAssets.map((a, i) => {
     const aName = [a.brand, a.type].filter(Boolean).join(' ') || assetName || '—';
     return `<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;color:var(--text3)"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+      <span style="flex-shrink:0;color:var(--text3)">${esvAssetIcon(a.type)}</span>
       <div style="min-width:0">
         <div style="font-size:12.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${_esvAssets.length > 1 ? (i+1)+'. ' : ''}${aName}</div>
         <div style="font-size:11px;color:var(--text3);font-family:'Courier New',monospace">${a.serialNo || '—'}</div>
@@ -2118,11 +2419,11 @@ function showEmployeeSignView(d) {
   document.getElementById('esvFormContent').innerHTML = `
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:0">
     <!-- Employee + Assets compact row -->
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--border)">
-      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:160px">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;color:var(--text3)"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text);line-height:1.2">${d.employeeName || '—'}</div>
+    <div style="display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:rgba(var(--accent-rgb,99,102,241),.08);border:1px solid rgba(var(--accent-rgb,99,102,241),.25);border-radius:var(--radius);flex:1;min-width:160px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;color:var(--accent)"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <div style="min-width:0">
+          <div style="font-size:12.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.employeeName || '—'}</div>
           <div style="font-size:11px;color:var(--text3)">${d.jobTitle || ''}</div>
         </div>
       </div>
@@ -2272,10 +2573,7 @@ async function esvSubmitSignature() {
     // Show success
     document.getElementById('esvSignSection').style.display = 'none';
     document.getElementById('esvTokenResult').style.display = '';
-    document.getElementById('esvNotice').textContent = '✅ Your signature has been submitted. IT has been notified.';
-    document.getElementById('esvNotice').style.background = 'var(--green-bg)';
-    document.getElementById('esvNotice').style.color = 'var(--green)';
-    document.getElementById('esvNotice').style.borderColor = 'rgba(22,163,74,.25)';
+    setEsvNotice('success', 'Your signature has been submitted. IT has been notified.');
   } catch(e) {
     btn.disabled = false;
     btn.textContent = 'Submit My Signature';
