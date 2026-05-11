@@ -383,6 +383,20 @@ body {
   border-bottom-color: var(--glass-border);
   box-shadow: 0 1px 0 var(--glass-border2);
 }
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--sidebar-border, #e8eaed);
+  background: var(--glass-bg);
+  color: var(--text2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.mobile-menu-btn:hover { background: var(--glass-bg-hover); color: var(--text); }
 .topbar-left { flex: 1; min-width: 0; }
 .topbar-title {
   font-size: 17px; font-weight: 700;
@@ -621,6 +635,22 @@ body {
 .ob-matrix-grid { display:grid; gap:6px; }
 .ob-matrix-hdr { display:contents; }
 .ob-matrix-col-spacer { /* empty top-left cell */ }
+
+/* IT clearance counters: keep content within cards with horizontal scroll when needed */
+#statsMatrix,
+#statsGridIt {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+#statsMatrix .ob-matrix-grid {
+  width: max-content;
+  min-width: 100%;
+}
+#statsGridIt .ob-matrix-grid {
+  min-width: 200px;
+}
 .ob-col-lbl {
   font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
   color:var(--text3); text-align:center; padding:0 4px 4px;
@@ -922,38 +952,186 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 /* ══════════════════════════════
    RESPONSIVE
 ══════════════════════════════ */
+@media (max-width: 1100px) {
+  #loginScreen {
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  .login-left {
+    width: 100%;
+    min-height: auto;
+    padding: 36px 28px;
+  }
+  .login-left-brand { margin-bottom: 20px; }
+  .login-left-content { justify-content: flex-start; }
+  .login-left-headline {
+    max-width: none;
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+  .login-left-tagline {
+    max-width: none;
+    margin-bottom: 0;
+  }
+  .login-right {
+    width: 100%;
+    min-height: 0;
+    padding: 28px 22px 32px;
+    justify-content: flex-start;
+  }
+}
 @media (max-width: 768px) {
-  #sidebar { width:56px; overflow:hidden; }
-  .sb-brand { padding:16px 10px; justify-content:center; }
-  .sb-brand-name { display:none; }
-  .sb-item { padding:12px; justify-content:center; }
-  .sb-item-label { display:none; }
-  .sb-section-label { display:none; }
-  .sb-footer { padding:8px; }
-  #topBar { padding:0 14px; gap:8px; }
+  #appScreen.active { height: 100dvh; }
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform 0.22s cubic-bezier(.4,0,.2,1), background 0.3s, box-shadow 0.3s;
+    z-index: 120;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  #sidebar.mobile-open { transform: translateX(0); }
+  #sidebar.collapsed { width: 260px; }
+  #sidebar.collapsed .sb-brand-name,
+  #sidebar.collapsed .sb-brand-sub,
+  #sidebar.collapsed .sb-section-label,
+  #sidebar.collapsed .sb-item-label,
+  #sidebar.collapsed .sb-online-label,
+  #sidebar.collapsed .sb-online-list,
+  #sidebar.collapsed .sb-divider,
+  #sidebar.collapsed .sb-brand-text,
+  #sidebar.collapsed .sb-brand-version { display: initial; }
+  #sidebar.collapsed .sb-item { justify-content: flex-start; padding: 11px 16px; width: 100%; }
+  #sidebar.collapsed .sb-item-icon { width: 18px; height: 18px; opacity: 0.65; }
+  #sidebar.collapsed .sb-brand { padding: 24px 20px 20px; justify-content: flex-start; gap: 14px; }
+  #sidebar.collapsed .sb-logo { margin: 0; }
+  #sidebar.collapsed .sb-footer { padding: 10px 12px 14px; align-items: stretch; }
+  #sidebar.collapsed .sb-theme-row { width: 100%; justify-content: flex-start; border-radius: 10px; padding: 9px 12px; }
+  #sidebar.collapsed .sb-nav { padding: 14px 12px; }
+  #sidebar.collapsed .sb-item:hover::after { display: none; }
+  #btnSidebarCollapse,
+  .sb-collapse-btn { display: none !important; }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 110;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-menu-btn { display: inline-flex; }
+  #topBar { padding: 0 12px; gap: 8px; }
   .topbar-title { font-size:16px; }
-  .main { padding:16px 14px; }
+  .db-status-dot { display: none; }
+  .main { padding: 12px; }
+
+  #offboardingMain > .stats-section > div {
+    flex-direction: column;
+    gap: 10px;
+  }
+  #statsGridIt {
+    flex: 1 1 auto !important;
+    width: 100%;
+  }
+  #statsMatrix { width: 100%; }
+  #statsMatrix .ob-matrix-grid { min-width: 760px; }
+  #statsGridIt .ob-matrix-grid { min-width: 220px; }
+
   .stats-section { gap:8px; }
   .stats-section-row { flex-direction:column; }
   .stats-grid { grid-template-columns:repeat(3,1fr); gap:6px; }
+  .counter-card { padding: 14px 12px; }
   .stat-val { font-size:18px; }
   .toolbar { flex-direction:column; gap:8px; }
   .toolbar .search-wrap { min-width:unset; width:100%; }
+  .toolbar .btn { width: 100%; justify-content: center; }
   .filter-select { width:100%; }
+  .count-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .table-wrap {
+    max-height: none;
+    border-radius: 12px;
+  }
+  table { min-width: 920px; }
+
   .form-grid { grid-template-columns:1fr; }
   .fg.full { grid-column:1; }
   .overlay { padding:12px; }
   .modal { border-radius:var(--radius-lg); max-height:95vh; }
+  .modal-footer { flex-wrap: wrap; }
+  .modal-footer .btn { flex: 1 1 100%; justify-content: center; }
+
+  .login-left {
+    padding: 24px 18px;
+  }
+  .login-left-deco1,
+  .login-left-deco2,
+  .login-left-tagline { display: none; }
+  .login-left-brand {
+    margin-bottom: 0;
+    justify-content: center;
+  }
+  .login-left-headline {
+    font-size: 24px;
+    text-align: center;
+    margin-top: 10px;
+  }
+  .login-right {
+    padding: 14px 14px 24px;
+  }
+  .login-form-wrap {
+    max-width: 100%;
+    padding: 24px 18px;
+    border-radius: 10px;
+  }
+  .login-form-title { font-size: 24px; }
+  .login-form-sub { margin-bottom: 20px; }
+
   .toast { bottom:16px; right:16px; left:16px; }
   .chip-name { display:none; }
   .chip-role { display:none; }
   .acct-btn { padding:4px 8px 4px 4px; }
 }
 @media (max-width: 480px) {
-  .login-form-wrap { padding: 32px 24px; border-radius: 8px; }
+  #topBar { height: 48px; }
+  .topbar-title { font-size: 15px; }
+  .topbar-right { gap: 6px; }
+  .btn.btn-sm { padding: 5px 7px; }
+
+  .login-form-wrap { padding: 20px 14px; }
+  .login-form-title { font-size: 22px; }
+  .login-app-nav-links { gap: 6px; }
+  .login-app-nav-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .login-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .stats-section { gap:6px; }
   .stats-section-row { flex-direction:column; }
   .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .count-bar .btn { width: 100%; justify-content: center; }
+  table { min-width: 760px; }
   .overlay { padding:8px; align-items:flex-end; }
   .modal { border-radius:var(--radius-xl) var(--radius-xl) 0 0; max-height:96vh; border-bottom:none; }
   .toast { bottom:0; right:0; left:0; border-radius:var(--radius-lg) var(--radius-lg) 0 0; }
@@ -1097,6 +1275,8 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 <!-- APP SCREEN -->
 <div id="appScreen">
 
+  <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
   <aside id="sidebar">
     <div class="sb-brand">
       <div class="sb-logo">
@@ -1222,7 +1402,12 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 
     <div id="topBar">
       <div class="topbar-left">
-        <h1 class="topbar-title" id="topbarTitle">Employee Offboarding</h1>
+        <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+          <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Open menu" title="Menu">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <h1 class="topbar-title" id="topbarTitle">Employee Offboarding</h1>
+        </div>
       </div>
       <div class="topbar-right">
         <span id="dbStatusDot" class="db-status-dot" title="Database connection status">Connecting…</span>
@@ -1327,6 +1512,31 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
           Delete All
         </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortBy('recordNumber')">Offboarding Record #</th>
+              <th onclick="sortBy('offboardingId')">Employee ID</th>
+              <th onclick="sortBy('employeeName')">Employee Full Name</th>
+              <th onclick="sortBy('separationFiledDateTime')">Separation Filed</th>
+              <th onclick="sortBy('businessUnit')">Business Unit</th>
+              <th onclick="sortBy('employeeLocation')">Location</th>
+              <th onclick="sortBy('lastDayOfWork')">Last Day</th>
+              <th onclick="sortBy('separationDate')">Separation Date</th>
+              <th onclick="sortBy('separationType')">Type</th>
+              <th onclick="sortBy('personalEmail')">Personal Email</th>
+              <th onclick="sortBy('clearanceStatus')">IT Tools</th>
+              <th onclick="sortBy('itAssetClearanceStatus')">IT Asset</th>
+              <th onclick="sortBy('offboardingStatus')">Offboarding Status</th>
+              <th onclick="sortBy('jobTitle')">Job Title</th>
+              <th class="no-sort">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
       </div>
 
       <div id="obPagination"></div>
@@ -2105,12 +2315,46 @@ function roleLabel(role) {
    SIDEBAR
 ══════════════════════════════════════════ */
 window.toggleSidebar = function() {
+  if (window.innerWidth <= 768) {
+    toggleMobileSidebar();
+    return;
+  }
   const sidebar = document.getElementById('sidebar');
   const btn = document.getElementById('btnSidebarCollapse');
   sidebar.classList.toggle('collapsed');
   const isCollapsed = sidebar.classList.contains('collapsed');
   btn.classList.toggle('is-collapsed', isCollapsed);
 };
+
+window.toggleMobileSidebar = function() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar || !overlay || window.innerWidth > 768) return;
+  const willOpen = !sidebar.classList.contains('mobile-open');
+  sidebar.classList.toggle('mobile-open', willOpen);
+  overlay.classList.toggle('open', willOpen);
+  document.body.style.overflow = willOpen ? 'hidden' : '';
+};
+
+window.closeMobileSidebar = function() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar || !overlay) return;
+  sidebar.classList.remove('mobile-open');
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+function syncResponsiveSidebarState() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar || !overlay) return;
+  if (window.innerWidth > 768) {
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
 
 /* ══════════════════════════════════════════
    THEME
@@ -2427,6 +2671,10 @@ window.switchView = function(view) {
     if (title) title.textContent = 'Employee Offboarding';
     renderStats();
     renderTable();
+  }
+
+  if (window.innerWidth <= 768) {
+    closeMobileSidebar();
   }
 };
 
@@ -3450,6 +3698,7 @@ function renderTable() {
   });
 
   const tb = document.getElementById('tableBody');
+  if (!tb) return;
 
   if (!filtered.length) {
     tb.innerHTML = `<tr><td colspan="15"><div class="empty-state"><div class="empty-icon">📋</div><div style="font-size:15px;font-weight:600;margin-bottom:6px;">No offboarding records found</div><div style="font-size:13px;">Add a record or adjust your search filters.</div></div></td></tr>`;
@@ -4407,6 +4656,8 @@ window.addEventListener('DOMContentLoaded', async function() {
     }, 450);
   }, 1200);
 
+  window.addEventListener('resize', syncResponsiveSidebarState);
+  syncResponsiveSidebarState();
 });
 </script>
 </body>
