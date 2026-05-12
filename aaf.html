@@ -111,7 +111,9 @@ body{font-family:'Segoe UI',Arial,'Helvetica Neue',Helvetica,sans-serif;backgrou
 /* ── LEGACY FORM STYLES (modal) ── */
 .form-group{margin-bottom:16px}
 .form-label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
-.form-input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-size:14px;outline:none;transition:border-color .15s,box-shadow .15s}
+.form-input{width:100%;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:var(--radius);background:#fff;color:var(--text);font-size:14px;outline:none;transition:border-color .15s,box-shadow .15s}
+.form-input::placeholder{color:#9ca3af}
+.form-input:hover:not(:focus){border-color:#b3b9c4}
 .form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
 
 /* ── APP SHELL ── */
@@ -234,9 +236,16 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
 .form-grid .span2{grid-column:span 2}
 .form-label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
 .form-label .req{color:var(--red)}
-.form-input,.form-select,.form-textarea{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface2);color:var(--text);font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s;font-family:inherit}
+.form-input,.form-select,.form-textarea{width:100%;padding:8px 11px;border:1.5px solid #d1d5db;border-radius:var(--radius);background:#fff;color:var(--text);font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s;font-family:inherit}
+.form-input::placeholder,.form-select::placeholder,.form-textarea::placeholder{color:#9ca3af}
+.form-input:hover:not(:focus),.form-select:hover:not(:focus),.form-textarea:hover:not(:focus){border-color:#b3b9c4}
 .form-textarea{resize:vertical;min-height:70px}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.input-error{border-color:var(--red) !important;background:rgba(220,38,38,.08)}
+.serial-error-text{display:block;width:100%;text-align:center;color:var(--red);font-size:12px;margin:10px 0 0;}
+[data-theme="dark"] .form-input,[data-theme="dark"] .form-select,[data-theme="dark"] .form-textarea{background:var(--surface2);border-color:#3d3d52;color:var(--text)}
+[data-theme="dark"] .form-input:hover:not(:focus),[data-theme="dark"] .form-select:hover:not(:focus),[data-theme="dark"] .form-textarea:hover:not(:focus){border-color:#5a5a75}
+[data-theme="dark"] .form-input::placeholder,[data-theme="dark"] .form-textarea::placeholder{color:var(--text3)}
 .section-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin:20px 0 12px;border-bottom:1px solid var(--border2);padding-bottom:6px}
 
 /* ── TOAST ── */
@@ -698,14 +707,6 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
         <div>
           <label class="form-label">Job Title</label>
           <input class="form-input" id="f_jobTitle" placeholder="e.g. Customer Service Rep">
-        </div>
-        <div>
-          <label class="form-label">Business Unit</label>
-          <input class="form-input" id="f_businessUnit" placeholder="e.g. Operations">
-        </div>
-        <div>
-          <label class="form-label">Business Division</label>
-          <input class="form-input" id="f_businessDivision" placeholder="e.g. IT Division">
         </div>
         <div>
           <label class="form-label">Department</label>
@@ -1958,7 +1959,7 @@ function addAssetRow(asset) {
     <select title="Asset Type">${_assetTypeOptions(a.type)}</select>
     <input type="text" placeholder="Brand / Model" value="${a.brand || ''}" title="Brand / Model">
     <div style="display:flex;gap:4px;align-items:center">
-      <input type="text" placeholder="Serial No." value="${a.serialNo || ''}" title="Serial Number" style="flex:1;min-width:0">
+      <input class="form-input" type="text" placeholder="Serial No." value="${a.serialNo || ''}" title="Serial Number" style="flex:1;min-width:0" oninput="autoCheckSerial(this)">
       <button type="button" class="btn-scan" title="Scan barcode / QR" onclick="openScanModal(this.closest('.asset-row').querySelector('input[placeholder=\\'Serial No.\\']'))">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
       </button>
@@ -1985,6 +1986,56 @@ function collectAssets() {
   return assets.length ? assets : [{ type: '', brand: '', serialNo: '' }];
 }
 
+function findExistingSerial(serial) {
+  if (!serial) return false;
+  const value = serial.trim().toLowerCase();
+  if (!value) return false;
+  const candidates = new Set();
+  deployments.forEach(d => {
+    if (editId && d.id === editId) return;
+    (getAssets(d) || []).forEach(a => {
+      if (a.serialNo) candidates.add(a.serialNo.trim().toLowerCase());
+    });
+  });
+  return candidates.has(value);
+}
+
+function autoCheckSerial(input) {
+  if (!input) return;
+  const value = (input.value || '').trim();
+  const row = input.closest('.asset-row');
+  let isDuplicate = false;
+  if (value) {
+    isDuplicate = findExistingSerial(value);
+    if (!isDuplicate) {
+      const otherSerials = Array.from(document.querySelectorAll('#assetRows .asset-row input[placeholder="Serial No."]'))
+        .filter(el => el !== input)
+        .map(el => (el.value || '').trim().toLowerCase())
+        .filter(Boolean);
+      if (otherSerials.includes(value.toLowerCase())) isDuplicate = true;
+    }
+  }
+  if (isDuplicate) {
+    input.classList.add('input-error');
+    const existingMsg = row?.nextElementSibling?.classList.contains('serial-error-text') ? row.nextElementSibling : null;
+    if (!existingMsg) {
+      const msg = document.createElement('div');
+      msg.className = 'serial-error-text';
+      msg.textContent = 'This serial number is already used in another deployment.';
+      msg.style.cssText = 'color:var(--red);font-size:12px;margin:10px 0 0;';
+      if (row) {
+        row.insertAdjacentElement('afterend', msg);
+      } else {
+        input.parentElement?.appendChild(msg);
+      }
+    }
+  } else {
+    input.classList.remove('input-error');
+    const existingMsg = row?.nextElementSibling?.classList.contains('serial-error-text') ? row.nextElementSibling : null;
+    if (existingMsg) existingMsg.remove();
+  }
+}
+
 /* ══════════════════════════════════════════
    ADD / EDIT DEPLOYMENT
 ══════════════════════════════════════════ */
@@ -1992,7 +2043,7 @@ function openDeployModal(id) {
   editId = id || null;
   const d = id ? deployments.find(x => x.id === id) : null;
   document.getElementById('deployModalTitle').textContent = d ? 'Edit Deployment' : 'Add Deployment';
-  const fields = ['employeeName','jobTitle','businessUnit','businessDivision','department',
+  const fields = ['employeeName','jobTitle','department',
     'site','floor','emailAddress','fsItamObr','requestedBy','dateRequested',
     'dateRelease','itPersonnel','assetPurpose','duration','authorityTo','status'];
   fields.forEach(k => {
@@ -2022,12 +2073,57 @@ function closeDeployModal() {
 async function saveDeployment() {
   const name = document.getElementById('f_employeeName').value.trim();
   if (!name) { showToast('Employee name is required.', 'error'); return; }
-  const fields = ['employeeName','jobTitle','businessUnit','businessDivision','department',
+  const fields = ['employeeName','jobTitle','department',
     'site','floor','emailAddress','fsItamObr','requestedBy','dateRequested',
     'dateRelease','itPersonnel','assetPurpose','duration','authorityTo','status'];
   const obj = {};
   fields.forEach(k => { obj[k] = document.getElementById('f_' + k)?.value || ''; });
+
   obj.assets = collectAssets();
+  // Duplicate serial number check
+  const allSerials = new Set();
+  let duplicateSerial = null;
+  let duplicateSource = 'deployment';
+  // Gather all serial numbers from all deployments (except current if editing)
+  deployments.forEach(d => {
+    if (editId && d.id === editId) return;
+    (getAssets(d) || []).forEach(a => {
+      if (a.serialNo) allSerials.add(a.serialNo.trim().toLowerCase());
+    });
+  });
+  const seenSerials = new Set();
+  obj.assets.forEach(a => {
+    const serial = a.serialNo && a.serialNo.trim();
+    if (!serial) return;
+    const normalized = serial.toLowerCase();
+    if (seenSerials.has(normalized) && !duplicateSerial) {
+      duplicateSerial = serial;
+      duplicateSource = 'form';
+    }
+    seenSerials.add(normalized);
+    if (!duplicateSerial && allSerials.has(normalized)) {
+      duplicateSerial = serial;
+      duplicateSource = 'deployment';
+    }
+  });
+  if (duplicateSerial) {
+    const rows = document.querySelectorAll('#assetRows .asset-row');
+    rows.forEach(row => {
+      const serialEl = row.querySelector('input[placeholder="Serial No."]');
+      if (serialEl && serialEl.value.trim().toLowerCase() === duplicateSerial.trim().toLowerCase()) {
+        serialEl.style.borderColor = 'var(--red)';
+        serialEl.style.background = 'rgba(220,38,38,0.08)';
+        setTimeout(() => {
+          serialEl.style.borderColor = '';
+          serialEl.style.background = '';
+        }, 1800);
+      }
+    });
+    showToast(duplicateSource === 'deployment'
+      ? 'Serial number already exists in another deployment.'
+      : 'Duplicate serial number entered in this deployment form.', 'error');
+    return;
+  }
   // keep first-asset shorthands for backward compat (search, legacy display)
   const first = obj.assets[0] || {};
   obj.assetType  = first.type || '';
@@ -2125,10 +2221,8 @@ function renderFormPreview(d) {
           <td class="field-value">${d.jobTitle || ''}</td>
         </tr>
         <tr>
-          <td class="field-label">Business Unit,<br>Business Division,<br>Department</td>
-          <td class="field-value">
-            ${[d.businessUnit, d.businessDivision, d.department].filter(Boolean).join('<br>') || ''}
-          </td>
+          <td class="field-label">Department</td>
+          <td class="field-value">${d.department || ''}</td>
         </tr>
         <tr>
           <td class="field-label">Requested by</td>
@@ -2814,14 +2908,14 @@ async function esvSubmitSignature() {
 ══════════════════════════════════════════ */
 function exportCSV() {
   if (!deployments.length) { showToast('No records to export.', 'error'); return; }
-  const headers = ['EmployeeName','JobTitle','BusinessUnit','BusinessDivision','Department',
+  const headers = ['EmployeeName','JobTitle','Department',
     'Site','Floor','EmailAddress','FS/ITAM/OBR','RequestedBy','DateRequested',
     'Assets','DateRelease','ITPPersonnel','AssetPurpose','Duration','Status'];
   const rows = deployments.map(d => {
     const _aa = getAssets(d);
     const assetsStr = _aa.map(a => [a.type, a.brand, a.serialNo].filter(Boolean).join('/')).join(' | ');
     return [
-      d.employeeName, d.jobTitle, d.businessUnit, d.businessDivision, d.department,
+      d.employeeName, d.jobTitle, d.department,
       d.site, d.floor, d.emailAddress, d.fsItamObr, d.requestedBy, d.dateRequested,
       assetsStr, d.dateRelease, d.itPersonnel,
       d.assetPurpose, d.duration, d.status
@@ -2883,8 +2977,7 @@ async function downloadFilledPDF(d) {
     // ── PAGE 4 — Main Form ───────────────────────
     dt(p1, d.employeeName,                        175, 691, 10, 350);
     dt(p1, d.jobTitle,                            175, 666, 10, 350);
-    const bizStr = [d.businessUnit, d.businessDivision, d.department].filter(Boolean).join(' / ');
-    dt(p1, bizStr,                                175, 642, 10, 350);
+    dt(p1, d.department || '',                   175, 642, 10, 350);
     dt(p1, d.requestedBy,                         175, 589, 10, 350);
     dt(p1, fmtDate(d.dateRequested),              175, 553, 10, 350);
     // IT Asset Purpose, Authority To: pre-filled in v4.0 template — not overwritten
