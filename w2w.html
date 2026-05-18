@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>W2W Inventory — Seat Asset Allocation</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Cg fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 7h12a2 2 0 0 1 2 2v6H8V9a2 2 0 0 1 2-2Z'/%3E%3Cpath d='M9 15v4a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-4'/%3E%3Cpath d='M16 22v5M11 27h10M8 13h16'/%3E%3C/g%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -591,6 +592,71 @@
       color: var(--accent);
       flex-shrink: 0;
     }
+    .sidebar-online-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 2px 0 8px;
+    }
+    .sidebar-online-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 12px;
+      border-radius: var(--r-md);
+      color: var(--text-2);
+    }
+    .sidebar-online-row:hover { background: var(--sidebar-hover); }
+    .sidebar-online-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), #60a5fa);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 800;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .sidebar-online-info { flex: 1; min-width: 0; }
+    .sidebar-online-name {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sidebar-online-role {
+      margin-top: 1px;
+      font-size: 0.65rem;
+      color: var(--text-4);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sidebar-online-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--success);
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 24%, transparent);
+      animation: pulse-dot 2s ease infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 24%, transparent); }
+      50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--success) 8%, transparent); }
+    }
+    .sidebar-online-empty {
+      padding: 5px 12px;
+      color: var(--text-4);
+      font-size: 0.72rem;
+      font-style: italic;
+    }
 
     /* ═══════════════════════════════════════
        SIDEBAR — DESKTOP (≥ 900px)
@@ -1090,6 +1156,50 @@
     .activity-item:last-child { border-bottom: none; }
     .activity-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
     .activity-time { font-size: 0.72rem; color: var(--text-4); font-family: var(--mono); margin-left: auto; white-space: nowrap; }
+    .activity-main { flex: 1; min-width: 0; }
+    .activity-msg { color: var(--text-1); font-weight: 600; line-height: 1.35; }
+    .activity-meta { margin-top: 2px; color: var(--text-4); font-size: 0.72rem; font-family: var(--mono); }
+    .audit-card { max-width: 980px; }
+    .audit-pagination {
+      max-width: 980px;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .audit-page-info {
+      color: var(--text-4);
+      font-size: 0.76rem;
+      font-family: var(--mono);
+    }
+    .audit-page-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .audit-page-btn {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-2);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .audit-page-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .audit-page-btn:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
 
     /* ── Toolbar ── */
     .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
@@ -1791,8 +1901,9 @@
     <div class="login-left-brand">
       <div class="login-left-logo-icon">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2"/>
-          <path d="M8 21h8M12 17v4"/>
+          <path d="M7 5h10a2 2 0 012 2v5H5V7a2 2 0 012-2z"/>
+          <path d="M6 12v4a3 3 0 003 3h6a3 3 0 003-3v-4"/>
+          <path d="M12 19v3M8 22h8M5 10h14"/>
         </svg>
       </div>
       <div>
@@ -1883,7 +1994,9 @@
     <div class="sidebar-brand">
       <div class="brand-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          <path d="M7 5h10a2 2 0 012 2v5H5V7a2 2 0 012-2z"/>
+          <path d="M6 12v4a3 3 0 003 3h6a3 3 0 003-3v-4"/>
+          <path d="M12 19v3M8 22h8M5 10h14"/>
         </svg>
       </div>
       <div>
@@ -1910,6 +2023,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         <span class="item-label">Import / Export</span>
       </button>
+      <button class="sidebar-item" data-target="audit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h6M9 9h1"/></svg>
+        <span class="item-label">Audit Logs</span>
+      </button>
       <span class="nav-group-label desktop-only" style="margin-top:4px;">Applications</span>
       <div class="sidebar-apps desktop-only" id="sidebar-apps">
         <button class="sidebar-item sidebar-expand" id="sidebar-apps-toggle" type="button">
@@ -1933,10 +2050,14 @@
             <span>Offboarding</span>
           </a>
           <a class="sidebar-subitem" href="w2w-inventory.html">
-            <span class="sidebar-subicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v18"/><path d="M17 8.5a4.5 4.5 0 0 0-9 0c0 6-3 7.5-3 7.5h14s-3-1.5-3-7.5"/><path d="M9 19a3 3 0 0 0 6 0"/></svg></span>
+            <span class="sidebar-subicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10a2 2 0 012 2v5H5V7a2 2 0 012-2z"/><path d="M6 12v4a3 3 0 003 3h6a3 3 0 003-3v-4"/><path d="M12 19v3M8 22h8M5 10h14"/></svg></span>
             <span>W2W Inventory</span>
           </a>
         </div>
+      </div>
+      <span class="nav-group-label" style="margin-top:4px;">Online Users</span>
+      <div id="sidebar-online-list" class="sidebar-online-list">
+        <div class="sidebar-online-empty">Loading...</div>
       </div>
     </nav>
 
@@ -1964,6 +2085,11 @@
         <div class="topbar-sub">Workstation seat tracking and asset assignment</div>
       </div>
       <div class="topbar-right">
+        <span id="dbStatusDot" class="db-status-dot" title="Database connection status">Connecting…</span>
+        <button class="btn btn-secondary" id="btnForceSync" title="Force sync">
+          <svg id="syncIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.13-3.36L23 10M1 14l5.36 4.36A9 9 0 0020.49 15"/></svg>
+          Sync
+        </button>
         <div class="acct-wrap" id="acct-wrap">
           <div class="acct-btn" id="acct-btn" title="Account">
             <div class="avatar" id="user-avatar">--</div>
@@ -1984,11 +2110,6 @@
             </div>
           </div>
         </div>
-        <span id="dbStatusDot" class="db-status-dot" title="Database connection status">Connecting…</span>
-        <button class="btn btn-secondary" id="btnForceSync" title="Force sync">
-          <svg id="syncIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.13-3.36L23 10M1 14l5.36 4.36A9 9 0 0020.49 15"/></svg>
-          Sync
-        </button>
       </div>
     </div>
 
@@ -2131,6 +2252,29 @@
           <div class="empty-title">No seats found</div>
           <div class="empty-sub" id="empty-msg">Add your first seat to get started.</div>
           <button class="btn btn-primary btn-sm" id="btn-add-empty">Add Seat</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AUDIT LOGS ── -->
+    <section class="page-section" id="section-audit">
+      <div class="page-header">
+        <h1>Audit Logs</h1>
+        <p>Recent W2W seat inventory actions and sync activity</p>
+      </div>
+      <p class="section-label">Activity Trail</p>
+      <div class="card audit-card">
+        <div id="audit-list">
+          <div class="empty-state" style="padding:20px 0;">
+            <div class="empty-sub">No audit logs yet.</div>
+          </div>
+        </div>
+      </div>
+      <div class="audit-pagination" id="audit-pagination" style="display:none;">
+        <div class="audit-page-info" id="audit-page-info"></div>
+        <div class="audit-page-controls">
+          <button class="audit-page-btn" id="audit-prev" type="button">Prev</button>
+          <button class="audit-page-btn" id="audit-next" type="button">Next</button>
         </div>
       </div>
     </section>
@@ -2600,7 +2744,7 @@ const ACTIVITY_KEY = 'w2w_activity_v2';
 const loadSeats    = () => { try { return JSON.parse(localStorage.getItem(SEATS_KEY)) || []; } catch { return []; } };
 const saveSeats    = d  => localStorage.setItem(SEATS_KEY, JSON.stringify(d));
 const loadActivity = () => { try { return JSON.parse(localStorage.getItem(ACTIVITY_KEY)) || []; } catch { return []; } };
-const saveActivity = d  => localStorage.setItem(ACTIVITY_KEY, JSON.stringify(d.slice(0,25)));
+const saveActivity = d  => localStorage.setItem(ACTIVITY_KEY, JSON.stringify(d.slice(0,250)));
 
 function normalizeActivityEntry(entry) {
   if (!entry) return null;
@@ -2608,7 +2752,10 @@ function normalizeActivityEntry(entry) {
     id: entry.id || genId(),
     msg: String(entry.msg || ''),
     type: entry.type || 'info',
-    ts: Number(entry.ts) || Date.now()
+    ts: Number(entry.ts) || Date.now(),
+    user: entry.user || entry.username || '',
+    displayName: entry.displayName || entry.userDisplayName || '',
+    action: entry.action || ''
   };
 }
 
@@ -2696,7 +2843,8 @@ function setSyncStatus(msg, isError = false) {
 async function initTursoTables() {
   return tursoBatch([
     { sql: 'CREATE TABLE IF NOT EXISTS w2w_seats (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
-    { sql: 'CREATE TABLE IF NOT EXISTS w2w_activity (id TEXT PRIMARY KEY, data TEXT NOT NULL)' }
+    { sql: 'CREATE TABLE IF NOT EXISTS w2w_activity (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
+    { sql: 'CREATE TABLE IF NOT EXISTS presence (username TEXT PRIMARY KEY, data TEXT NOT NULL)' }
   ]);
 }
 const tursoReady = initTursoTables();
@@ -2729,7 +2877,7 @@ async function replaceAllSeatsInTurso(rows) {
 async function replaceAllActivityInTurso(rows) {
   await tursoReady;
   const stmts = [{ sql: 'DELETE FROM w2w_activity' }];
-  rows.slice(0, 25).forEach(row => {
+  rows.slice(0, 250).forEach(row => {
     const item = normalizeActivityEntry(row);
     stmts.push({ sql: 'INSERT OR REPLACE INTO w2w_activity (id, data) VALUES (?, ?)', args: [item.id, JSON.stringify(item)] });
   });
@@ -2750,7 +2898,7 @@ async function syncFromTurso() {
     await tursoReady;
     const [seatRes, activityRes] = await Promise.all([
       tursoExec('SELECT data FROM w2w_seats'),
-      tursoExec('SELECT data FROM w2w_activity ORDER BY rowid DESC LIMIT 25')
+      tursoExec('SELECT data FROM w2w_activity ORDER BY rowid DESC LIMIT 250')
     ]);
 
     const remoteSeats = (seatRes?.rows || []).map(row => {
@@ -2767,6 +2915,7 @@ async function syncFromTurso() {
 
     renderDashboard();
     renderTable();
+    renderAuditLogs();
     setSyncStatus('Connected · ' + new Date().toLocaleTimeString());
     return true;
   } catch (e) {
@@ -2782,15 +2931,28 @@ async function syncNow() {
 
 async function logActivity(msg, type = 'info') {
   const list = loadActivity();
-  const entry = normalizeActivityEntry({ msg, type, ts: Date.now() });
+  const entry = normalizeActivityEntry({
+    msg,
+    type,
+    ts: Date.now(),
+    user: currentUser?.username || 'system',
+    displayName: currentUser?.displayName || currentUser?.username || 'System',
+    action: msg.split(':')[0].split('—')[0].trim()
+  });
   list.unshift(entry);
   saveActivity(list);
   persistActivityEntry(entry);
+  auditPage = 1;
+  renderAuditLogs();
 }
 
 let seats = loadSeats();
 let currentUser = null;
 let appStarted = false;
+let presenceTimer = null;
+let presenceRefreshTimer = null;
+let auditPage = 1;
+const AUDIT_PAGE_SIZE = 10;
 
 /* ════════════════════════════════════════
    UTILS
@@ -2804,6 +2966,13 @@ const esc = s => String(s||'')
 const blank = v => !v || !String(v).trim();
 const na    = v => blank(v) ? '<span class="badge-na">—</span>' : esc(v);
 const naM   = v => blank(v) ? '' : esc(v);
+
+function roleLabel(role) {
+  if (role === 'superadmin') return 'Super Admin';
+  if (role === 'admin') return 'Admin';
+  if (role === 'member') return 'Member';
+  return role || '—';
+}
 
 function timeAgo(ts) {
   const d = Date.now() - ts;
@@ -2841,26 +3010,108 @@ function hideLoginError() {
 function updateUserChip() {
   const name = currentUser?.displayName || currentUser?.username || 'Guest';
   const role = currentUser?.role ? String(currentUser.role) : '—';
-  const roleLabel = role === 'superadmin' ? 'Super Admin' : role === 'admin' ? 'Admin' : role === 'member' ? 'Member' : '—';
+  const roleText = roleLabel(role);
   const avatar = document.getElementById('user-avatar');
   const label = document.getElementById('user-name');
   const roleEl = document.getElementById('user-role');
   const ddName = document.getElementById('acct-dd-name');
   const ddRole = document.getElementById('acct-dd-role');
   if (label) label.textContent = name;
-  if (roleEl) roleEl.textContent = roleLabel;
+  if (roleEl) roleEl.textContent = roleText;
   if (ddName) ddName.textContent = name;
-  if (ddRole) ddRole.textContent = roleLabel;
+  if (ddRole) ddRole.textContent = roleText;
   if (avatar) avatar.textContent = name.slice(0, 2).toUpperCase();
+}
+
+async function setPresence(online) {
+  if (!currentUser?.username) return;
+  try {
+    await tursoReady;
+    if (online) {
+      const data = JSON.stringify({
+        username: currentUser.username,
+        displayName: currentUser.displayName || currentUser.username,
+        role: currentUser.role || '',
+        page: 'W2W Inventory',
+        avatar: currentUser.avatar || null,
+        lastSeen: new Date().toISOString(),
+        online: true
+      });
+      await tursoExec('INSERT OR REPLACE INTO presence (username, data) VALUES (?, ?)', [currentUser.username, data]);
+    } else {
+      await tursoExec('DELETE FROM presence WHERE username = ?', [currentUser.username]);
+    }
+  } catch (e) {}
+}
+
+function renderPresenceList(online) {
+  const list = document.getElementById('sidebar-online-list');
+  if (!list) return;
+  if (!online.length) {
+    list.innerHTML = '<div class="sidebar-online-empty">No active users.</div>';
+    return;
+  }
+  const now = Date.now();
+  list.innerHTML = online.map(p => {
+    const name = p.displayName || p.username || 'User';
+    const initials = name.slice(0, 2).toUpperCase();
+    const isActive = now - new Date(p.lastSeen).getTime() < 5 * 60 * 1000;
+    return `<div class="sidebar-online-row">
+      <div class="sidebar-online-avatar">${esc(initials)}</div>
+      <div class="sidebar-online-info">
+        <div class="sidebar-online-name">${esc(name)}</div>
+        <div class="sidebar-online-role">${esc(p.page || roleLabel(p.role))}</div>
+      </div>
+      ${isActive ? '<div class="sidebar-online-dot"></div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+async function loadPresence() {
+  try {
+    await tursoReady;
+    const res = await tursoExec('SELECT data FROM presence');
+    const now = Date.now();
+    const online = (res?.rows || [])
+      .map(row => {
+        try { return JSON.parse(row[0].value); } catch { return null; }
+      })
+      .filter(Boolean)
+      .filter(p => {
+        const lastSeen = new Date(p.lastSeen).getTime();
+        return Number.isFinite(lastSeen) && now - lastSeen < 15 * 60 * 1000;
+      })
+      .sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
+    renderPresenceList(online);
+  } catch (e) {}
+}
+
+function startPresenceHeartbeat() {
+  if (presenceTimer || presenceRefreshTimer) return;
+  setPresence(true);
+  loadPresence();
+  presenceTimer = setInterval(() => setPresence(true), 3 * 60 * 1000);
+  presenceRefreshTimer = setInterval(loadPresence, 60 * 1000);
+}
+
+function stopPresence() {
+  clearInterval(presenceTimer);
+  clearInterval(presenceRefreshTimer);
+  presenceTimer = null;
+  presenceRefreshTimer = null;
+  setPresence(false);
+  renderPresenceList([]);
 }
 
 function showApp() {
   document.body.classList.add('app-ready');
   updateUserChip();
+  startPresenceHeartbeat();
   if (appStarted) return;
   appStarted = true;
   renderDashboard();
   renderTable();
+  renderAuditLogs();
   syncFromTurso();
 }
 
@@ -2918,12 +3169,15 @@ async function doLogin() {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
     localStorage.setItem('assetvault_session', JSON.stringify(user));
     showApp();
+    logActivity('Logged in to W2W Inventory', 'info');
   } finally {
     if (btn) btn.disabled = false;
   }
 }
 
 function doLogout() {
+  logActivity('Logged out of W2W Inventory', 'info');
+  stopPresence();
   currentUser = null;
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('assetvault_session');
@@ -3039,6 +3293,14 @@ window.addEventListener('resize', () => {
 document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme);
 document.getElementById('btn-login').addEventListener('click', doLogin);
 document.getElementById('btn-logout').addEventListener('click', doLogout);
+document.getElementById('audit-prev')?.addEventListener('click', () => {
+  auditPage = Math.max(1, auditPage - 1);
+  renderAuditLogs();
+});
+document.getElementById('audit-next')?.addEventListener('click', () => {
+  auditPage += 1;
+  renderAuditLogs();
+});
 document.getElementById('acct-btn').addEventListener('click', e => {
   e.stopPropagation();
   toggleAcctMenu();
@@ -3052,6 +3314,9 @@ document.getElementById('login-username').addEventListener('keydown', e => {
 document.addEventListener('click', e => {
   const wrap = document.getElementById('acct-wrap');
   if (wrap && !wrap.contains(e.target)) closeAcctMenu();
+});
+window.addEventListener('beforeunload', () => {
+  if (currentUser?.username) setPresence(false);
 });
 
 /* ════════════════════════════════════════
@@ -3112,6 +3377,45 @@ function renderDashboard() {
       </div>
     `).join('');
   }
+}
+
+function renderAuditLogs() {
+  const auditEl = document.getElementById('audit-list');
+  const paginationEl = document.getElementById('audit-pagination');
+  const pageInfoEl = document.getElementById('audit-page-info');
+  const prevBtn = document.getElementById('audit-prev');
+  const nextBtn = document.getElementById('audit-next');
+  if (!auditEl) return;
+  const acts = loadActivity()
+    .map(normalizeActivityEntry)
+    .filter(Boolean)
+    .sort((a, b) => b.ts - a.ts);
+  if (!acts.length) {
+    auditEl.innerHTML = '<div class="empty-state" style="padding:18px 0"><div class="empty-sub">No audit logs yet.</div></div>';
+    if (paginationEl) paginationEl.style.display = 'none';
+    return;
+  }
+  const colors = { success:'#34d399', error:'#f87171', info:'#60a5fa' };
+  const totalPages = Math.max(1, Math.ceil(acts.length / AUDIT_PAGE_SIZE));
+  auditPage = Math.min(Math.max(1, auditPage), totalPages);
+  const start = (auditPage - 1) * AUDIT_PAGE_SIZE;
+  const pageItems = acts.slice(start, start + AUDIT_PAGE_SIZE);
+  auditEl.innerHTML = pageItems.map(a => {
+    const actor = a.displayName || a.user || 'System';
+    const user = a.user && a.user !== actor ? ` (@${a.user})` : '';
+    return `<div class="activity-item">
+      <div class="activity-dot" style="background:${colors[a.type]||colors.info}"></div>
+      <div class="activity-main">
+        <div class="activity-msg">${esc(a.msg)}</div>
+        <div class="activity-meta">Modified by ${esc(actor)}${user ? esc(user) : ''}</div>
+      </div>
+      <span class="activity-time">${timeAgo(a.ts)}</span>
+    </div>`;
+  }).join('');
+  if (paginationEl) paginationEl.style.display = acts.length > AUDIT_PAGE_SIZE ? 'flex' : 'none';
+  if (pageInfoEl) pageInfoEl.textContent = `Page ${auditPage} of ${totalPages} · ${acts.length} log${acts.length !== 1 ? 's' : ''}`;
+  if (prevBtn) prevBtn.disabled = auditPage <= 1;
+  if (nextBtn) nextBtn.disabled = auditPage >= totalPages;
 }
 
 function jumpSite(site) {
@@ -4265,10 +4569,12 @@ document.getElementById('btn-clear').addEventListener('click', () => {
       localStorage.removeItem(ACTIVITY_KEY);
       setSyncStatus('Saving…');
       const cleared = await clearAllTursoData();
+      logActivity('Cleared all W2W seat inventory data', 'error');
       setSyncStatus(cleared ? 'Connected · ' + new Date().toLocaleTimeString() : 'Local only', !cleared);
       toast('All data cleared.', 'info');
       renderDashboard();
       renderTable();
+      renderAuditLogs();
     }
   );
 });
