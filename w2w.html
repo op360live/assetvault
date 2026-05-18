@@ -301,6 +301,30 @@
       flex-direction: column;
       gap: 16px;
     }
+    .login-type-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      background: var(--surface-2);
+    }
+    .login-type-tab {
+      min-height: 34px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--text-3);
+      font: 700 12px var(--ui);
+      cursor: pointer;
+      transition: background .16s, color .16s, box-shadow .16s;
+    }
+    .login-type-tab.active {
+      background: var(--surface);
+      color: var(--accent);
+      box-shadow: var(--sidebar-shadow);
+    }
     .login-field {
       display: flex;
       flex-direction: column;
@@ -1957,11 +1981,19 @@
           <label for="login-username">Username</label>
           <input id="login-username" type="text" autocomplete="username" placeholder="Enter your username"/>
         </div>
-        <div class="login-field">
+        <div class="login-field" id="login-password-field" style="display:none;">
           <label for="login-password">Password</label>
           <input id="login-password" type="password" autocomplete="current-password" placeholder="Enter your password"/>
         </div>
+        <div class="login-field" id="login-pin-field">
+          <label for="login-pin">PIN</label>
+          <input id="login-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="20" placeholder="Enter your PIN"/>
+        </div>
         <div class="login-error" id="login-error"></div>
+        <div class="login-type-tabs" role="tablist" aria-label="Login type">
+          <button class="login-type-tab" id="login-type-password" type="button" data-login-type="password">Password</button>
+          <button class="login-type-tab active" id="login-type-pin" type="button" data-login-type="pin">PIN</button>
+        </div>
         <button class="btn btn-primary btn-login-main" id="btn-login" type="button">
           Sign in →
         </button>
@@ -1970,11 +2002,8 @@
       <div class="login-app-nav">
         <div class="login-app-nav-divider"><span>SWITCH TO</span></div>
         <div class="login-app-nav-links">
-          <a class="login-app-nav-btn" href="https://op360live.github.io/assetvault/laptop.html">
-            Laptop Inventory
-          </a>
-          <a class="login-app-nav-btn" href="https://op360live.github.io/assetvault/inventory.html">
-            Asset Register
+          <a class="login-app-nav-btn" href="https://op360live.github.io/assetvault/">
+            Home
           </a>
         </div>
       </div>
@@ -2953,6 +2982,7 @@ let presenceTimer = null;
 let presenceRefreshTimer = null;
 let auditPage = 1;
 const AUDIT_PAGE_SIZE = 10;
+let loginType = 'pin';
 
 /* ════════════════════════════════════════
    UTILS
@@ -3005,6 +3035,19 @@ function showLoginError(msg) {
 
 function hideLoginError() {
   document.getElementById('login-error')?.classList.remove('show');
+}
+
+function setLoginType(type) {
+  loginType = type === 'pin' ? 'pin' : 'password';
+  document.querySelectorAll('[data-login-type]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.loginType === loginType);
+  });
+  document.getElementById('login-password-field').style.display = loginType === 'password' ? '' : 'none';
+  document.getElementById('login-pin-field').style.display = loginType === 'pin' ? '' : 'none';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-pin').value = '';
+  hideLoginError();
+  setTimeout(() => document.getElementById(loginType === 'pin' ? 'login-pin' : 'login-password')?.focus(), 60);
 }
 
 function updateUserChip() {
@@ -3134,8 +3177,9 @@ function checkSession() {
 async function doLogin() {
   const username = document.getElementById('login-username').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value;
-  if (!username || !password) {
-    showLoginError('Enter your username and password.');
+  const pin = document.getElementById('login-pin').value;
+  if (!username || (loginType === 'password' && !password) || (loginType === 'pin' && !pin)) {
+    showLoginError(loginType === 'pin' ? 'Enter your username and PIN.' : 'Enter your username and password.');
     return;
   }
 
@@ -3154,15 +3198,28 @@ async function doLogin() {
       showLoginError('This account has been disabled.');
       return;
     }
-    if (user.mustChangePassword) {
+    if (loginType === 'password' && user.mustChangePassword) {
       showLoginError('Please update your password first in Laptop Inventory.');
       return;
     }
-    const hash = await hashPassword(password);
-    if (!hash || hash !== user.passwordHash) {
-      showLoginError('Incorrect password.');
-      document.getElementById('login-password').value = '';
-      return;
+    const hash = await hashPassword(loginType === 'pin' ? pin : password);
+    if (loginType === 'pin') {
+      if (!user.pinHash) {
+        showLoginError('No PIN is set for this account. Set one in Laptop Inventory or Asset Register.');
+        document.getElementById('login-pin').value = '';
+        return;
+      }
+      if (!hash || hash !== user.pinHash) {
+        showLoginError('Incorrect PIN.');
+        document.getElementById('login-pin').value = '';
+        return;
+      }
+    } else {
+      if (!hash || hash !== user.passwordHash) {
+        showLoginError('Incorrect password.');
+        document.getElementById('login-password').value = '';
+        return;
+      }
     }
 
     currentUser = user;
@@ -3185,6 +3242,7 @@ function doLogout() {
   appStarted = false;
   closeAcctMenu();
   document.getElementById('login-password').value = '';
+  document.getElementById('login-pin').value = '';
   document.getElementById('login-username').focus();
 }
 
@@ -3293,6 +3351,9 @@ window.addEventListener('resize', () => {
 document.getElementById('btn-theme-toggle').addEventListener('click', toggleTheme);
 document.getElementById('btn-login').addEventListener('click', doLogin);
 document.getElementById('btn-logout').addEventListener('click', doLogout);
+document.querySelectorAll('[data-login-type]').forEach(btn => {
+  btn.addEventListener('click', () => setLoginType(btn.dataset.loginType));
+});
 document.getElementById('audit-prev')?.addEventListener('click', () => {
   auditPage = Math.max(1, auditPage - 1);
   renderAuditLogs();
@@ -3308,8 +3369,14 @@ document.getElementById('acct-btn').addEventListener('click', e => {
 document.getElementById('login-password').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
 });
+document.getElementById('login-pin').addEventListener('input', e => {
+  e.target.value = e.target.value.replace(/[^0-9]/g, '');
+});
+document.getElementById('login-pin').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
 document.getElementById('login-username').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('login-password').focus();
+  if (e.key === 'Enter') document.getElementById(loginType === 'pin' ? 'login-pin' : 'login-password').focus();
 });
 document.addEventListener('click', e => {
   const wrap = document.getElementById('acct-wrap');
