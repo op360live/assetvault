@@ -106,73 +106,338 @@
     .login-screen {
       min-height: 100dvh;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 28px 16px;
-      background:
-        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 16%, transparent), transparent 32%),
-        radial-gradient(circle at bottom right, color-mix(in srgb, var(--success) 12%, transparent), transparent 28%),
-        var(--surface-2);
+      flex-direction: row;
+      position: relative;
+      overflow: hidden;
+      background: #f7f8fc;
     }
     body.app-ready .login-screen { display: none; }
+    [data-theme="dark"] .login-screen { background: #0f172a; }
+    .login-left {
+      width: 44%;
+      min-height: 100dvh;
+      flex-shrink: 0;
+      background: linear-gradient(150deg, #1e3a8a 0%, #1d4ed8 55%, #2563eb 100%);
+      display: flex;
+      flex-direction: column;
+      padding: 60px 52px;
+      position: relative;
+      overflow: hidden;
+    }
+    .login-left-deco1,
+    .login-left-deco2,
+    .login-left-deco3,
+    .login-left-deco4 {
+      position: absolute;
+      pointer-events: none;
+    }
+    .login-left-deco1 {
+      top: -100px;
+      right: -100px;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+    }
+    .login-left-deco2 {
+      bottom: -130px;
+      left: -80px;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.055);
+    }
+    .login-left-deco3 {
+      top: 38%;
+      right: -50px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.10);
+    }
+    .login-left-deco4 {
+      top: 18%;
+      left: -30px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.08);
+    }
+    .login-left-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 56px;
+      flex-shrink: 0;
+    }
+    .login-left-logo-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.18);
+      border: 1.5px solid rgba(255,255,255,.30);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      flex-shrink: 0;
+    }
+    .login-left-brand-name {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -.6px;
+    }
+    .login-left-brand-sub {
+      margin-top: 2px;
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,.62);
+      letter-spacing: .2px;
+    }
+    .login-left-content {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .login-left-headline {
+      max-width: 330px;
+      margin-bottom: 18px;
+      font-size: 34px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.18;
+      letter-spacing: -1px;
+    }
+    .login-left-tagline {
+      max-width: 320px;
+      margin-bottom: 44px;
+      font-size: 14px;
+      color: rgba(255,255,255,.72);
+      line-height: 1.7;
+    }
+    .login-left-illustration {
+      width: 100%;
+      max-width: 340px;
+      opacity: .9;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,.20));
+    }
+    .login-left-dots {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 40px;
+    }
+    .login-left-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.28);
+    }
+    .login-left-dots span.active {
+      width: 24px;
+      border-radius: 4px;
+      background: rgba(255,255,255,.92);
+    }
+    .login-right {
+      flex: 1;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 48px;
+      background: #f7f8fc;
+      position: relative;
+    }
+    [data-theme="dark"] .login-right { background: #0f172a; }
+    .login-version {
+      position: fixed;
+      right: 22px;
+      bottom: 18px;
+      z-index: 10;
+      color: rgba(100,80,140,.40);
+      font-size: 11px;
+      font-weight: 500;
+      font-family: var(--mono);
+      pointer-events: none;
+    }
     .login-card {
       width: 100%;
       max-width: 420px;
-      padding: 28px;
-      border-radius: 24px;
-      background: color-mix(in srgb, var(--surface) 94%, transparent);
-      border: 1px solid var(--border);
-      box-shadow: 0 22px 56px rgba(15,23,42,.12);
-    }
-    .login-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .login-brand-icon {
-      width: 42px;
-      height: 42px;
+      padding: 48px 44px;
       border-radius: 12px;
-      background: linear-gradient(135deg, var(--accent), #60a5fa);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 10px 22px rgba(37,99,235,.2);
-      flex-shrink: 0;
+      background: #fff;
+      box-shadow: 0 32px 80px rgba(29,78,216,.13), 0 8px 28px rgba(0,0,0,.07);
+    }
+    [data-theme="dark"] .login-card {
+      background: #1e293b;
+      border: 1px solid rgba(96,165,250,.20);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.04), 0 24px 60px rgba(0,0,0,.50), 0 0 40px rgba(29,78,216,.12);
     }
     .login-title {
-      font-size: 1.35rem;
-      font-weight: 700;
+      margin-bottom: 8px;
       color: var(--text-1);
-      letter-spacing: -0.02em;
+      font-size: 28px;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: -.8px;
     }
     .login-sub {
-      margin-top: 4px;
-      color: var(--text-3);
-      font-size: 0.9rem;
+      margin-bottom: 36px;
+      color: var(--text-4);
+      font-size: 14px;
+      line-height: 1.5;
+      text-align: center;
     }
     .login-form {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 16px;
+    }
+    .login-field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .login-field label {
+      color: var(--text-3);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+    .login-field input {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: var(--r-sm);
+      background: #fff;
+      color: var(--text-1);
+      font-size: 15px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    [data-theme="dark"] .login-field input {
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.12);
+    }
+    .login-field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .login-field input::placeholder { color: var(--text-4); }
+    .btn-login-main {
+      width: 100%;
+      min-height: 46px;
+      justify-content: center;
+      border-radius: var(--r-sm);
+      font-size: 15px;
+      font-weight: 700;
+      box-shadow: 0 4px 20px var(--accent-glow);
     }
     .login-error {
       display: none;
-      padding: 10px 12px;
-      border-radius: 12px;
+      padding: 11px 14px;
+      border-radius: var(--r-sm);
       background: var(--danger-bg);
+      border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
       color: var(--danger);
-      font-size: 0.82rem;
-      border: 1px solid color-mix(in srgb, var(--danger) 24%, transparent);
+      font-size: 13px;
     }
     .login-error.show { display: block; }
-    .login-note {
-      margin-top: 16px;
+    .login-app-nav {
+      margin-top: 24px;
+    }
+    .login-app-nav-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .login-app-nav-divider::before,
+    .login-app-nav-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #c8c8d0;
+    }
+    [data-theme="dark"] .login-app-nav-divider::before,
+    [data-theme="dark"] .login-app-nav-divider::after {
+      background: rgba(255,255,255,.18);
+    }
+    .login-app-nav-divider span {
       color: var(--text-4);
-      font-size: 0.78rem;
-      line-height: 1.6;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .10em;
+      white-space: nowrap;
+    }
+    .login-app-nav-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .login-app-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-3);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .login-app-nav-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .login-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(0,0,0,.07);
+    }
+    [data-theme="dark"] .login-footer { border-top-color: rgba(255,255,255,.08); }
+    .login-note {
+      color: var(--text-4);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    @media (max-width: 900px) {
+      .login-screen { flex-direction: column; }
+      .login-left {
+        width: 100%;
+        min-height: auto;
+        padding: 28px 24px 24px;
+      }
+      .login-left-brand { margin-bottom: 0; }
+      .login-left-content { display: none; }
+      .login-right {
+        min-height: auto;
+        padding: 32px 24px 40px;
+      }
+      .login-card {
+        padding: 32px 24px;
+        border-radius: 8px;
+      }
+      .login-title { font-size: 22px; }
+      .login-sub { margin-bottom: 24px; }
     }
     .acct-wrap { position: relative; }
     .acct-btn {
@@ -880,23 +1145,74 @@
     .table-wrap {
       border: 1px solid var(--border); border-radius: var(--r-md);
       overflow-x: auto;
+      overflow-y: auto;
+      max-height: min(68vh, 720px);
+      background: var(--surface);
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-dk) var(--surface-2);
     }
-    table { width: 100%; border-collapse: collapse; min-width: 860px; }
+    .table-wrap::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+    .table-wrap::-webkit-scrollbar-track {
+      background: var(--surface-2);
+      border-radius: 999px;
+    }
+    .table-wrap::-webkit-scrollbar-thumb {
+      background: var(--border-dk);
+      border: 3px solid var(--surface-2);
+      border-radius: 999px;
+    }
+    .table-wrap::-webkit-scrollbar-thumb:hover {
+      background: var(--text-4);
+    }
+    .table-wrap::-webkit-scrollbar-corner {
+      background: var(--surface-2);
+    }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1040px; table-layout: fixed; }
     thead { background: var(--surface-2); border-bottom: 1px solid var(--border); }
     th {
-      padding: 10px 13px; text-align: left;
-      font-size: 0.68rem; font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      padding: 8px 10px; text-align: left;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.62rem; font-weight: 800;
       text-transform: uppercase; letter-spacing: .08em;
       color: var(--text-3); white-space: nowrap;
     }
-    td { padding: 11px 13px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 0.85rem; }
+    th:nth-child(1), td:nth-child(1) { width: 82px; }
+    th:nth-child(2), td:nth-child(2) { width: 76px; }
+    th:nth-child(3), td:nth-child(3) { width: 78px; }
+    th:nth-child(4), td:nth-child(4) { width: 190px; }
+    th:nth-child(5), td:nth-child(5),
+    th:nth-child(6), td:nth-child(6) { width: 150px; }
+    th:nth-child(7), td:nth-child(7),
+    th:nth-child(8), td:nth-child(8) { width: 104px; }
+    th:nth-child(9), td:nth-child(9) { width: 150px; }
+    th:nth-child(10), td:nth-child(10) { width: 92px; }
+    th:nth-child(11), td:nth-child(11) { width: 76px; }
+    td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      font-size: 0.78rem;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover { background: var(--surface-2); }
-    .td-mono { font-family: var(--mono); font-size: 0.78rem; color: var(--text-3); }
-    .td-seat { font-family: var(--mono); font-weight: 600; font-size: 0.9rem; }
+    .td-mono { font-family: var(--mono); font-size: 0.7rem; color: var(--text-3); line-height: 1.35; }
+    .td-seat { font-family: var(--mono); font-weight: 700; font-size: 0.8rem; color: var(--text-1); }
     .seat-mobile-head .site-pill { display: none; }
-    .td-sub { font-size: 0.72rem; color: var(--text-4); margin-top: 2px; }
-    .td-actions { display: flex; gap: 3px; align-items: center; }
+    .td-sub { font-size: 0.68rem; color: var(--text-4); margin-top: 2px; }
+    .td-actions { display: flex; gap: 2px; align-items: center; }
+    .td-actions .btn-ghost,
+    .td-actions .btn-danger-ghost {
+      padding: 5px;
+    }
 
     .quick-update-row td {
       background: var(--surface-2);
@@ -1293,6 +1609,8 @@
       .search-input { width: 100%; }
       .table-wrap {
         overflow-x: visible !important;
+        overflow-y: visible !important;
+        max-height: none !important;
         border: none !important;
         box-shadow: none !important;
         background: transparent !important;
@@ -1300,6 +1618,8 @@
       }
       #inv-table {
         min-width: unset !important;
+        table-layout: auto !important;
+        border-spacing: 0 !important;
         display: block;
       }
       #inv-table thead { display: none; }
@@ -1462,34 +1782,97 @@
 </head>
 <body>
 <div class="login-screen" id="login-screen">
-  <div class="login-card">
-    <div class="login-brand">
-      <div class="login-brand-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+  <div class="login-left">
+    <div class="login-left-deco1"></div>
+    <div class="login-left-deco2"></div>
+    <div class="login-left-deco3"></div>
+    <div class="login-left-deco4"></div>
+
+    <div class="login-left-brand">
+      <div class="login-left-logo-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/>
+          <path d="M8 21h8M12 17v4"/>
         </svg>
       </div>
       <div>
-        <div class="login-title">W2W Inventory</div>
-        <div class="login-sub">Sign in with your AssetVault credentials.</div>
+        <div class="login-left-brand-name">AssetVault</div>
+        <div class="login-left-brand-sub">W2W Seat Inventory</div>
       </div>
     </div>
-    <div class="login-form">
-      <div class="form-field">
-        <label class="form-label" for="login-username">Username</label>
-        <input class="form-input" id="login-username" type="text" autocomplete="username" placeholder="Enter your username"/>
+
+    <div class="login-left-content">
+      <h1 class="login-left-headline">Track every<br>workstation seat.</h1>
+      <p class="login-left-tagline">Purpose-built seat tracking for W2W assets. Update computers, monitors, peripherals, and UPS assignments by site and floor.</p>
+
+      <svg class="login-left-illustration" viewBox="0 0 340 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="88" y="36" width="164" height="104" rx="10" fill="rgba(255,255,255,0.13)" stroke="rgba(255,255,255,0.38)" stroke-width="2"/>
+        <rect x="100" y="48" width="140" height="80" rx="5" fill="rgba(255,255,255,0.09)"/>
+        <rect x="108" y="60" width="64" height="6" rx="3" fill="rgba(255,255,255,0.40)"/>
+        <rect x="108" y="76" width="102" height="5" rx="2.5" fill="rgba(255,255,255,0.22)"/>
+        <rect x="108" y="88" width="82" height="5" rx="2.5" fill="rgba(255,255,255,0.16)"/>
+        <rect x="108" y="100" width="118" height="5" rx="2.5" fill="rgba(255,255,255,0.14)"/>
+        <rect x="146" y="144" width="48" height="8" rx="4" fill="rgba(255,255,255,0.18)"/>
+        <path d="M68 154 L82 140 H258 L272 154 Z" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
+        <rect x="28" y="58" width="64" height="36" rx="9" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.24)" stroke-width="1.5"/>
+        <circle cx="43" cy="76" r="5" fill="rgba(95,212,168,0.85)"/>
+        <rect x="54" y="70" width="26" height="5" rx="2.5" fill="rgba(255,255,255,0.45)"/>
+        <rect x="54" y="80" width="20" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
+        <rect x="252" y="56" width="62" height="38" rx="9" fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.24)" stroke-width="1.5"/>
+        <rect x="263" y="68" width="38" height="5" rx="2.5" fill="rgba(255,255,255,0.45)"/>
+        <rect x="263" y="79" width="25" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
+        <rect x="242" y="112" width="78" height="46" rx="10" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.22)" stroke-width="1.5"/>
+        <path d="M258 128h46M258 140h32" stroke="rgba(255,255,255,0.42)" stroke-width="5" stroke-linecap="round"/>
+        <rect x="24" y="116" width="70" height="42" rx="10" fill="rgba(255,255,255,0.10)" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+        <path d="M38 132h40M38 144h28" stroke="rgba(255,255,255,0.34)" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+
+      <div class="login-left-dots">
+        <span class="active"></span>
+        <span></span>
+        <span></span>
       </div>
-      <div class="form-field">
-        <label class="form-label" for="login-password">Password</label>
-        <input class="form-input" id="login-password" type="password" autocomplete="current-password" placeholder="Enter your password"/>
-      </div>
-      <div class="login-error" id="login-error"></div>
-      <button class="btn btn-primary" id="btn-login" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-        Sign In
-      </button>
     </div>
-    <p class="login-note">This page uses the same Turso user accounts and shared session as Laptop Inventory.</p>
+  </div>
+
+  <div class="login-right">
+    <div class="login-version">beta</div>
+    <div class="login-card">
+      <div class="login-title">W2W Inventory</div>
+      <div class="login-sub">Sign in with your AssetVault credentials.</div>
+
+      <div class="login-form">
+        <div class="login-field">
+          <label for="login-username">Username</label>
+          <input id="login-username" type="text" autocomplete="username" placeholder="Enter your username"/>
+        </div>
+        <div class="login-field">
+          <label for="login-password">Password</label>
+          <input id="login-password" type="password" autocomplete="current-password" placeholder="Enter your password"/>
+        </div>
+        <div class="login-error" id="login-error"></div>
+        <button class="btn btn-primary btn-login-main" id="btn-login" type="button">
+          Sign in →
+        </button>
+      </div>
+
+      <div class="login-app-nav">
+        <div class="login-app-nav-divider"><span>SWITCH TO</span></div>
+        <div class="login-app-nav-links">
+          <a class="login-app-nav-btn" href="https://op360live.github.io/assetvault/laptop.html">
+            Laptop Inventory
+          </a>
+          <a class="login-app-nav-btn" href="https://op360live.github.io/assetvault/inventory.html">
+            Asset Register
+          </a>
+        </div>
+      </div>
+
+      <div class="login-footer">
+        <div class="login-note">AssetVault · IT Department</div>
+        <div class="login-note">Shared Turso account access</div>
+      </div>
+    </div>
   </div>
 </div>
 <div class="app-shell">
