@@ -1012,13 +1012,22 @@
       align-items: center;
     }
     .scan-field .form-input { flex: 1; min-width: 0; }
-    .btn-scan {
+    .btn-scan,
+    .btn-ocr {
       width: 38px;
       height: 38px;
       padding: 0;
       border-radius: var(--r-sm);
       justify-content: center;
       flex-shrink: 0;
+    }
+    .btn-ocr {
+      width: auto;
+      min-width: 42px;
+      padding: 0 8px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: .04em;
     }
     .scanner-overlay {
       position: fixed;
@@ -1099,7 +1108,13 @@
       padding: 12px 16px;
       font-size: 0.78rem;
       color: var(--text-4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
     }
+    .scanner-status-text { flex: 1; min-width: 180px; }
 
     /* Badges */
     .badge {
@@ -2047,6 +2062,7 @@
                 <button class="btn btn-secondary btn-scan" type="button" data-scan-target="u-pc-asset" title="Scan asset tag">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
                 </button>
+                <button class="btn btn-secondary btn-ocr" type="button" data-ocr-target="u-pc-asset" title="Read printed text">OCR</button>
               </div>
             </div>
             <div class="form-field">
@@ -2056,6 +2072,7 @@
                 <button class="btn btn-secondary btn-scan" type="button" data-scan-target="u-pc-serial" title="Scan serial">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
                 </button>
+                <button class="btn btn-secondary btn-ocr" type="button" data-ocr-target="u-pc-serial" title="Read printed text">OCR</button>
               </div>
             </div>
           </div>
@@ -2072,6 +2089,7 @@
               <div class="scan-field">
                 <input class="form-input mono" id="u-m1-asset" type="text"/>
                 <button class="btn btn-secondary btn-scan" type="button" data-scan-target="u-m1-asset" title="Scan asset tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg></button>
+                <button class="btn btn-secondary btn-ocr" type="button" data-ocr-target="u-m1-asset" title="Read printed text">OCR</button>
               </div>
             </div>
             <div class="form-field">
@@ -2079,6 +2097,7 @@
               <div class="scan-field">
                 <input class="form-input mono" id="u-m1-serial" type="text"/>
                 <button class="btn btn-secondary btn-scan" type="button" data-scan-target="u-m1-serial" title="Scan serial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg></button>
+                <button class="btn btn-secondary btn-ocr" type="button" data-ocr-target="u-m1-serial" title="Read printed text">OCR</button>
               </div>
             </div>
           </div>
@@ -2095,6 +2114,7 @@
               <div class="scan-field">
                 <input class="form-input mono" id="u-m2-asset" type="text"/>
                 <button class="btn btn-secondary btn-scan" type="button" data-scan-target="u-m2-asset" title="Scan asset tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg></button>
+                <button class="btn btn-secondary btn-ocr" type="button" data-ocr-target="u-m2-asset" title="Read printed text">OCR</button>
               </div>
             </div>
             <div class="form-field">
@@ -2102,6 +2122,7 @@
               <div class="scan-field">
                 <input class="form-input mono" id="u-m2-serial" type="text"/>
                 <button class="btn btn-secondary btn-scan" type="button" data-scan-target="u-m2-serial" title="Scan serial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg></button>
+                <button class="btn btn-secondary btn-ocr" type="button" data-ocr-target="u-m2-serial" title="Read printed text">OCR</button>
               </div>
             </div>
           </div>
@@ -2118,6 +2139,7 @@
               <div class="scan-field">
                 <input class="form-input mono" id="u-ups-asset" type="text"/>
                 <button class="btn btn-secondary btn-scan" type="button" data-scan-target="u-ups-asset" title="Scan asset tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg></button>
+                <button class="btn btn-secondary btn-ocr" type="button" data-ocr-target="u-ups-asset" title="Read printed text">OCR</button>
               </div>
             </div>
             <div class="form-field">
@@ -2125,6 +2147,7 @@
               <div class="scan-field">
                 <input class="form-input mono" id="u-ups-serial" type="text"/>
                 <button class="btn btn-secondary btn-scan" type="button" data-scan-target="u-ups-serial" title="Scan serial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg></button>
+                <button class="btn btn-secondary btn-ocr" type="button" data-ocr-target="u-ups-serial" title="Read printed text">OCR</button>
               </div>
             </div>
           </div>
@@ -2157,7 +2180,10 @@
       <div id="scanner-reader"></div>
       <div class="scanner-guide"></div>
     </div>
-    <div class="scanner-foot" id="scanner-status">Camera scanner works on supported mobile browsers.</div>
+    <div class="scanner-foot">
+      <span class="scanner-status-text" id="scanner-status">Camera scanner works on supported mobile browsers.</span>
+      <button class="btn btn-primary btn-sm" id="scanner-ocr-capture" type="button" style="display:none;">Capture Text</button>
+    </div>
   </div>
 </div>
 
@@ -2947,8 +2973,11 @@ let scannerTargetId = null;
 let html5Scanner = null;
 let html5ScannerLoading = null;
 let html5ScannerStopping = null;
+let scannerMode = 'barcode';
+let tesseractLoading = null;
 
 const HTML5_QRCODE_SRC = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+const TESSERACT_SRC = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
 
 function openUpdateSeatModal() {
   updateSeatId = null;
@@ -3092,7 +3121,9 @@ async function saveUpdateSeatForm(e) {
 
 async function startScanner(targetId) {
   scannerTargetId = targetId;
+  scannerMode = 'barcode';
   const status = document.getElementById('scanner-status');
+  document.getElementById('scanner-ocr-capture').style.display = 'none';
   if (!navigator.mediaDevices?.getUserMedia) {
     toast('Camera access is not available in this browser.', 'error');
     return;
@@ -3158,6 +3189,7 @@ function loadHtml5Scanner() {
 
 async function startHtml5Scanner(targetId) {
   scannerTargetId = targetId;
+  scannerMode = 'barcode';
   const status = document.getElementById('scanner-status');
   const video = document.getElementById('scanner-video');
   const reader = document.getElementById('scanner-reader');
@@ -3169,6 +3201,7 @@ async function startHtml5Scanner(targetId) {
     reader.style.display = 'block';
     reader.innerHTML = '';
     status.textContent = 'Scanning with fallback scanner... keep the label inside the frame.';
+    document.getElementById('scanner-ocr-capture').style.display = 'none';
 
     const formats = window.Html5QrcodeSupportedFormats ? [
       Html5QrcodeSupportedFormats.QR_CODE,
@@ -3201,6 +3234,116 @@ async function startHtml5Scanner(targetId) {
   }
 }
 
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve();
+  if (tesseractLoading) return tesseractLoading;
+  tesseractLoading = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = TESSERACT_SRC;
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+  return tesseractLoading;
+}
+
+async function startOcrScanner(targetId) {
+  scannerTargetId = targetId;
+  scannerMode = 'ocr';
+  const status = document.getElementById('scanner-status');
+  const video = document.getElementById('scanner-video');
+  const reader = document.getElementById('scanner-reader');
+  const captureBtn = document.getElementById('scanner-ocr-capture');
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    toast('Camera access is not available in this browser.', 'error');
+    return;
+  }
+
+  try {
+    if (html5ScannerStopping) await html5ScannerStopping;
+    await loadTesseract();
+    stopScanner();
+    scannerTargetId = targetId;
+    scannerMode = 'ocr';
+    video.style.display = 'block';
+    reader.style.display = 'none';
+    captureBtn.style.display = 'inline-flex';
+    scannerStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    video.srcObject = scannerStream;
+    await video.play();
+    document.getElementById('scanner-overlay').classList.add('active');
+    status.textContent = 'Frame the printed serial/asset text, then tap Capture Text.';
+  } catch (err) {
+    toast('Could not start OCR camera. You can type the value manually.', 'error');
+    stopScanner();
+  }
+}
+
+function extractOcrValue(text) {
+  const candidates = String(text || '')
+    .split(/\n+/)
+    .map(line => line.trim())
+    .filter(Boolean)
+    .map(line => line.replace(/[^A-Z0-9:_\-./ ]/gi, '').trim())
+    .filter(line => /[A-Z0-9]/i.test(line))
+    .map(line => line.replace(/\s+/g, ' ').trim())
+    .sort((a, b) => {
+      const score = value => {
+        const compact = value.replace(/\s/g, '');
+        const hasDigit = /\d/.test(value) ? 10 : 0;
+        const hasSerialWords = /(SN|S\/N|SERIAL|ASSET|TAG|MAC)/i.test(value) ? 8 : 0;
+        return hasDigit + hasSerialWords + Math.min(compact.length, 24);
+      };
+      return score(b) - score(a);
+    });
+
+  const best = candidates[0] || '';
+  return best
+    .replace(/^(S\/N|SN|SERIAL|SERIAL NO|SERIAL NUMBER|ASSET TAG|ASSET|TAG|MAC)\s*[:#-]?\s*/i, '')
+    .trim();
+}
+
+async function captureOcrText() {
+  if (scannerMode !== 'ocr') return;
+  const video = document.getElementById('scanner-video');
+  const status = document.getElementById('scanner-status');
+  const captureBtn = document.getElementById('scanner-ocr-capture');
+
+  try {
+    captureBtn.disabled = true;
+    status.textContent = 'Reading text... hold on.';
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const result = await Tesseract.recognize(canvas, 'eng', {
+      logger: m => {
+        if (m.status === 'recognizing text' && m.progress) {
+          status.textContent = `Reading text... ${Math.round(m.progress * 100)}%`;
+        }
+      }
+    });
+    const value = extractOcrValue(result?.data?.text || '');
+    if (!value) {
+      status.textContent = 'No clear text found. Move closer and try again.';
+      toast('No clear text found.', 'error');
+      return;
+    }
+    setScannedValue(value);
+    stopScanner();
+  } catch (err) {
+    status.textContent = 'OCR failed. Try better lighting or type manually.';
+    toast('OCR could not read the label.', 'error');
+  } finally {
+    captureBtn.disabled = false;
+  }
+}
+
 function stopScanner() {
   if (scannerTimer) window.clearInterval(scannerTimer);
   scannerTimer = null;
@@ -3217,10 +3360,12 @@ function stopScanner() {
   if (scannerStream) scannerStream.getTracks().forEach(track => track.stop());
   scannerStream = null;
   scannerTargetId = null;
+  scannerMode = 'barcode';
   const video = document.getElementById('scanner-video');
   if (video) video.srcObject = null;
   const reader = document.getElementById('scanner-reader');
   if (reader) reader.innerHTML = '';
+  document.getElementById('scanner-ocr-capture').style.display = 'none';
   document.getElementById('scanner-overlay')?.classList.remove('active');
 }
 
@@ -3352,6 +3497,10 @@ document.getElementById('update-seat-form').addEventListener('submit', saveUpdat
 document.querySelectorAll('[data-scan-target]').forEach(btn => {
   btn.addEventListener('click', () => startScanner(btn.dataset.scanTarget));
 });
+document.querySelectorAll('[data-ocr-target]').forEach(btn => {
+  btn.addEventListener('click', () => startOcrScanner(btn.dataset.ocrTarget));
+});
+document.getElementById('scanner-ocr-capture').addEventListener('click', captureOcrText);
 document.getElementById('scanner-close').addEventListener('click', stopScanner);
 document.getElementById('scanner-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('scanner-overlay')) stopScanner();
