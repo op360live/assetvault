@@ -1069,6 +1069,24 @@
       object-fit: cover;
       display: block;
     }
+    #scanner-reader {
+      width: 100%;
+      min-height: 100%;
+      display: none;
+    }
+    #scanner-reader video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+    }
+    #scanner-reader__dashboard_section,
+    #scanner-reader__header_message,
+    #scanner-reader__scan_region img {
+      display: none !important;
+    }
+    #scanner-reader__scan_region {
+      min-height: 100%;
+    }
     .scanner-guide {
       position: absolute;
       inset: 22%;
@@ -2136,6 +2154,7 @@
     </div>
     <div class="scanner-video-wrap">
       <video id="scanner-video" muted playsinline></video>
+      <div id="scanner-reader"></div>
       <div class="scanner-guide"></div>
     </div>
     <div class="scanner-foot" id="scanner-status">Camera scanner works on supported mobile browsers.</div>
@@ -2925,6 +2944,11 @@ let updateSeatId = null;
 let scannerStream = null;
 let scannerTimer = null;
 let scannerTargetId = null;
+let html5Scanner = null;
+let html5ScannerLoading = null;
+let html5ScannerStopping = null;
+
+const HTML5_QRCODE_SRC = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
 
 function openUpdateSeatModal() {
   updateSeatId = null;
@@ -3074,7 +3098,7 @@ async function startScanner(targetId) {
     return;
   }
   if (!('BarcodeDetector' in window)) {
-    toast('Barcode scanning is not supported in this browser. You can type the value manually.', 'error');
+    await startHtml5Scanner(targetId);
     return;
   }
 
@@ -3083,6 +3107,9 @@ async function startScanner(targetId) {
       formats: ['qr_code', 'code_128', 'code_39', 'code_93', 'ean_13', 'ean_8', 'upc_a', 'upc_e']
     });
     const video = document.getElementById('scanner-video');
+    const reader = document.getElementById('scanner-reader');
+    video.style.display = 'block';
+    reader.style.display = 'none';
     scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     video.srcObject = scannerStream;
     await video.play();
@@ -3094,12 +3121,7 @@ async function startScanner(targetId) {
         const codes = await detector.detect(video);
         if (!codes.length) return;
         const value = codes[0].rawValue || '';
-        const input = document.getElementById(scannerTargetId);
-        if (input && value) {
-          input.value = value.trim();
-          input.focus();
-          toast('Scanned value added.', 'success');
-        }
+        setScannedValue(value);
         stopScanner();
       } catch (err) {
         status.textContent = 'Scanning...';
@@ -3111,14 +3133,94 @@ async function startScanner(targetId) {
   }
 }
 
+function setScannedValue(value) {
+  const input = document.getElementById(scannerTargetId);
+  if (input && value) {
+    input.value = String(value).trim();
+    input.focus();
+    toast('Scanned value added.', 'success');
+  }
+}
+
+function loadHtml5Scanner() {
+  if (window.Html5Qrcode) return Promise.resolve();
+  if (html5ScannerLoading) return html5ScannerLoading;
+  html5ScannerLoading = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = HTML5_QRCODE_SRC;
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+  return html5ScannerLoading;
+}
+
+async function startHtml5Scanner(targetId) {
+  scannerTargetId = targetId;
+  const status = document.getElementById('scanner-status');
+  const video = document.getElementById('scanner-video');
+  const reader = document.getElementById('scanner-reader');
+  try {
+    if (html5ScannerStopping) await html5ScannerStopping;
+    await loadHtml5Scanner();
+    document.getElementById('scanner-overlay').classList.add('active');
+    video.style.display = 'none';
+    reader.style.display = 'block';
+    reader.innerHTML = '';
+    status.textContent = 'Scanning with fallback scanner... keep the label inside the frame.';
+
+    const formats = window.Html5QrcodeSupportedFormats ? [
+      Html5QrcodeSupportedFormats.QR_CODE,
+      Html5QrcodeSupportedFormats.CODE_128,
+      Html5QrcodeSupportedFormats.CODE_39,
+      Html5QrcodeSupportedFormats.CODE_93,
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.UPC_A,
+      Html5QrcodeSupportedFormats.UPC_E
+    ].filter(Boolean) : undefined;
+    html5Scanner = new Html5Qrcode('scanner-reader', formats ? { formatsToSupport: formats } : undefined);
+
+    await html5Scanner.start(
+      { facingMode: 'environment' },
+      {
+        fps: 10,
+        qrbox: { width: 240, height: 160 },
+        aspectRatio: 1.333
+      },
+      decodedText => {
+        setScannedValue(decodedText);
+        stopScanner();
+      },
+      () => {}
+    );
+  } catch (err) {
+    toast('Scanner fallback could not start. You can type the value manually.', 'error');
+    stopScanner();
+  }
+}
+
 function stopScanner() {
   if (scannerTimer) window.clearInterval(scannerTimer);
   scannerTimer = null;
+  if (html5Scanner) {
+    const scanner = html5Scanner;
+    html5Scanner = null;
+    html5ScannerStopping = scanner.stop()
+      .catch(() => {})
+      .finally(() => {
+        try { scanner.clear(); } catch {}
+        html5ScannerStopping = null;
+      });
+  }
   if (scannerStream) scannerStream.getTracks().forEach(track => track.stop());
   scannerStream = null;
   scannerTargetId = null;
   const video = document.getElementById('scanner-video');
   if (video) video.srcObject = null;
+  const reader = document.getElementById('scanner-reader');
+  if (reader) reader.innerHTML = '';
   document.getElementById('scanner-overlay')?.classList.remove('active');
 }
 
