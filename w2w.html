@@ -1255,6 +1255,25 @@
     .site-pill.active { background: var(--navy); color: #e2e8f0; border-color: var(--navy); }
 
     .result-count { font-size: 0.78rem; color: var(--text-4); font-family: var(--mono); white-space: nowrap; }
+    .bulk-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: -2px 0 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      background: var(--surface);
+    }
+    .bulk-bar.active { display: flex; }
+    .bulk-count { color: var(--text-3); font: 600 0.78rem var(--mono); }
+    .seat-check {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
 
     /* ── Buttons ── */
     .btn {
@@ -1304,7 +1323,7 @@
     .table-wrap::-webkit-scrollbar-corner {
       background: var(--surface-2);
     }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1040px; table-layout: fixed; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1080px; table-layout: fixed; }
     thead { background: var(--surface-2); border-bottom: 1px solid var(--border); }
     th {
       position: sticky;
@@ -1317,17 +1336,18 @@
       text-transform: uppercase; letter-spacing: .08em;
       color: var(--text-3); white-space: nowrap;
     }
-    th:nth-child(1), td:nth-child(1) { width: 82px; }
-    th:nth-child(2), td:nth-child(2) { width: 76px; }
-    th:nth-child(3), td:nth-child(3) { width: 78px; }
-    th:nth-child(4), td:nth-child(4) { width: 190px; }
-    th:nth-child(5), td:nth-child(5),
-    th:nth-child(6), td:nth-child(6) { width: 150px; }
-    th:nth-child(7), td:nth-child(7),
-    th:nth-child(8), td:nth-child(8) { width: 104px; }
-    th:nth-child(9), td:nth-child(9) { width: 150px; }
-    th:nth-child(10), td:nth-child(10) { width: 92px; }
-    th:nth-child(11), td:nth-child(11) { width: 76px; }
+    th:nth-child(1), td:nth-child(1) { width: 42px; text-align: center; }
+    th:nth-child(2), td:nth-child(2) { width: 82px; }
+    th:nth-child(3), td:nth-child(3) { width: 76px; }
+    th:nth-child(4), td:nth-child(4) { width: 78px; }
+    th:nth-child(5), td:nth-child(5) { width: 190px; }
+    th:nth-child(6), td:nth-child(6),
+    th:nth-child(7), td:nth-child(7) { width: 150px; }
+    th:nth-child(8), td:nth-child(8),
+    th:nth-child(9), td:nth-child(9) { width: 104px; }
+    th:nth-child(10), td:nth-child(10) { width: 150px; }
+    th:nth-child(11), td:nth-child(11) { width: 92px; }
+    th:nth-child(12), td:nth-child(12) { width: 76px; }
     td {
       padding: 7px 10px;
       border-bottom: 1px solid var(--border);
@@ -1792,6 +1812,13 @@
       #inv-table td[data-label="Seat #"] {
         grid-column: span 2;
       }
+      #inv-table td[data-label="Select"] {
+        position: absolute;
+        right: 14px;
+        top: 14px;
+        padding: 0;
+      }
+      #inv-table td[data-label="Select"]::before { display: none; }
       #inv-table td[data-label="Seat #"]::before { display: none; }
       #inv-table td[data-label="Seat #"] .seat-mobile-head {
         display: flex;
@@ -2254,11 +2281,19 @@
         </div>
         <span class="result-count" id="result-count"></span>
       </div>
+      <div class="bulk-bar" id="bulk-bar">
+        <span class="bulk-count" id="bulk-count">0 selected</span>
+        <button class="btn btn-secondary btn-sm" id="btn-bulk-delete" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          Delete selected
+        </button>
+      </div>
 
       <div class="table-wrap">
         <table id="inv-table">
           <thead>
             <tr>
+              <th><input class="seat-check" id="select-all-seats" type="checkbox" aria-label="Select all visible seats"></th>
               <th>Seat #</th>
               <th>Site</th>
               <th>Floor #</th>
@@ -2939,6 +2974,7 @@ async function syncFromTurso() {
     }).filter(Boolean).sort((a, b) => b.ts - a.ts);
 
     seats = remoteSeats;
+    selectedSeatIds.clear();
     saveSeats(seats);
     saveActivity(remoteActivity);
 
@@ -3498,6 +3534,7 @@ function jumpSite(site) {
 let currentSite   = '';
 let currentSearch = '';
 let quickUpdateId = null;
+const selectedSeatIds = new Set();
 
 function filtered() {
   return seats.filter(s => {
@@ -3538,7 +3575,7 @@ function quickUpdatePanel(s) {
   const id = esc(s.id);
   return `
     <tr class="quick-update-row">
-      <td colspan="11">
+      <td colspan="12">
         <div class="quick-update-panel">
           <div class="quick-update-head">
             <div>
@@ -3587,6 +3624,37 @@ function quickUpdatePanel(s) {
   `;
 }
 
+function updateBulkBar(rows = filtered()) {
+  [...selectedSeatIds].forEach(id => {
+    if (!seats.some(s => s.id === id)) selectedSeatIds.delete(id);
+  });
+  const visibleSelected = rows.filter(s => selectedSeatIds.has(s.id)).length;
+  const bulkBar = document.getElementById('bulk-bar');
+  const bulkCount = document.getElementById('bulk-count');
+  const selectAll = document.getElementById('select-all-seats');
+  if (bulkBar) bulkBar.classList.toggle('active', selectedSeatIds.size > 0);
+  if (bulkCount) bulkCount.textContent = `${selectedSeatIds.size} selected`;
+  if (selectAll) {
+    selectAll.checked = rows.length > 0 && visibleSelected === rows.length;
+    selectAll.indeterminate = visibleSelected > 0 && visibleSelected < rows.length;
+    selectAll.disabled = rows.length === 0;
+  }
+}
+
+function toggleSeatSelection(id, checked) {
+  if (checked) selectedSeatIds.add(id);
+  else selectedSeatIds.delete(id);
+  updateBulkBar();
+}
+
+function toggleAllVisibleSeats(checked) {
+  filtered().forEach(s => {
+    if (checked) selectedSeatIds.add(s.id);
+    else selectedSeatIds.delete(s.id);
+  });
+  renderTable();
+}
+
 function renderTable() {
   const rows  = filtered();
   const tbody = document.getElementById('inv-body');
@@ -3599,6 +3667,7 @@ function renderTable() {
   if (rows.length === 0) {
     table.style.display = 'none';
     empty.style.display = 'block';
+    updateBulkBar(rows);
     document.getElementById('empty-msg').textContent =
       currentSearch ? `No results for "${currentSearch}".` :
       currentSite   ? `No seats in ${currentSite} yet.` :
@@ -3620,6 +3689,9 @@ function renderTable() {
 
   tbody.innerHTML = rows.map(s => `
     <tr>
+      <td data-label="Select">
+        <input class="seat-check row-seat-check" type="checkbox" aria-label="Select seat ${esc(s.seat)}" ${selectedSeatIds.has(s.id) ? 'checked' : ''} onchange="toggleSeatSelection('${esc(s.id)}', this.checked)">
+      </td>
       <td class="td-seat" data-label="Seat #">
         <div class="seat-mobile-head">
           <span class="seat-mobile-id">${esc(s.seat)}</span>
@@ -3657,6 +3729,7 @@ function renderTable() {
     </tr>
     ${quickUpdateId === s.id ? quickUpdatePanel(s) : ''}
   `).join('');
+  updateBulkBar(rows);
 }
 
 function toggleQuickUpdate(id) {
@@ -4248,6 +4321,10 @@ document.getElementById('update-floor').addEventListener('change', () => {
   document.getElementById('update-seat-summary').classList.remove('show');
 });
 document.getElementById('update-seat-form').addEventListener('submit', saveUpdateSeatForm);
+document.getElementById('select-all-seats')?.addEventListener('change', e => {
+  toggleAllVisibleSeats(e.target.checked);
+});
+document.getElementById('btn-bulk-delete')?.addEventListener('click', askBulkDelete);
 document.querySelectorAll('[data-scan-target]').forEach(btn => {
   btn.addEventListener('click', () => startScanner(btn.dataset.scanTarget));
 });
@@ -4363,6 +4440,33 @@ function askDelete(id) {
         setSyncStatus(ok ? 'Connected · ' + new Date().toLocaleTimeString() : 'Local only', !ok);
       });
       toast(`Seat ${s.seat} deleted.`, 'info');
+      renderDashboard();
+      renderTable();
+    }
+  );
+}
+
+function askBulkDelete() {
+  const ids = [...selectedSeatIds].filter(id => seats.some(s => s.id === id));
+  if (!ids.length) {
+    toast('Select at least one seat to delete.', 'error');
+    return;
+  }
+  const label = ids.length === 1 ? '1 selected seat' : `${ids.length} selected seats`;
+  showConfirm(
+    `Delete ${label}?`,
+    'This will permanently remove the selected seat inventory records. This cannot be undone.',
+    async () => {
+      const deleteSet = new Set(ids);
+      seats = seats.filter(s => !deleteSet.has(s.id));
+      selectedSeatIds.clear();
+      saveSeats(seats);
+      logActivity(`Bulk deleted ${ids.length} seat${ids.length !== 1 ? 's' : ''}`, 'error');
+      setSyncStatus('Saving…');
+      const results = await Promise.all(ids.map(id => persistSeatDelete(id)));
+      const ok = results.every(Boolean);
+      setSyncStatus(ok ? 'Connected · ' + new Date().toLocaleTimeString() : 'Local only', !ok);
+      toast(`Deleted ${ids.length} seat${ids.length !== 1 ? 's' : ''}.`, 'info');
       renderDashboard();
       renderTable();
     }
@@ -4632,6 +4736,7 @@ document.getElementById('btn-clear').addEventListener('click', () => {
     'This will permanently delete all seat inventory records and activity log. This cannot be undone.',
     async () => {
       seats = [];
+      selectedSeatIds.clear();
       saveSeats(seats);
       localStorage.removeItem(ACTIVITY_KEY);
       setSyncStatus('Saving…');
