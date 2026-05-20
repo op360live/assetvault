@@ -3254,6 +3254,12 @@ async function tursoInit() {
   ]);
 }
 
+let _tursoReady = null;
+function ensureTursoReady() {
+  if (!_tursoReady) _tursoReady = tursoInit();
+  return _tursoReady;
+}
+
 function setSyncStatus(msg, isError = false) {
   const el = document.getElementById('lastSync');
   if (el) { el.textContent = msg; el.style.color = isError ? 'var(--red)' : ''; }
@@ -3265,7 +3271,10 @@ function setSyncStatus(msg, isError = false) {
     if (icon) icon.classList.add('spinning');
     if (syncBtn) syncBtn.disabled = true;
   } else if (isError) {
-    if (dot) { dot.className = 'db-status-dot disconnected'; dot.textContent = 'Not connected'; }
+    if (dot) {
+      dot.className = 'db-status-dot disconnected';
+      dot.textContent = msg.includes('local') ? 'Local only' : msg;
+    }
     if (icon) icon.classList.remove('spinning');
     if (syncBtn) syncBtn.disabled = false;
   } else {
@@ -3281,8 +3290,10 @@ function setSyncStatus(msg, isError = false) {
 }
 
 let _syncInProgress = false;
+let _syncQueued = false;
 let _autoSyncTimer = null;
 let _autoSyncStarted = false;
+let _lastSuccessfulSyncTs = '';
 
 function isGoodSyncResult(result) {
   if (!result) return false;
@@ -3291,12 +3302,16 @@ function isGoodSyncResult(result) {
 }
 
 async function tursoSyncAll() {
-  if (_syncInProgress) return false;
+  if (_syncInProgress) {
+    _syncQueued = true;
+    return null;
+  }
   _syncInProgress = true;
   _assetSyncing = true;
   _showAssetLoader(true);
   setSyncStatus('Syncing…');
   try {
+    await ensureTursoReady();
     // Fire all 5 queries in parallel — reduces worst-case from 50s to 10s
     const [rRes, uRes, iRes, aRes, asRes] = await Promise.all([
       tursoExec('SELECT data FROM records'),
@@ -3339,9 +3354,14 @@ async function tursoSyncAll() {
     const hasAnyRemoteData = [rRes, uRes, iRes, aRes, asRes].some(isGoodSyncResult);
     // If all queries failed, the network is down but no exception was thrown
     if (!hasAnyRemoteData) {
-      setSyncStatus('Not connected — using local data', true);
+      if (_lastSuccessfulSyncTs) {
+        setSyncStatus('Connected · ' + _lastSuccessfulSyncTs);
+      } else {
+        setSyncStatus('Not connected — using local data', true);
+      }
     } else {
-      setSyncStatus('Connected · ' + new Date().toLocaleTimeString());
+      _lastSuccessfulSyncTs = new Date().toLocaleTimeString();
+      setSyncStatus('Connected · ' + _lastSuccessfulSyncTs);
     }
     // Mark sync done BEFORE re-rendering so counters show real values
     _assetSyncing = false;
@@ -3354,7 +3374,11 @@ async function tursoSyncAll() {
     }
     return hasAnyRemoteData;
   } catch(e) {
-    setSyncStatus('Sync failed — using local data', true);
+    if (_lastSuccessfulSyncTs) {
+      setSyncStatus('Connected · ' + _lastSuccessfulSyncTs);
+    } else {
+      setSyncStatus('Sync failed — using local data', true);
+    }
     _assetSyncing = false;
     _showAssetLoader(false);
     if (currentView) switchView(currentView);
@@ -3364,6 +3388,10 @@ async function tursoSyncAll() {
     _assetSyncing = false;
     _showAssetLoader(false);
     _syncInProgress = false;
+    if (_syncQueued) {
+      _syncQueued = false;
+      setTimeout(() => tursoSyncAll(), 250);
+    }
   }
 }
 
@@ -3386,13 +3414,13 @@ const LS_USERS = 'deliveryAssets_users';
 
 // ── ONLINE / OFFLINE DETECTION ──
 window.addEventListener('offline', () => {
-  setSyncStatus('No internet connection', true);
+  if (!_lastSuccessfulSyncTs) setSyncStatus('No internet connection', true);
 });
 window.addEventListener('online', () => {
   setSyncStatus('Syncing…');
   tursoSyncAll();
 });
-if (!navigator.onLine) setSyncStatus('No internet connection', true);
+if (!navigator.onLine && !_lastSuccessfulSyncTs) setSyncStatus('No internet connection', true);
 const THEME_KEY   = 'deliveryAssets_theme';
 const SESSION_KEY = 'deliveryAssets_session';
 const DEFAULT_PW  = 'ae33a34216f00d844796e3ab70b2aaedd30e8544b7e8f8fd105a03d7f7a7dbb5';
@@ -4874,24 +4902,41 @@ function syncInventoryFromRecords() {
   loadInventory();
   const assetStatusBySerial = buildAssetRegisterStatusBySerial();
   const validKeys = new Set();
+  let changed = false;
   records.forEach(r => {
     // Helper to upsert one unit into invItems
     function upsert(key, assetType, brand, serial, unit, itemIdx) {
       validKeys.add(key);
-      if (!invItems[key]) invItems[key] = { status: 'Untagged', notes: '', updatedBy: '', updatedAt: '' };
-      invItems[key].status = normalizeInventoryStatus(invItems[key].status);
+      if (!invItems[key]) {
+        invItems[key] = { status: 'Untagged', notes: '', updatedBy: '', updatedAt: '' };
+        changed = true;
+      }
+      const normalizedStatus = normalizeInventoryStatus(invItems[key].status);
+      if (invItems[key].status !== normalizedStatus) {
+        invItems[key].status = normalizedStatus;
+        changed = true;
+      }
       const assetStatus = serial ? assetStatusBySerial.get(normalizeSerialKey(serial)) : null;
       if (assetStatus && invItems[key].status !== assetStatus) {
         invItems[key].status = assetStatus;
         invItems[key].updatedBy = 'Asset Register';
         invItems[key].updatedAt = new Date().toISOString();
+        changed = true;
       }
-      invItems[key]._rec      = r.id;
-      invItems[key]._assetType = assetType || '';
-      invItems[key]._brand     = brand     || '';
-      invItems[key]._serial    = serial    || null;
-      invItems[key]._unit      = unit      || null;
-      if (itemIdx !== undefined) invItems[key]._itemIdx = itemIdx;
+      const meta = {
+        _rec: r.id,
+        _assetType: assetType || '',
+        _brand: brand || '',
+        _serial: serial || null,
+        _unit: unit || null,
+      };
+      if (itemIdx !== undefined) meta._itemIdx = itemIdx;
+      Object.entries(meta).forEach(([field, value]) => {
+        if (invItems[key][field] !== value) {
+          invItems[key][field] = value;
+          changed = true;
+        }
+      });
     }
 
     if (r.items && r.items.length > 0) {
@@ -4918,9 +4963,12 @@ function syncInventoryFromRecords() {
   });
   // Remove orphan keys (records deleted)
   Object.keys(invItems).forEach(k => {
-    if (!validKeys.has(k)) delete invItems[k];
+    if (!validKeys.has(k)) {
+      delete invItems[k];
+      changed = true;
+    }
   });
-  persistInventory();
+  if (changed) persistInventory();
 }
 
 function refreshInventoryAfterAssetRegisterChange() {
@@ -6795,7 +6843,7 @@ window.switchView = function(view) {
 
   try {
     loadTheme();
-    tursoInit(); // fire-and-forget — tables created in background; local cache loads immediately
+    ensureTursoReady(); // fire-and-forget; sync awaits this before querying
 
     loadUsers();
     loadAuditLog();
