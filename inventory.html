@@ -3244,7 +3244,19 @@ function setSyncStatus(msg, isError = false) {
   }
 }
 
+let _syncInProgress = false;
+let _autoSyncTimer = null;
+let _autoSyncStarted = false;
+
+function isGoodSyncResult(result) {
+  if (!result) return false;
+  if (Array.isArray(result)) return true;
+  return Array.isArray(result.rows);
+}
+
 async function tursoSyncAll() {
+  if (_syncInProgress) return false;
+  _syncInProgress = true;
   _assetSyncing = true;
   _showAssetLoader(true);
   setSyncStatus('Syncing…');
@@ -3288,11 +3300,12 @@ async function tursoSyncAll() {
       assetsDb = asRes;
       _saveAssetsCache();
     }
-    // If all queries returned null, the network is down but no exception was thrown
-    if (!rRes && !uRes && !iRes && !aRes && !asRes) {
+    const hasAnyRemoteData = [rRes, uRes, iRes, aRes, asRes].some(isGoodSyncResult);
+    // If all queries failed, the network is down but no exception was thrown
+    if (!hasAnyRemoteData) {
       setSyncStatus('Not connected — using local data', true);
     } else {
-      setSyncStatus('Synced · ' + new Date().toLocaleTimeString());
+      setSyncStatus('Connected · ' + new Date().toLocaleTimeString());
     }
     // Mark sync done BEFORE re-rendering so counters show real values
     _assetSyncing = false;
@@ -3303,17 +3316,34 @@ async function tursoSyncAll() {
     if (currentView !== 'assets') {
       renderAssetStats();
     }
+    return hasAnyRemoteData;
   } catch(e) {
     setSyncStatus('Sync failed — using local data', true);
     _assetSyncing = false;
     _showAssetLoader(false);
     if (currentView) switchView(currentView);
+    return false;
   } finally {
     // Safety net — already cleared above, idempotent here
     _assetSyncing = false;
     _showAssetLoader(false);
+    _syncInProgress = false;
   }
 }
+
+function startAutoSync() {
+  if (_autoSyncStarted) return;
+  _autoSyncStarted = true;
+  clearInterval(_autoSyncTimer);
+  _autoSyncTimer = setInterval(() => {
+    if (document.hidden || !navigator.onLine) return;
+    tursoSyncAll();
+  }, 30000);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && navigator.onLine && currentUser) tursoSyncAll();
+});
 
 const LS_DATA  = 'deliveryAssets_data';
 const LS_USERS = 'deliveryAssets_users';
@@ -3440,9 +3470,9 @@ function loadTheme() {
 window.refreshData = function() {
   const icon = document.getElementById('refreshIcon');
   if (icon) icon.style.animation = 'spin 0.6s linear';
-  tursoSyncAll().then(() => {
+  tursoSyncAll().then((synced) => {
     syncInventoryFromRecords();
-    showToast('Data refreshed.');
+    showToast(synced ? 'Data refreshed.' : 'Using local data. Could not reach database.', !synced);
     setTimeout(() => { if (icon) icon.style.animation = ''; }, 700);
   });
 };
@@ -3835,6 +3865,7 @@ async function showApp() {
   loadInventory();
   switchView('dashboard');
   tursoSyncAll();
+  startAutoSync();
   startPresenceHeartbeat();
   loadPresence();
   setInterval(loadPresence, 60000);
@@ -4740,7 +4771,11 @@ function findAssetBySerial(serial) {
   return assetsDb.find(asset => normalizeSerialKey(asset.serialNumber) === key) || null;
 }
 
-async function ensureAssetRegisterEntryFromInventory(key) {
+function inventoryCustodianForStatus(status) {
+  return ['Spare', 'Docked', 'For Repair', 'For Disposal'].includes(normalizeInventoryStatus(status)) ? 'IT' : '';
+}
+
+async function ensureAssetRegisterEntryFromInventory(key, status) {
   const item = invItems[key];
   const serial = (item?._serial || '').trim();
   if (!serial) return;
@@ -4751,21 +4786,25 @@ async function ensureAssetRegisterEntryFromInventory(key) {
   }
 
   const record = records.find(entry => entry.id === item._rec);
+  const nextStatus = normalizeInventoryStatus(status || item.status);
   const asset = {
     id: 'ast_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
     site: (record?.to || '').trim(),
     quantity: '1',
+    assetType: item._assetType || record?.assetType || '',
+    deviceModel: item._brand || record?.brand || '',
     serialNumber: serial,
-    status: 'Deployed',
+    custodian: inventoryCustodianForStatus(nextStatus),
+    status: nextStatus,
     updatedAt: new Date().toISOString(),
     updatedBy: currentUser?.username || '',
   };
 
   try {
     await _persistAsset(asset);
-    logAudit('Auto Add Asset', serial + ' added to Asset Register');
+    logAudit('Auto Add Asset', serial + ' added to Asset Register as ' + nextStatus);
     if (currentView === 'assets') renderAssets();
-    showToast('Serial added to Asset Register.');
+    showToast('Serial added to Asset Register as ' + nextStatus + '.');
   } catch {
     showToast('Failed to add serial to Asset Register.', true);
   }
@@ -4878,7 +4917,10 @@ window.setAssetStatus = async function(key, value) {
       if (updEl) updEl.textContent = 'by ' + (invItems[key].updatedBy || '—') + ' · just now';
     }
   }
-  if (prevStatus !== 'Deployed' && nextStatus === 'Deployed') await ensureAssetRegisterEntryFromInventory(key);
+  if (prevStatus === 'Untagged' && nextStatus !== 'Untagged') {
+    await ensureAssetRegisterEntryFromInventory(key, nextStatus);
+    refreshInventoryAfterAssetRegisterChange();
+  }
   renderInvStats();
 };
 
