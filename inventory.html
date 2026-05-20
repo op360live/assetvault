@@ -4702,6 +4702,26 @@ function normalizeInventoryStatus(status) {
   return INVENTORY_STATUS_OPTIONS.includes(nextStatus) ? nextStatus : 'Untagged';
 }
 
+function normalizeSerialKey(serial) {
+  return (serial || '').trim().toLowerCase();
+}
+
+function buildAssetRegisterStatusBySerial() {
+  const priority = { Deployed: 6, Spare: 5, Docked: 4, 'For Repair': 3, 'For Disposal': 2, Untagged: 1 };
+  const map = new Map();
+  assetsDb.forEach(asset => {
+    const key = normalizeSerialKey(asset.serialNumber);
+    if (!key) return;
+    if (!(asset.status || '').trim()) return;
+    const status = normalizeInventoryStatus(asset.status);
+    const current = map.get(key);
+    if (!current || (priority[status] || 0) > (priority[current] || 0)) {
+      map.set(key, status);
+    }
+  });
+  return map;
+}
+
 function inventoryStatusClass(status) {
   const classMap = {
     Deployed: 'pcc-deployed',
@@ -4715,9 +4735,9 @@ function inventoryStatusClass(status) {
 }
 
 function findAssetBySerial(serial) {
-  const key = (serial || '').trim().toLowerCase();
+  const key = normalizeSerialKey(serial);
   if (!key) return null;
-  return assetsDb.find(asset => (asset.serialNumber || '').trim().toLowerCase() === key) || null;
+  return assetsDb.find(asset => normalizeSerialKey(asset.serialNumber) === key) || null;
 }
 
 async function ensureAssetRegisterEntryFromInventory(key) {
@@ -4777,6 +4797,7 @@ function persistInventory() {
 // Creates new entries for any serial/unit not yet tracked; preserves existing statuses.
 function syncInventoryFromRecords() {
   loadInventory();
+  const assetStatusBySerial = buildAssetRegisterStatusBySerial();
   const validKeys = new Set();
   records.forEach(r => {
     // Helper to upsert one unit into invItems
@@ -4784,6 +4805,12 @@ function syncInventoryFromRecords() {
       validKeys.add(key);
       if (!invItems[key]) invItems[key] = { status: 'Untagged', notes: '', updatedBy: '', updatedAt: '' };
       invItems[key].status = normalizeInventoryStatus(invItems[key].status);
+      const assetStatus = serial ? assetStatusBySerial.get(normalizeSerialKey(serial)) : null;
+      if (assetStatus && invItems[key].status !== assetStatus) {
+        invItems[key].status = assetStatus;
+        invItems[key].updatedBy = 'Asset Register';
+        invItems[key].updatedAt = new Date().toISOString();
+      }
       invItems[key]._rec      = r.id;
       invItems[key]._assetType = assetType || '';
       invItems[key]._brand     = brand     || '';
@@ -4819,6 +4846,16 @@ function syncInventoryFromRecords() {
     if (!validKeys.has(k)) delete invItems[k];
   });
   persistInventory();
+}
+
+function refreshInventoryAfterAssetRegisterChange() {
+  syncInventoryFromRecords();
+  if (currentView === 'inventory') {
+    renderInvStats();
+    renderInventory();
+  } else if (currentView === 'dashboard') {
+    renderDashboard();
+  }
 }
 
 window.setAssetStatus = async function(key, value) {
@@ -6358,6 +6395,7 @@ window.saveAssetForm = async function() {
   try {
     const prevAsset = _editingAssetId ? assetsDb.find(a => a.id === _editingAssetId) : null;
     await _persistAsset(asset);
+    refreshInventoryAfterAssetRegisterChange();
 
     // Build change details
     const FIELD_LABELS = {
@@ -6933,6 +6971,7 @@ window.quickUpdateAssetStatus = async function(id, status) {
   asset.status = status;
   try {
     await _persistAsset(asset);
+    refreshInventoryAfterAssetRegisterChange();
     logAudit('Quick Status Change', (asset.assetTag || id) + ' → ' + status);
     showToast('Status updated: ' + (asset.assetTag || id) + ' → ' + status);
     if (currentView === 'assets') renderAssets();
