@@ -1368,6 +1368,15 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
         </svg>
         <span class="sb-item-label">Deduction Calculator</span>
       </button>
+      <button class="sb-item" id="navFormSubmissions" onclick="switchView('formSubmissions')" title="Form Submissions">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <path d="M14 2v6h6"/>
+          <path d="M9 13h6"/>
+          <path d="M9 17h6"/>
+        </svg>
+        <span class="sb-item-label">Form Submissions</span>
+      </button>
 
       <div class="sb-divider"></div>
       <div class="sb-section-label">IT Tools</div>
@@ -1716,6 +1725,39 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
           <!-- Results appear here after calculation -->
         </div>
       </div>
+    </main>
+
+    <main class="main" id="formSubmissionsMain" style="display:none;">
+      <div class="toolbar counter-card">
+        <div class="search-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="search-input" id="formSubmissionsSearchInput" placeholder="Search name, email, site, purpose, asset…" oninput="formSubmissionsPage=1;renderFormSubmissionsTable()">
+        </div>
+        <button class="btn btn-sm" onclick="loadFormSubmissions()" style="margin-left:10px;">Refresh</button>
+      </div>
+      <div class="count-bar">
+        <span id="formSubmissionsRecordCount">0 submissions</span>
+      </div>
+      <div style="margin:0 0 16px"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Submitted</th>
+              <th>Complete Name</th>
+              <th>Personal Email</th>
+              <th>Site</th>
+              <th>Account</th>
+              <th>Purpose</th>
+              <th>Returned Assets</th>
+              <th>IT Personnel</th>
+              <th>Security Personnel</th>
+            </tr>
+          </thead>
+          <tbody id="formSubmissionsTableBody"></tbody>
+        </table>
+      </div>
+      <div id="formSubmissionsPagination"></div>
     </main>
 
     <div class="overlay" id="deductionResultOverlay" onclick="if(event.target===this)closeDeductionResultModal()">
@@ -2216,6 +2258,7 @@ async function tursoInit() {
     { sql: 'CREATE TABLE IF NOT EXISTS presence (username TEXT PRIMARY KEY, data TEXT NOT NULL)' },
     { sql: 'CREATE TABLE IF NOT EXISTS employee_assets (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
     { sql: 'CREATE TABLE IF NOT EXISTS deployment_returns (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
+    { sql: 'CREATE TABLE IF NOT EXISTS asset_return_submissions (id TEXT PRIMARY KEY, data TEXT NOT NULL)' },
   ]);
 }
 
@@ -2248,11 +2291,12 @@ function setSyncStatus(msg, isError = false) {
 async function tursoSyncAll() {
   setSyncStatus('Syncing…');
   try {
-    const [rRes, uRes, eaRes, draRes] = await Promise.all([
+    const [rRes, uRes, eaRes, draRes, arsRes] = await Promise.all([
       tursoExec('SELECT data FROM offboarding'),
       tursoExec('SELECT data FROM users'),
       tursoExec('SELECT data FROM employee_assets'),
       tursoExec('SELECT data FROM deployment_returns'),
+      tursoExec('SELECT data FROM asset_return_submissions'),
     ]);
 
     if (rRes) {
@@ -2292,8 +2336,11 @@ async function tursoSyncAll() {
     if (eaRes) {
       eaRecords = eaRes.rows.map(row => JSON.parse(row[0].value));
     }
+    if (arsRes) {
+      formSubmissionRecords = arsRes.rows.map(row => JSON.parse(row[0].value));
+    }
 
-    if (!rRes && !uRes && !eaRes) {
+    if (!rRes && !uRes && !eaRes && !arsRes) {
       setSyncStatus('Not connected — using local data', true);
     } else {
       setSyncStatus('Synced · ' + new Date().toLocaleTimeString());
@@ -2342,6 +2389,9 @@ let eaInvSiteFilter  = '';
 let draPage          = 1;
 const DRA_PAGE_SIZE  = 50;
 let draRecords       = [];
+let formSubmissionsPage = 1;
+const FORM_SUBMISSIONS_PAGE_SIZE = 50;
+let formSubmissionRecords = [];
 let currentUser      = null;
 let _usersCache      = null;
 let currentView      = 'offboarding';
@@ -2686,15 +2736,17 @@ window.switchView = function(view) {
   const eam = document.getElementById('employeeAssetMain');
   const dram = document.getElementById('deploymentReturnedAssetsMain');
   const dcm = document.getElementById('deductionCalculatorMain');
+  const fsm = document.getElementById('formSubmissionsMain');
   const no  = document.getElementById('navOffboarding');
   const nu  = document.getElementById('navUsers');
   const nea = document.getElementById('navEmployeeAsset');
   const ndra = document.getElementById('navDeploymentReturnedAssets');
   const ndc = document.getElementById('navDeductionCalculator');
+  const nfs = document.getElementById('navFormSubmissions');
   const title = document.getElementById('topbarTitle');
 
-  [om, um, eam, dram, dcm].forEach(el => { if (el) el.style.display = 'none'; });
-  [no, nu, nea, ndra, ndc].forEach(el => { if (el) el.classList.remove('active'); });
+  [om, um, eam, dram, dcm, fsm].forEach(el => { if (el) el.style.display = 'none'; });
+  [no, nu, nea, ndra, ndc, nfs].forEach(el => { if (el) el.classList.remove('active'); });
 
   if (view === 'users') {
     if (um) um.style.display = '';
@@ -2723,6 +2775,12 @@ window.switchView = function(view) {
     if (dcm) dcm.style.display = '';
     if (ndc) ndc.classList.add('active');
     if (title) title.textContent = 'Deduction Calculator';
+  } else if (view === 'formSubmissions') {
+    if (fsm) fsm.style.display = '';
+    if (nfs) nfs.classList.add('active');
+    if (title) title.textContent = 'Form Submissions';
+    formSubmissionsPage = 1;
+    loadFormSubmissions();
   } else {
     if (om) om.style.display = '';
     if (no) no.classList.add('active');
@@ -3277,6 +3335,89 @@ function renderDeploymentReturnedAssetsTable() {
 
   if (pgEl) pgEl.innerHTML = draPaginationHtml();
   document.getElementById('btnDRADelAll').style.display = draRecords.length ? '' : 'none';
+}
+
+window.loadFormSubmissions = async function() {
+  setSyncStatus('Syncing…');
+  await tursoInit();
+  const res = await tursoExec('SELECT data FROM asset_return_submissions');
+  if (res) {
+    formSubmissionRecords = res.rows
+      .map(row => JSON.parse(row[0].value))
+      .sort((a, b) => new Date(b.submissionDateIso || b.submissionDate || 0) - new Date(a.submissionDateIso || a.submissionDate || 0));
+    setSyncStatus('Synced · ' + new Date().toLocaleTimeString());
+  } else {
+    setSyncStatus('Unable to load form submissions', true);
+  }
+  renderFormSubmissionsTable();
+};
+
+window.goFormSubmissionsPage = function(page) {
+  formSubmissionsPage = Math.max(1, page);
+  renderFormSubmissionsTable();
+};
+
+function renderFormSubmissionsTable() {
+  const query = (document.getElementById('formSubmissionsSearchInput')?.value || '').toLowerCase();
+  const filtered = formSubmissionRecords.filter(record => {
+    const assets = Array.isArray(record.assets) ? record.assets.join(', ') : (record.assets || '');
+    if (!query) return true;
+    return [
+      record.submissionDate,
+      record.completeName,
+      record.personalEmail,
+      record.site,
+      record.account,
+      record.purpose,
+      assets,
+      record.itPersonnel,
+      record.securityPersonnel
+    ].some(value => (value || '').toString().toLowerCase().includes(query));
+  });
+
+  const tbody = document.getElementById('formSubmissionsTableBody');
+  const countEl = document.getElementById('formSubmissionsRecordCount');
+  const paginationEl = document.getElementById('formSubmissionsPagination');
+  if (countEl) countEl.textContent = filtered.length + ' submission' + (filtered.length !== 1 ? 's' : '');
+  if (!tbody) return;
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:32px">No asset return form submissions found.</td></tr>';
+    if (paginationEl) paginationEl.innerHTML = '';
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / FORM_SUBMISSIONS_PAGE_SIZE));
+  if (formSubmissionsPage > totalPages) formSubmissionsPage = totalPages;
+  const pageStart = (formSubmissionsPage - 1) * FORM_SUBMISSIONS_PAGE_SIZE;
+  const paginated = filtered.slice(pageStart, pageStart + FORM_SUBMISSIONS_PAGE_SIZE);
+
+  tbody.innerHTML = paginated.map(record => {
+    const assets = Array.isArray(record.assets) ? record.assets.join(', ') : (record.assets || '');
+    return `<tr>
+      <td>${record.submissionDateIso ? fmtDate(record.submissionDateIso) : esc(record.submissionDate || '—')}</td>
+      <td style="font-weight:600;">${esc(record.completeName || '—')}</td>
+      <td>${esc(record.personalEmail || '—')}</td>
+      <td>${esc(record.site || '—')}</td>
+      <td>${esc(record.account || '—')}</td>
+      <td>${esc(record.purpose || '—')}</td>
+      <td>${esc(assets || '—')}</td>
+      <td>${esc(record.itPersonnel || '—')}</td>
+      <td>${esc(record.securityPersonnel || '—')}</td>
+    </tr>`;
+  }).join('');
+
+  if (paginationEl) {
+    if (totalPages <= 1) {
+      paginationEl.innerHTML = '';
+    } else {
+      paginationEl.innerHTML = `<div class="al-pagination">
+        <button class="al-pg-btn" onclick="goFormSubmissionsPage(${formSubmissionsPage - 1})" ${formSubmissionsPage === 1 ? 'disabled' : ''}>‹ Prev</button>
+        <span class="al-pg-info">${pageStart + 1}–${Math.min(pageStart + FORM_SUBMISSIONS_PAGE_SIZE, filtered.length)} of ${filtered.length}</span>
+        <button class="al-pg-btn" onclick="goFormSubmissionsPage(${formSubmissionsPage + 1})" ${formSubmissionsPage === totalPages ? 'disabled' : ''}>Next ›</button>
+      </div>`;
+    }
+  }
 }
 
 /* ══════════════════════════════════════════
