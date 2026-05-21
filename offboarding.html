@@ -897,6 +897,33 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
 .fg input:focus, .fg select:focus, .fg textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
 .fg input::placeholder, .fg textarea::placeholder { color:var(--text3); }
 .fg textarea { resize:vertical; min-height:80px; }
+.fg-check {
+  flex-direction:row; align-items:center; gap:8px;
+  min-height:34px; padding:7px 10px; border:1px solid var(--glass-border);
+  border-radius:var(--radius); background:var(--surface-tint);
+}
+.fg-check input { width:16px; height:16px; flex:0 0 auto; }
+.fg-check label { margin:0; text-transform:none; letter-spacing:0; font-size:12px; color:var(--text); }
+.serial-cell { max-width:190px; white-space:normal; word-break:break-word; line-height:1.35; }
+.submission-validation-summary {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px;
+  padding:10px; border:1px solid var(--glass-border); border-radius:var(--radius);
+  background:var(--surface-tint); margin-bottom:12px; font-size:12px; color:var(--text2);
+}
+.submission-validation-summary strong { display:block; color:var(--text); font-size:13px; margin-top:2px; }
+.asset-validation-list { display:flex; flex-direction:column; gap:8px; grid-column:1/-1; }
+.asset-validation-row {
+  display:grid; grid-template-columns:minmax(140px,1.1fr) minmax(130px,.85fr) minmax(150px,1fr) minmax(140px,.8fr);
+  gap:8px; align-items:end; padding:10px; border:1px solid var(--glass-border);
+  border-radius:var(--radius); background:var(--surface-tint);
+}
+.asset-validation-label { font-size:10px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
+.asset-validation-name { color:var(--text); font-size:12px; font-weight:700; line-height:1.35; word-break:break-word; }
+.asset-validation-row input, .asset-validation-row select {
+  background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:var(--radius);
+  color:var(--text); font-size:12px; font-family:inherit; padding:7px 10px; outline:none; width:100%;
+}
+@media (max-width:720px) { .asset-validation-row { grid-template-columns:1fr; } }
 
 /* ══════════════════════════════
    TOAST
@@ -1750,6 +1777,9 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
               <th>Account</th>
               <th>Purpose</th>
               <th>Returned Assets</th>
+              <th>Returned Serial(s)</th>
+              <th>Asset Status</th>
+              <th>IT Validation</th>
               <th>IT Personnel</th>
               <th>Security Personnel</th>
               <th>Actions</th>
@@ -1760,6 +1790,47 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
       </div>
       <div id="formSubmissionsPagination"></div>
     </main>
+
+    <div class="overlay" id="formSubmissionValidationOverlay" onclick="if(event.target===this)closeFormSubmissionValidationModal()">
+      <div class="modal" style="max-width:760px;">
+        <div class="modal-header">
+          <div class="modal-title">IT Validation</div>
+          <button class="modal-close" onclick="closeFormSubmissionValidationModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="fsv_submissionId">
+          <div class="submission-validation-summary">
+            <div>Employee<strong id="fsv_employeeName">—</strong></div>
+            <div>Site<strong id="fsv_site">—</strong></div>
+            <div>Returned Assets<strong id="fsv_assets">—</strong></div>
+            <div>Submitted<strong id="fsv_submitted">—</strong></div>
+          </div>
+          <div class="form-grid">
+            <div class="fg full">
+              <label>Returned Asset Validation</label>
+              <div class="asset-validation-list" id="fsv_assetRows"></div>
+            </div>
+            <div class="fg fg-check" style="margin-top:18px;">
+              <input type="checkbox" id="fsv_validated">
+              <label for="fsv_validated">Validated by IT</label>
+            </div>
+            <div class="fg full">
+              <label>IT Notes</label>
+              <textarea id="fsv_notes" placeholder="Optional notes"></textarea>
+            </div>
+            <div class="fg full" style="font-size:11px;color:var(--text3);line-height:1.45;" id="fsv_meta">
+              Validation details will be stamped after saving.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" onclick="closeFormSubmissionValidationModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveFormSubmissionValidation()">Save Validation</button>
+        </div>
+      </div>
+    </div>
 
     <div class="overlay" id="deductionResultOverlay" onclick="if(event.target===this)closeDeductionResultModal()">
       <div class="modal" style="max-width:520px;">
@@ -3372,6 +3443,12 @@ function renderFormSubmissionsTable() {
       record.account,
       record.purpose,
       assets,
+      record.itAssetBrands,
+      record.itReturnedSerials,
+      record.itAssetStatus,
+      JSON.stringify(record.itAssetValidations || ''),
+      record.itValidationStatus,
+      record.itValidatedBy,
       record.itPersonnel,
       record.securityPersonnel
     ].some(value => (value || '').toString().toLowerCase().includes(query));
@@ -3380,11 +3457,14 @@ function renderFormSubmissionsTable() {
   const tbody = document.getElementById('formSubmissionsTableBody');
   const countEl = document.getElementById('formSubmissionsRecordCount');
   const paginationEl = document.getElementById('formSubmissionsPagination');
-  if (countEl) countEl.textContent = filtered.length + ' submission' + (filtered.length !== 1 ? 's' : '');
+  if (countEl) {
+    const needsValidation = filtered.filter(record => !record.itValidated).length;
+    countEl.textContent = filtered.length + ' submission' + (filtered.length !== 1 ? 's' : '') + ' · ' + needsValidation + ' need IT validation';
+  }
   if (!tbody) return;
 
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:32px">No asset return form submissions found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--text3);padding:32px">No asset return form submissions found.</td></tr>';
     if (paginationEl) paginationEl.innerHTML = '';
     return;
   }
@@ -3404,10 +3484,19 @@ function renderFormSubmissionsTable() {
       <td>${esc(record.account || '—')}</td>
       <td>${esc(record.purpose || '—')}</td>
       <td>${esc(assets || '—')}</td>
+      <td class="mono serial-cell">${formatSubmissionValidationSerials(record)}</td>
+      <td>${formatSubmissionValidationStatuses(record)}</td>
+      <td>${formSubmissionValidationBadgeHtml(record)}</td>
       <td>${esc(record.itPersonnel || '—')}</td>
       <td>${esc(record.securityPersonnel || '—')}</td>
       <td>
         <div style="display:flex;gap:6px;flex-wrap:nowrap;">
+          <button class="btn btn-sm" onclick="openFormSubmissionValidationModal('${esc(record.id)}')" title="Update IT validation" aria-label="Update IT validation" style="padding:5px 7px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/>
+            </svg>
+          </button>
           <button class="btn btn-sm" onclick="downloadFormSubmissionCopy('${esc(record.id)}')" title="Download copy" aria-label="Download copy" style="padding:5px 7px;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -3441,6 +3530,184 @@ function renderFormSubmissionsTable() {
     }
   }
 }
+
+function formatSubmissionSerials(value) {
+  const serials = String(value || '')
+    .split(/\r?\n|,/)
+    .map(s => s.trim())
+    .filter(Boolean);
+  if (!serials.length) return '—';
+  const visible = serials.slice(0, 3).map(esc).join('<br>');
+  const remaining = serials.length - 3;
+  return remaining > 0 ? `${visible}<br><span style="color:var(--text3)">+${remaining} more</span>` : visible;
+}
+
+function getSubmissionAssetItems(record) {
+  if (Array.isArray(record?.assets)) return record.assets.map(item => String(item || '').trim()).filter(Boolean);
+  return String(record?.assets || '')
+    .split(/\r?\n|,/)
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function getSubmissionValidationRows(record) {
+  const assets = getSubmissionAssetItems(record);
+  const legacySerials = String(record?.itReturnedSerials || '').split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
+  const legacyStatuses = String(record?.itAssetStatus || '').split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
+  const legacyBrands = String(record?.itAssetBrands || '').split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
+  const savedRows = Array.isArray(record?.itAssetValidations) ? record.itAssetValidations : [];
+  const rowCount = Math.max(assets.length, savedRows.length, legacyBrands.length, legacySerials.length, legacyStatuses.length, 1);
+  return Array.from({ length: rowCount }, (_, index) => {
+    const saved = savedRows[index] || {};
+    return {
+      asset: saved.asset || assets[index] || `Asset ${index + 1}`,
+      brand: saved.brand || legacyBrands[index] || '',
+      serial: saved.serial || legacySerials[index] || '',
+      status: saved.status || legacyStatuses[index] || (legacyStatuses.length === 1 ? legacyStatuses[0] : '')
+    };
+  });
+}
+
+function formatSubmissionValidationSerials(record) {
+  const rows = getSubmissionValidationRows(record).filter(row => row.serial);
+  if (!rows.length) return '—';
+  const visible = rows.slice(0, 3).map(row => `${esc(row.asset)}: ${row.brand ? esc(row.brand) + ' · ' : ''}${esc(row.serial)}`).join('<br>');
+  const remaining = rows.length - 3;
+  return remaining > 0 ? `${visible}<br><span style="color:var(--text3)">+${remaining} more</span>` : visible;
+}
+
+function formatSubmissionValidationStatuses(record) {
+  const rows = getSubmissionValidationRows(record).filter(row => row.status);
+  if (!rows.length) return statusBadgeHtml('');
+  const visible = rows.slice(0, 3).map(row => `<div style="margin-bottom:3px;">${esc(row.asset)} ${statusBadgeHtml(row.status)}</div>`).join('');
+  const remaining = rows.length - 3;
+  return remaining > 0 ? `${visible}<span style="font-size:11px;color:var(--text3)">+${remaining} more</span>` : visible;
+}
+
+function formSubmissionValidationBadgeHtml(record) {
+  if (!record?.itValidated) return '<span class="badge b-pending">Needs IT Validation</span>';
+  const by = record.itValidatedBy ? ` by ${esc(record.itValidatedBy)}` : '';
+  const at = record.itValidatedAt ? `<div class="date-cell" style="margin-top:3px;">${fmtDate(record.itValidatedAt)}</div>` : '';
+  return `<span class="badge b-complete">Validated${by}</span>${at}`;
+}
+
+function getSubmissionAssetsText(record) {
+  return Array.isArray(record?.assets) ? record.assets.join(', ') : (record?.assets || '');
+}
+
+function renderFormSubmissionAssetRows(record) {
+  const wrap = document.getElementById('fsv_assetRows');
+  if (!wrap) return;
+  const rows = getSubmissionValidationRows(record);
+  wrap.innerHTML = rows.map((row, index) => `
+    <div class="asset-validation-row" data-fsv-row="${index}">
+      <div>
+        <div class="asset-validation-label">Asset ${index + 1}</div>
+        <div class="asset-validation-name">${esc(row.asset)}</div>
+      </div>
+      <div>
+        <div class="asset-validation-label">Brand</div>
+        <input type="text" class="fsv-brand" value="${escAttr(row.brand)}" placeholder="Brand">
+      </div>
+      <div>
+        <div class="asset-validation-label">Serial Number</div>
+        <input type="text" class="fsv-serial" value="${escAttr(row.serial)}" placeholder="Scan or type serial">
+      </div>
+      <div>
+        <div class="asset-validation-label">Status</div>
+        <select class="fsv-status">
+          <option value="">Select Status</option>
+          ${['Spare','Disposal','For Repair','Dormant'].map(status => `<option value="${status}"${row.status === status ? ' selected' : ''}>${status}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.openFormSubmissionValidationModal = function(id) {
+  const record = formSubmissionRecords.find(item => item.id === id);
+  if (!record) {
+    showToast('Submission not found.', true);
+    return;
+  }
+
+  document.getElementById('fsv_submissionId').value = record.id;
+  document.getElementById('fsv_employeeName').textContent = record.completeName || '—';
+  document.getElementById('fsv_site').textContent = record.site || '—';
+  document.getElementById('fsv_assets').textContent = getSubmissionAssetsText(record) || '—';
+  document.getElementById('fsv_submitted').textContent = record.submissionDateIso ? fmtDate(record.submissionDateIso) : (record.submissionDate || '—');
+  renderFormSubmissionAssetRows(record);
+  document.getElementById('fsv_validated').checked = !!record.itValidated;
+  document.getElementById('fsv_notes').value = record.itValidationNotes || '';
+  document.getElementById('fsv_meta').textContent = record.itValidated
+    ? `Validated by ${record.itValidatedBy || 'IT'} · ${record.itValidatedAt ? fmtDate(record.itValidatedAt) : 'saved validation time'}`
+    : 'Validation details will be stamped after saving.';
+  document.getElementById('formSubmissionValidationOverlay').classList.add('open');
+};
+
+window.closeFormSubmissionValidationModal = function() {
+  document.getElementById('formSubmissionValidationOverlay').classList.remove('open');
+};
+
+window.saveFormSubmissionValidation = async function() {
+  const id = document.getElementById('fsv_submissionId').value;
+  const record = formSubmissionRecords.find(item => item.id === id);
+  if (!record) {
+    showToast('Submission not found.', true);
+    return;
+  }
+
+  const validationRows = Array.from(document.querySelectorAll('#fsv_assetRows .asset-validation-row')).map(row => ({
+    asset: row.querySelector('.asset-validation-name')?.textContent.trim() || '',
+    brand: row.querySelector('.fsv-brand')?.value.trim() || '',
+    serial: row.querySelector('.fsv-serial')?.value.trim() || '',
+    status: row.querySelector('.fsv-status')?.value || ''
+  }));
+  const validated = document.getElementById('fsv_validated').checked;
+  const notes = document.getElementById('fsv_notes').value.trim();
+
+  const missingSerial = validationRows.find(row => !row.serial);
+  const missingStatus = validationRows.find(row => !row.status);
+  if (missingSerial) { showToast(`Serial number is required for ${missingSerial.asset || 'each asset'}.`, true); return; }
+  if (missingStatus) { showToast(`Asset status is required for ${missingStatus.asset || 'each asset'}.`, true); return; }
+  if (!validated) { showToast('Please mark the submission as validated by IT.', true); return; }
+
+  const serials = validationRows.map(row => row.serial).join('\n');
+  const brands = validationRows.map(row => row.brand).join('\n');
+  const statuses = validationRows.map(row => row.status).join('\n');
+  const previousRows = JSON.stringify(getSubmissionValidationRows(record));
+  const nextRows = JSON.stringify(validationRows);
+  const validationChanged =
+    !record.itValidated ||
+    previousRows !== nextRows;
+  const updated = {
+    ...record,
+    itAssetValidations: validationRows,
+    itAssetBrands: brands,
+    itReturnedSerials: serials,
+    itAssetStatus: statuses,
+    itValidated: true,
+    itValidationStatus: 'Validated',
+    itValidationNotes: notes,
+    itValidatedBy: validationChanged ? (currentUser?.displayName || currentUser?.username || 'IT') : (record.itValidatedBy || currentUser?.displayName || currentUser?.username || 'IT'),
+    itValidatedAt: validationChanged ? new Date().toISOString() : (record.itValidatedAt || new Date().toISOString())
+  };
+
+  setSyncStatus('Saving…');
+  const result = await tursoExec('INSERT OR REPLACE INTO asset_return_submissions (id, data) VALUES (?, ?)', [id, JSON.stringify(updated)]);
+  if (!result) {
+    setSyncStatus('Save failed', true);
+    showToast('Validation save failed — check connection.', true);
+    return;
+  }
+
+  const idx = formSubmissionRecords.findIndex(item => item.id === id);
+  if (idx >= 0) formSubmissionRecords[idx] = updated;
+  setSyncStatus('Saved · ' + new Date().toLocaleTimeString());
+  closeFormSubmissionValidationModal();
+  renderFormSubmissionsTable();
+  showToast('IT validation saved.');
+};
 
 function fileSafeName(value) {
   return (value || 'asset-return').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'asset-return';
@@ -3477,6 +3744,9 @@ window.downloadFormSubmissionCopy = function(id) {
   const margin = 16;
   let y = 18;
   const assets = Array.isArray(record.assets) ? record.assets.join(', ') : (record.assets || '');
+  const validationDetails = getSubmissionValidationRows(record)
+    .map((row, index) => `${index + 1}. ${row.asset || 'Asset'} - Brand: ${row.brand || 'Not provided'} - Serial: ${row.serial || 'Not provided'} - Status: ${row.status || 'Not provided'}`)
+    .join('\n');
 
   doc.setFillColor(11, 45, 92);
   doc.rect(0, 0, pageWidth, 30, 'F');
@@ -3493,6 +3763,9 @@ window.downloadFormSubmissionCopy = function(id) {
     ['Account', record.account],
     ['Purpose', record.purpose],
     ['Assets', assets],
+    ['IT Asset Validation', validationDetails],
+    ['IT Validation', record.itValidated ? `Validated by ${record.itValidatedBy || 'IT'}${record.itValidatedAt ? ' on ' + fmtDate(record.itValidatedAt) : ''}` : 'Needs IT Validation'],
+    ['IT Validation Notes', record.itValidationNotes],
     ['IT Personnel', record.itPersonnel],
     ['Security Personnel', record.securityPersonnel],
     ['Submission Date', record.submissionDate]
@@ -4702,6 +4975,10 @@ function esc(s) {
   const div = document.createElement('div');
   div.textContent = s;
   return div.innerHTML;
+}
+
+function escAttr(s) {
+  return esc(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function fmtDate(d) {
