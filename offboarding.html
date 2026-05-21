@@ -3744,9 +3744,6 @@ window.downloadFormSubmissionCopy = function(id) {
   const margin = 16;
   let y = 18;
   const assets = Array.isArray(record.assets) ? record.assets.join(', ') : (record.assets || '');
-  const validationDetails = getSubmissionValidationRows(record)
-    .map((row, index) => `${index + 1}. ${row.asset || 'Asset'} - Brand: ${row.brand || 'Not provided'} - Serial: ${row.serial || 'Not provided'} - Status: ${row.status || 'Not provided'}`)
-    .join('\n');
 
   doc.setFillColor(11, 45, 92);
   doc.rect(0, 0, pageWidth, 30, 'F');
@@ -3763,9 +3760,6 @@ window.downloadFormSubmissionCopy = function(id) {
     ['Account', record.account],
     ['Purpose', record.purpose],
     ['Assets', assets],
-    ['IT Asset Validation', validationDetails],
-    ['IT Validation', record.itValidated ? `Validated by ${record.itValidatedBy || 'IT'}${record.itValidatedAt ? ' on ' + fmtDate(record.itValidatedAt) : ''}` : 'Needs IT Validation'],
-    ['IT Validation Notes', record.itValidationNotes],
     ['IT Personnel', record.itPersonnel],
     ['Security Personnel', record.securityPersonnel],
     ['Submission Date', record.submissionDate]
