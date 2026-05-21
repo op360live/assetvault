@@ -1752,6 +1752,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
               <th>Returned Assets</th>
               <th>IT Personnel</th>
               <th>Security Personnel</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="formSubmissionsTableBody"></tbody>
@@ -2164,6 +2165,7 @@ td.date-cell { font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ══════════════════════════════════════════
    TURSO DATABASE
@@ -3382,7 +3384,7 @@ function renderFormSubmissionsTable() {
   if (!tbody) return;
 
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text3);padding:32px">No asset return form submissions found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:32px">No asset return form submissions found.</td></tr>';
     if (paginationEl) paginationEl.innerHTML = '';
     return;
   }
@@ -3404,6 +3406,26 @@ function renderFormSubmissionsTable() {
       <td>${esc(assets || '—')}</td>
       <td>${esc(record.itPersonnel || '—')}</td>
       <td>${esc(record.securityPersonnel || '—')}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:nowrap;">
+          <button class="btn btn-sm" onclick="downloadFormSubmissionCopy('${esc(record.id)}')" title="Download copy" aria-label="Download copy" style="padding:5px 7px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <path d="M7 10l5 5 5-5"/>
+              <path d="M12 15V3"/>
+            </svg>
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deleteFormSubmission('${esc(record.id)}')" title="Delete entry" aria-label="Delete entry" style="padding:5px 7px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 6h18"/>
+              <path d="M8 6V4h8v2"/>
+              <path d="M19 6l-1 14H6L5 6"/>
+              <path d="M10 11v5"/>
+              <path d="M14 11v5"/>
+            </svg>
+          </button>
+        </div>
+      </td>
     </tr>`;
   }).join('');
 
@@ -3419,6 +3441,121 @@ function renderFormSubmissionsTable() {
     }
   }
 }
+
+function fileSafeName(value) {
+  return (value || 'asset-return').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'asset-return';
+}
+
+function drawFormSubmissionPdfText(doc, label, value, x, y, maxWidth) {
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(83, 101, 127);
+  doc.text(label.toUpperCase(), x, y);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.setTextColor(8, 27, 58);
+  const lines = doc.splitTextToSize(value || 'Not provided', maxWidth);
+  doc.text(lines, x, y + 6);
+  return y + 10 + (lines.length * 5);
+}
+
+window.downloadFormSubmissionCopy = function(id) {
+  const record = formSubmissionRecords.find(item => item.id === id);
+  if (!record) {
+    showToast('Submission not found.', true);
+    return;
+  }
+  if (!window.jspdf) {
+    showToast('PDF export library is still loading. Please try again.', true);
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 16;
+  let y = 18;
+  const assets = Array.isArray(record.assets) ? record.assets.join(', ') : (record.assets || '');
+
+  doc.setFillColor(11, 45, 92);
+  doc.rect(0, 0, pageWidth, 30, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('Asset Return Clearance Copy', margin, 18);
+
+  y = 42;
+  [
+    ['Personal Email', record.personalEmail],
+    ['Complete Name', record.completeName],
+    ['Site', record.site],
+    ['Account', record.account],
+    ['Purpose', record.purpose],
+    ['Assets', assets],
+    ['IT Personnel', record.itPersonnel],
+    ['Security Personnel', record.securityPersonnel],
+    ['Submission Date', record.submissionDate]
+  ].forEach(([label, value]) => {
+    if (y > 250) {
+      doc.addPage();
+      y = 18;
+    }
+    y = drawFormSubmissionPdfText(doc, label, value, margin, y, pageWidth - (margin * 2));
+  });
+
+  if (record.signatureDataUrl) {
+    if (y > 215) {
+      doc.addPage();
+      y = 18;
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(8, 27, 58);
+    doc.text('Signature Confirmation', margin, y);
+    y += 12;
+
+    doc.addImage(record.signatureDataUrl, 'PNG', margin, y, 82, 30);
+    y += 34;
+
+    doc.setDrawColor(8, 27, 58);
+    doc.line(margin, y, margin + 82, y);
+    y += 6;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(8, 27, 58);
+    doc.text(record.completeName || 'Not provided', margin, y);
+    y += 6;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(83, 101, 127);
+    doc.text(record.submissionDate || '', margin, y);
+  }
+
+  doc.save(`${fileSafeName(record.completeName)}-asset-return-copy.pdf`);
+};
+
+window.deleteFormSubmission = async function(id) {
+  const record = formSubmissionRecords.find(item => item.id === id);
+  const label = record?.completeName ? ` for ${record.completeName}` : '';
+  if (!confirm(`Delete this form submission${label}? This cannot be undone.`)) return;
+
+  setSyncStatus('Saving…');
+  const result = await tursoExec('DELETE FROM asset_return_submissions WHERE id = ?', [id]);
+  if (!result) {
+    setSyncStatus('Delete failed', true);
+    showToast('Delete failed — check connection.', true);
+    return;
+  }
+
+  formSubmissionRecords = formSubmissionRecords.filter(item => item.id !== id);
+  setSyncStatus('Saved · ' + new Date().toLocaleTimeString());
+  showToast('Form submission deleted.');
+  renderFormSubmissionsTable();
+};
 
 /* ══════════════════════════════════════════
    USER MANAGEMENT
