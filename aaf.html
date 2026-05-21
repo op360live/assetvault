@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Asset Accountability Forms · AssetSign</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Crect x='8' y='5' width='16' height='20' rx='2' fill='white' opacity='.95'/%3E%3Crect x='11' y='9' width='10' height='1.5' rx='.75' fill='%234f46e5' opacity='.5'/%3E%3Crect x='11' y='13' width='10' height='1.5' rx='.75' fill='%234f46e5' opacity='.5'/%3E%3Crect x='11' y='17' width='6' height='1.5' rx='.75' fill='%234f46e5' opacity='.5'/%3E%3Cpolyline points='11,22 13.5,25 21,19' stroke='%2316a34a' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
@@ -1103,6 +1106,7 @@ const SESSION_KEY   = 'headsedvault_session';
 const THEME_KEY     = 'headsedvault_theme';
 const SB_KEY        = 'headsedvault_sb_collapsed';
 const AUDIT_KEY     = 'headsedvault_audit';
+const APP_VERSION   = '2026-05-21-sync-cache-guard';
 const AUDIT_PER_PAGE = 20;
 let auditLog  = [];
 let auditPage = 1;
@@ -1172,23 +1176,35 @@ function ensureTursoReady() {
   return _tursoReady;
 }
 
-function setSyncStatus(state) {
+function markAppVersionLoaded() {
+  try { localStorage.setItem('aaf_app_version', APP_VERSION); } catch(e) {}
+}
+
+function clearOperationalLocalCache() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(AUDIT_KEY);
+    localStorage.removeItem('aaf_users');
+  } catch(e) {}
+}
+
+function setSyncStatus(msg, isError = false) {
   const dot = document.getElementById('dbStatusDot');
   const icon = document.getElementById('syncIcon');
   const btn  = document.getElementById('btnForceSync');
   if (!dot) return;
-  if (state === 'syncing') {
+  if (msg.startsWith('Syncing') || msg.startsWith('Saving')) {
     dot.className = 'db-status-dot syncing'; dot.textContent = 'Syncing\u2026';
     if (icon) icon.classList.add('spinning');
     if (btn) btn.disabled = true;
-  } else if (state === 'error') {
-    dot.className = 'db-status-dot disconnected'; dot.textContent = _lastSuccessfulSyncTs ? 'Local only' : 'Not connected';
+  } else if (isError) {
+    dot.className = 'db-status-dot disconnected'; dot.textContent = 'Not connected';
     if (icon) icon.classList.remove('spinning');
     if (btn) btn.disabled = false;
   } else {
-    const ts = _lastSuccessfulSyncTs || new Date().toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
+    const ts = msg.includes('\u00b7') ? msg.split('\u00b7').pop().trim() : (_lastSuccessfulSyncTs || '');
     dot.className = 'db-status-dot connected';
-    dot.textContent = 'Synced \u00b7 ' + ts;
+    dot.innerHTML = 'Connected&thinsp;&middot;&thinsp;Last sync&thinsp;<span style="font-variant-numeric:tabular-nums;">' + ts + '</span>';
     if (icon) icon.classList.remove('spinning');
     if (btn) btn.disabled = false;
   }
@@ -1209,7 +1225,7 @@ async function tursoSyncAll(silent = false) {
     return null;
   }
   _syncInProgress = true;
-  if (!silent) setSyncStatus('syncing');
+  if (!silent) setSyncStatus('Syncing\u2026');
   try {
     await ensureTursoReady();
     const [result, uRes] = await Promise.all([
@@ -1218,7 +1234,6 @@ async function tursoSyncAll(silent = false) {
     ]);
     if (result) {
       deployments = result.rows.map(row => JSON.parse(row[0].value));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(deployments));
     }
     // Sync / seed users
     if (uRes) {
@@ -1231,11 +1246,10 @@ async function tursoSyncAll(silent = false) {
         }
       }
       _usersCache = merged;
-      localStorage.setItem('aaf_users', JSON.stringify(_usersCache));
     }
     if (result || uRes) {
       _lastSuccessfulSyncTs = new Date().toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
-      setSyncStatus('ok');
+      setSyncStatus('Synced \u00b7 ' + _lastSuccessfulSyncTs);
       if (result) {
         try {
           renderCurrentView();
@@ -1245,10 +1259,14 @@ async function tursoSyncAll(silent = false) {
       }
       return true;
     }
-    if (!silent || !_lastSuccessfulSyncTs) setSyncStatus('error');
+    if (!silent || !_lastSuccessfulSyncTs) {
+      setSyncStatus('Not connected', true);
+    }
     return false;
   } catch(e) {
-    if (!silent || !_lastSuccessfulSyncTs) setSyncStatus('error');
+    if (!silent || !_lastSuccessfulSyncTs) {
+      setSyncStatus('Not connected', true);
+    }
     return false;
   } finally {
     _syncInProgress = false;
@@ -1273,8 +1291,7 @@ const SEEDED_USERS = [
 ══════════════════════════════════════════ */
 let _usersCache = [];
 async function loadUsers() {
-  try { _usersCache = JSON.parse(localStorage.getItem('aaf_users')) || []; } catch(e) { _usersCache = []; }
-  if (!_usersCache.length) _usersCache = [...SEEDED_USERS];
+  _usersCache = [...SEEDED_USERS];
 }
 function getUsers() { return _usersCache.length ? _usersCache : [...SEEDED_USERS]; }
 
@@ -1474,20 +1491,16 @@ let currentView = 'dashboard';
    LOAD / PERSIST
 ══════════════════════════════════════════ */
 function loadData() {
-  // Load from localStorage as cache while Turso fetches
-  try { deployments = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { deployments = []; }
+  deployments = [];
 }
 async function persist(record) {
-  // Upsert a single record to Turso + update localStorage cache
   await tursoExec(
     'INSERT OR REPLACE INTO headset_deployments (id, data) VALUES (?, ?)',
     [record.id, JSON.stringify(record)]
   );
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(deployments));
 }
 async function persistDelete(id) {
   await tursoExec('DELETE FROM headset_deployments WHERE id = ?', [id]);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(deployments));
 }
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1570,7 +1583,6 @@ async function doLoginWithPin() {
       const fresh = JSON.parse(uRes.rows[0][0].value);
       const idx = _usersCache.findIndex(x => x.username.toLowerCase() === u.toLowerCase());
       if (idx >= 0) _usersCache[idx] = fresh; else _usersCache.push(fresh);
-      localStorage.setItem('aaf_users', JSON.stringify(_usersCache));
     }
     const users = getUsers();
     const hash = await hashPassword(pin);
@@ -1696,6 +1708,8 @@ function initApplicationsMenu() {
    APP SHELL
 ══════════════════════════════════════════ */
 function showApp() {
+  markAppVersionLoaded();
+  clearOperationalLocalCache();
   document.getElementById('loginScreen').style.display = 'none';
   const app = document.getElementById('appScreen');
   app.style.display = '';
@@ -1705,7 +1719,7 @@ function showApp() {
   loadAudit();
   switchView('dashboard');
   // Init Turso tables then full sync
-  setSyncStatus('syncing');
+  setSyncStatus('Syncing\u2026');
   ensureTursoReady().then(() => tursoSyncAll()).then(() => {
     startAutoRefresh();
     startPresenceHeartbeat();
@@ -1734,11 +1748,10 @@ function renderCurrentView() {
    AUDIT LOG
 ══════════════════════════════════════════ */
 function loadAudit() {
-  try { auditLog = JSON.parse(localStorage.getItem(AUDIT_KEY)) || []; } catch { auditLog = []; }
+  auditLog = [];
 }
 function saveAudit() {
   if (auditLog.length > 500) auditLog = auditLog.slice(-500);
-  localStorage.setItem(AUDIT_KEY, JSON.stringify(auditLog));
 }
 async function addAuditEntry(type, detail, ref = '') {
   const entry = {
@@ -1762,7 +1775,7 @@ async function loadAuditFromTurso() {
       auditLog.sort((a, b) => a.ts.localeCompare(b.ts));
       saveAudit();
     }
-  } catch { loadAudit(); }
+  } catch { auditLog = []; }
 }
 function auditEsc(value) {
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2439,9 +2452,10 @@ async function saveDeployment() {
 
   closeDeployModal();
   renderCurrentView();
-  setSyncStatus('syncing');
+  setSyncStatus('Saving\u2026');
   await persist(record);
-  setSyncStatus('ok');
+  _lastSuccessfulSyncTs = new Date().toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
+  setSyncStatus('Saved \u00b7 ' + _lastSuccessfulSyncTs);
   const assetRef = auditAssetRef(record);
   await addAuditEntry(editId ? 'edit' : 'add', `${editId ? 'Edited' : 'Added'} deployment for ${record.employeeName}`, assetRef);
   showToast(editId ? 'Deployment updated.' : 'Deployment added.', 'success');
@@ -2462,9 +2476,10 @@ async function confirmDelete() {
   deployments = deployments.filter(x => x.id !== id);
   document.getElementById('deleteOverlay').classList.remove('open');
   renderCurrentView();
-  setSyncStatus('syncing');
+  setSyncStatus('Saving\u2026');
   await persistDelete(id);
-  setSyncStatus('ok');
+  _lastSuccessfulSyncTs = new Date().toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
+  setSyncStatus('Saved \u00b7 ' + _lastSuccessfulSyncTs);
   await addAuditEntry('delete', `Deleted deployment for ${deletedRecord?.employeeName || id}`, deletedRecord ? auditAssetRef(deletedRecord) : '');
   showToast('Deployment deleted.', 'success');
 }
@@ -2876,9 +2891,10 @@ async function applySignature() {
     deployments[idx].signedAt = new Date().toISOString().slice(0, 10);
     renderFormPreview(deployments[idx]);
     closeSignModal();
-    setSyncStatus('syncing');
+    setSyncStatus('Saving\u2026');
     await persist(deployments[idx]);
-    setSyncStatus('ok');
+    _lastSuccessfulSyncTs = new Date().toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
+    setSyncStatus('Saved \u00b7 ' + _lastSuccessfulSyncTs);
     await addAuditEntry('sign', `Signed accountability form for ${deployments[idx].employeeName}`, auditAssetRef(deployments[idx]));
     showToast('Signature applied.', 'success');
   } else {
