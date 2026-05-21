@@ -638,8 +638,12 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
       <span class="sb-brand-version">v1.0</span>
     </div>
     <nav class="sb-nav">
-      <div class="sb-item active" id="navDeployments" onclick="switchView('deployments')">
+      <div class="sb-item active" id="navDashboard" onclick="switchView('dashboard')">
         <svg class="sb-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Dashboard</span>
+      </div>
+      <div class="sb-item" id="navDeployments" onclick="switchView('deployments')">
+        <svg class="sb-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
         <span>Deployments</span>
       </div>
       <div class="sb-divider"></div>
@@ -701,7 +705,7 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
       <button id="btnMobileMenu" class="btn-icon" onclick="toggleSidebar()" title="Open menu" style="flex-shrink:0">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <div class="topbar-title" id="topbarTitle">Deployments</div>
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
       <div class="topbar-actions" id="topbarActions">
         <div id="topbarViewActions" style="display:flex;gap:8px;align-items:center"></div>
       </div>
@@ -1158,6 +1162,16 @@ async function tursoInit() {
   ]);
 }
 
+let _tursoReady = null;
+let _syncInProgress = false;
+let _syncQueued = false;
+let _lastSuccessfulSyncTs = '';
+
+function ensureTursoReady() {
+  if (!_tursoReady) _tursoReady = tursoInit();
+  return _tursoReady;
+}
+
 function setSyncStatus(state) {
   const dot = document.getElementById('dbStatusDot');
   const icon = document.getElementById('syncIcon');
@@ -1168,11 +1182,11 @@ function setSyncStatus(state) {
     if (icon) icon.classList.add('spinning');
     if (btn) btn.disabled = true;
   } else if (state === 'error') {
-    dot.className = 'db-status-dot disconnected'; dot.textContent = 'Not connected';
+    dot.className = 'db-status-dot disconnected'; dot.textContent = _lastSuccessfulSyncTs ? 'Local only' : 'Not connected';
     if (icon) icon.classList.remove('spinning');
     if (btn) btn.disabled = false;
   } else {
-    const ts = new Date().toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
+    const ts = _lastSuccessfulSyncTs || new Date().toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
     dot.className = 'db-status-dot connected';
     dot.textContent = 'Synced \u00b7 ' + ts;
     if (icon) icon.classList.remove('spinning');
@@ -1183,20 +1197,30 @@ function setSyncStatus(state) {
 let _autoRefreshTimer = null;
 function startAutoRefresh() {
   if (_autoRefreshTimer) clearInterval(_autoRefreshTimer);
-  _autoRefreshTimer = setInterval(() => tursoSyncAll(true), 30000);
+  _autoRefreshTimer = setInterval(() => {
+    if (document.hidden || !navigator.onLine) return;
+    tursoSyncAll(true);
+  }, 30000);
 }
 
 async function tursoSyncAll(silent = false) {
+  if (_syncInProgress) {
+    _syncQueued = true;
+    return null;
+  }
+  _syncInProgress = true;
   if (!silent) setSyncStatus('syncing');
   try {
-    const result = await tursoExec('SELECT data FROM headset_deployments ORDER BY rowid DESC');
+    await ensureTursoReady();
+    const [result, uRes] = await Promise.all([
+      tursoExec('SELECT data FROM headset_deployments ORDER BY rowid DESC'),
+      tursoExec('SELECT data FROM users')
+    ]);
     if (result) {
       deployments = result.rows.map(row => JSON.parse(row[0].value));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(deployments));
-      renderDeployments();
     }
     // Sync / seed users
-    const uRes = await tursoExec('SELECT data FROM users');
     if (uRes) {
       const tursoUsers = uRes.rows.map(row => JSON.parse(row[0].value));
       const merged = [...tursoUsers];
@@ -1209,11 +1233,35 @@ async function tursoSyncAll(silent = false) {
       _usersCache = merged;
       localStorage.setItem('aaf_users', JSON.stringify(_usersCache));
     }
-    setSyncStatus('ok');
+    if (result || uRes) {
+      _lastSuccessfulSyncTs = new Date().toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
+      setSyncStatus('ok');
+      if (result) {
+        try {
+          renderCurrentView();
+        } catch (renderError) {
+          console.warn('[AAF render after sync]', renderError);
+        }
+      }
+      return true;
+    }
+    if (!silent || !_lastSuccessfulSyncTs) setSyncStatus('error');
+    return false;
   } catch(e) {
-    setSyncStatus('error');
+    if (!silent || !_lastSuccessfulSyncTs) setSyncStatus('error');
+    return false;
+  } finally {
+    _syncInProgress = false;
+    if (_syncQueued) {
+      _syncQueued = false;
+      setTimeout(() => tursoSyncAll(true), 250);
+    }
   }
 }
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && navigator.onLine) tursoSyncAll(true);
+});
 
 const SEEDED_USERS = [
   { username:'rcabil',  displayName:'R. Cabil', role:'superadmin', passwordHash:'ae33a34216f00d844796e3ab70b2aaedd30e8544b7e8f8fd105a03d7f7a7dbb5', active:true },
@@ -1420,6 +1468,7 @@ let statusFilter = '';
 let signedFilter = ''; // 'signed' | 'unsigned' | ''
 let siteFilter = '';
 let searchQuery = '';
+let currentView = 'dashboard';
 
 /* ══════════════════════════════════════════
    LOAD / PERSIST
@@ -1654,10 +1703,10 @@ function showApp() {
   updateAvatarDisplay();
   loadData(); // load cache immediately
   loadAudit();
-  switchView('deployments');
+  switchView('dashboard');
   // Init Turso tables then full sync
   setSyncStatus('syncing');
-  tursoInit().then(() => tursoSyncAll()).then(() => {
+  ensureTursoReady().then(() => tursoSyncAll()).then(() => {
     startAutoRefresh();
     startPresenceHeartbeat();
     loadPresence();
@@ -1666,11 +1715,19 @@ function showApp() {
 }
 
 function switchView(view) {
+  currentView = view;
   document.querySelectorAll('.sb-item[id^="nav"]').forEach(el => el.classList.remove('active'));
   const nav = document.getElementById('nav' + view.charAt(0).toUpperCase() + view.slice(1));
   if (nav) nav.classList.add('active');
+  if (view === 'dashboard') renderDashboard();
   if (view === 'deployments') renderDeployments();
   if (view === 'audit') { auditPage = 1; renderAudit(); }
+}
+
+function renderCurrentView() {
+  if (currentView === 'dashboard') renderDashboard();
+  else if (currentView === 'audit') renderAudit();
+  else renderDeployments();
 }
 
 /* ══════════════════════════════════════════
@@ -1910,25 +1967,33 @@ function showToast(msg, type = '') {
 /* ══════════════════════════════════════════
    DEPLOYMENTS VIEW
 ══════════════════════════════════════════ */
-function renderDeployments() {
-  document.getElementById('topbarTitle').textContent = 'Deployments';
-  document.getElementById('topbarViewActions').innerHTML = `
-    <button class="btn btn-primary btn-sm" onclick="openDeployModal()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Deployment
-    </button>`;
+const DEPLOYMENT_SITES = ['EB2','EB3','DMD','SDP','WFH'];
 
+function getDeploymentStats() {
   const all = deployments;
   const signed = all.filter(d => d.signature).length;
   const unsigned = all.filter(d => !d.signature).length;
-  const SITES = ['EB2','EB3','DMD','SDP','WFH'];
-  const siteStats = SITES.map(s => ({
+  const siteStats = DEPLOYMENT_SITES.map(s => ({
     name: s,
     signed: all.filter(d => d.site === s && d.signature).length,
     total:  all.filter(d => d.site === s).length
   }));
+  const personnelMap = new Map();
+  all.forEach(d => {
+    const name = (d.itPersonnel || 'Unassigned').trim() || 'Unassigned';
+    const current = personnelMap.get(name) || { name, total: 0, unsigned: 0 };
+    current.total += 1;
+    if (!d.signature) current.unsigned += 1;
+    personnelMap.set(name, current);
+  });
+  const personnelStats = Array.from(personnelMap.values())
+    .filter(p => p.unsigned > 0)
+    .sort((a, b) => b.unsigned - a.unsigned || b.total - a.total || a.name.localeCompare(b.name));
+  return { all, signed, unsigned, siteStats, personnelStats };
+}
 
-  const filtered = all.filter(d => {
+function getFilteredDeployments() {
+  return deployments.filter(d => {
     const matchStatus = !statusFilter || d.status === statusFilter;
     const matchSite   = !siteFilter   || d.site === siteFilter;
     const matchSigned = !signedFilter || (signedFilter === 'signed' ? !!d.signature : !d.signature);
@@ -1938,6 +2003,41 @@ function renderDeployments() {
     ].some(v => (v||'').toLowerCase().includes(q));
     return matchStatus && matchSite && matchSigned && matchSearch;
   });
+}
+
+function openDeploymentsFiltered(nextSite, nextSigned) {
+  siteFilter = nextSite || '';
+  signedFilter = nextSigned || '';
+  switchView('deployments');
+}
+
+function openPersonnelUnsigned(encodedName) {
+  searchQuery = decodeURIComponent(encodedName);
+  siteFilter = '';
+  statusFilter = '';
+  signedFilter = 'unsigned';
+  switchView('deployments');
+}
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+
+function renderDashboard() {
+  document.getElementById('topbarTitle').textContent = 'Dashboard';
+  document.getElementById('topbarViewActions').innerHTML = `
+    <button class="btn btn-primary btn-sm" onclick="openDeployModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Deployment
+    </button>`;
+
+  const { all, signed, unsigned, siteStats, personnelStats } = getDeploymentStats();
 
   document.getElementById('pageContent').innerHTML = `
     ${unsigned > 0 ? `
@@ -1949,26 +2049,26 @@ function renderDeployments() {
         <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:3px">${unsigned} deployment${unsigned > 1 ? 's' : ''} pending signature</div>
         <div style="font-size:12px;color:var(--text2);line-height:1.55">Send the signing link to each employee so they can review and e-sign their accountability form from their own device. Click the <span style="display:inline-flex;align-items:center;gap:3px;vertical-align:middle"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span> link icon on any unsigned record to generate and share the signing link.</div>
       </div>
-      <button onclick="setSiteFilter('');setSignedFilter('unsigned')" style="flex-shrink:0;background:var(--amber);color:#fff;border:none;border-radius:var(--radius);padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">View all</button>
+      <button onclick="openDeploymentsFiltered('', 'unsigned')" style="flex-shrink:0;background:var(--amber);color:#fff;border:none;border-radius:var(--radius);padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">View all</button>
     </div>` : ''}
-    <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px;box-shadow:var(--card-shadow)">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px;box-shadow:var(--card-shadow)">
       <!-- Top summary row -->
       <div class="stat-grid" style="margin-bottom:16px">
-        <div class="stat-card" onclick="setSiteFilter('');setSignedFilter('')" style="${!siteFilter&&!signedFilter?'border-color:var(--accent)':''}">
+        <div class="stat-card" onclick="openDeploymentsFiltered('', '')">
           <div class="stat-icon" style="background:var(--accent-light)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><rect x="6" y="3" width="12" height="16" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg>
           </div>
           <div class="stat-label">Total Forms</div>
           <div class="stat-val">${all.length}</div>
         </div>
-        <div class="stat-card" onclick="setSiteFilter('');setSignedFilter('signed')" style="${signedFilter==='signed'&&!siteFilter?'border-color:var(--green)':''}">
+        <div class="stat-card" onclick="openDeploymentsFiltered('', 'signed')">
           <div class="stat-icon" style="background:var(--green-bg)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
           <div class="stat-label">Signed</div>
           <div class="stat-val" style="color:var(--green)">${signed}</div>
         </div>
-        <div class="stat-card" onclick="setSiteFilter('');setSignedFilter('unsigned')" style="${signedFilter==='unsigned'&&!siteFilter?'border-color:var(--amber)':''}">
+        <div class="stat-card" onclick="openDeploymentsFiltered('', 'unsigned')">
           <div class="stat-icon" style="background:var(--amber-bg)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           </div>
@@ -1983,8 +2083,7 @@ function renderDeployments() {
           ${siteStats.map(s => {
             const pct = s.total ? Math.round(s.signed / s.total * 100) : 0;
             const awaiting = s.total - s.signed;
-            const isActive = siteFilter === s.name;
-            return `<div onclick="setSiteFilter('${s.name}');setSignedFilter('')" style="flex:1;min-width:100px;background:var(--surface2);border:1px solid ${isActive?'var(--accent)':'var(--border)'};border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:border-color .15s">
+            return `<div onclick="openDeploymentsFiltered('${s.name}', '')" style="flex:1;min-width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:border-color .15s">
               <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px">${s.name}</div>
               <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
                 <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
@@ -2005,8 +2104,49 @@ function renderDeployments() {
           }).join('')}
         </div>
       </div>
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3)">Unsigned Deployment by IT Personnel</div>
+          <div style="font-size:11px;color:var(--text3)">${unsigned} pending</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">
+          ${personnelStats.length ? personnelStats.map(p => {
+            const pct = p.total ? Math.round(p.unsigned / p.total * 100) : 0;
+            const encoded = encodeURIComponent(p.name).replace(/'/g, '%27');
+            return `<div onclick="openPersonnelUnsigned('${encoded}')" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:11px 12px;cursor:pointer">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+                <div style="min-width:0">
+                  <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(p.name)}</div>
+                  <div style="font-size:11px;color:var(--text3);margin-top:2px">${p.total} total deployment${p.total === 1 ? '' : 's'}</div>
+                </div>
+                <div style="font-size:18px;font-weight:800;color:var(--amber);line-height:1">${p.unsigned}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="flex:1;height:5px;background:var(--border);border-radius:999px;overflow:hidden">
+                  <div style="width:${pct}%;height:100%;background:var(--amber);border-radius:999px"></div>
+                </div>
+                <span style="font-size:11px;font-weight:700;color:var(--amber);white-space:nowrap">${pct}%</span>
+              </div>
+            </div>`;
+          }).join('') : `<div style="grid-column:1/-1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;color:var(--text3);font-size:12px;text-align:center">No unsigned deployments by IT personnel.</div>`}
+        </div>
+      </div>
     </div>
+  `;
+}
 
+function renderDeployments() {
+  document.getElementById('topbarTitle').textContent = 'Deployments';
+  document.getElementById('topbarViewActions').innerHTML = `
+    <button class="btn btn-primary btn-sm" onclick="openDeployModal()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Deployment
+    </button>`;
+
+  const all = deployments;
+  const filtered = getFilteredDeployments();
+
+  document.getElementById('pageContent').innerHTML = `
     <div class="table-toolbar">
       <div class="search-wrap">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -2077,9 +2217,9 @@ function renderDeployments() {
     </div>`;
 }
 
-function setStatusFilter(v) { statusFilter = v; renderDeployments(); }
-function setSiteFilter(v) { siteFilter = v; renderDeployments(); }
-function setSignedFilter(v) { signedFilter = v; renderDeployments(); }
+function setStatusFilter(v) { statusFilter = v; switchView('deployments'); }
+function setSiteFilter(v) { siteFilter = v; switchView('deployments'); }
+function setSignedFilter(v) { signedFilter = v; switchView('deployments'); }
 
 function statusBadge(s) {
   const map = { Active:'b-active', Pending:'b-pending', Returned:'b-returned', Inactive:'b-inactive' };
@@ -2298,7 +2438,7 @@ async function saveDeployment() {
   }
 
   closeDeployModal();
-  renderDeployments();
+  renderCurrentView();
   setSyncStatus('syncing');
   await persist(record);
   setSyncStatus('ok');
@@ -2321,7 +2461,7 @@ async function confirmDelete() {
   const deletedRecord = deployments.find(x => x.id === id);
   deployments = deployments.filter(x => x.id !== id);
   document.getElementById('deleteOverlay').classList.remove('open');
-  renderDeployments();
+  renderCurrentView();
   setSyncStatus('syncing');
   await persistDelete(id);
   setSyncStatus('ok');
@@ -2822,7 +2962,7 @@ async function checkSignParam() {
 
   try {
     // Init table first (in case it doesn't exist yet)
-    await tursoInit();
+    await ensureTursoReady();
     const result = await tursoExec('SELECT data FROM headset_deployments WHERE id = ?', [id]);
     if (!result || !result.rows.length) {
       setEsvNotice('error', 'Form not found. This link may be invalid or expired.');
@@ -3214,6 +3354,8 @@ window.closePinStep = closePinStep;
 window.doLoginWithPin = doLoginWithPin;
 window.toggleTheme = toggleTheme;
 window.exportCSV = exportCSV;
+window.switchView = switchView;
+window.openDeploymentsFiltered = openDeploymentsFiltered;
 window.setStatusFilter = setStatusFilter;
 window.setSiteFilter = setSiteFilter;
 window.setSignedFilter = setSignedFilter;
