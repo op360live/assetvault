@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Asset Return Form</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #ffffff;
+      --panel: #ffffff;
+      --ink: #081b3a;
+      --muted: #53657f;
+      --line: #c9d6ea;
+      --focus: #0b2d5c;
+      --accent: #123f7a;
+      --soft-blue: #eef5ff;
+      --warning-bg: #f5f9ff;
+      --warning-line: #8fb0dc;
+      --danger: #b42318;
+      --shadow: 0 18px 44px rgba(8, 27, 58, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, #eef5ff 0, #ffffff 260px),
+        var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+
+    main {
+      width: min(760px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0;
+    }
+
+    header {
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(28px, 5vw, 42px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 720px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    form,
+    .modal-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    form {
+      padding: 24px;
+    }
+
+    fieldset {
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    fieldset + fieldset {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    legend {
+      width: 100%;
+      margin-bottom: 16px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field,
+    .choice-group {
+      display: grid;
+      gap: 7px;
+    }
+
+    label,
+    .group-label {
+      color: #10284f;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .required {
+      color: var(--danger);
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select,
+    textarea {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid #b8c8dd;
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus,
+    button:focus {
+      outline: 3px solid rgba(34, 103, 199, 0.24);
+      outline-offset: 2px;
+      border-color: var(--focus);
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .choice {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #ffffff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.68;
+    }
+
+    .choice input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .choice:has(input:checked) {
+      border-color: var(--accent);
+      background: var(--soft-blue);
+      color: var(--focus);
+    }
+
+    .announcement {
+      margin-top: 22px;
+      border: 1px solid var(--warning-line);
+      border-radius: 8px;
+      padding: 16px;
+      background: var(--warning-bg);
+      font-weight: 700;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    button {
+      min-height: 44px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: var(--focus);
+      color: #fff;
+    }
+
+    .secondary {
+      background: var(--soft-blue);
+      color: var(--focus);
+      border-color: #b8c8dd;
+    }
+
+    .ghost {
+      background: transparent;
+      color: var(--focus);
+      border-color: #b8c8dd;
+    }
+
+    .download-copy {
+      display: none;
+    }
+
+    .download-copy.visible {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(18, 26, 42, 0.56);
+      animation: fadeIn 180ms ease-out;
+    }
+
+    .modal-card {
+      width: min(620px, 100%);
+      max-height: min(760px, calc(100vh - 40px));
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      overflow: hidden;
+      transform-origin: center;
+      animation: popIn 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-header,
+    .modal-actions {
+      padding: 18px 20px;
+    }
+
+    .modal-header {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-header h2 {
+      margin: 0 0 14px;
+      font-size: 20px;
+    }
+
+    .modal-header p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .modal-body {
+      overflow: auto;
+      padding: 18px 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid var(--line);
+      background: #f8fbff;
+    }
+
+    .summary-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+    }
+
+    .summary-row {
+      display: grid;
+      gap: 3px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .summary-row dt {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .summary-row dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+      font-weight: 700;
+    }
+
+    .signature-area {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .signature-area h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .signature-pad {
+      width: 100%;
+      height: 160px;
+      border: 1px solid #b8c8dd;
+      border-radius: 8px;
+      background: #ffffff;
+      touch-action: none;
+    }
+
+    .signature-tools {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .modal-backdrop,
+      .modal-card {
+        animation: none;
+      }
+    }
+
+    @media (max-width: 880px) {
+      .grid,
+      .choices {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        width: min(100% - 20px, 760px);
+        padding: 18px 0;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      .subtitle {
+        font-size: 15px;
+      }
+
+      form {
+        padding: 18px;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      select,
+      textarea,
+      .choice,
+      button {
+        min-height: 48px;
+      }
+
+      .actions,
+      .modal-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .download-copy.visible {
+        display: flex;
+      }
+
+      .modal-backdrop {
+        align-items: end;
+        padding: 10px;
+      }
+
+      .modal-card {
+        max-height: calc(100vh - 20px);
+      }
+
+      .modal-header,
+      .modal-actions,
+      .modal-body {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      main {
+        width: 100%;
+        padding: 0;
+      }
+
+      form {
+        box-shadow: none;
+      }
+
+      .modal-backdrop,
+      .actions {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Asset Return Form</h1>
+      <p class="subtitle">Submit asset return details for clearance validation and acknowledgement processing.</p>
+    </header>
+
+    <form id="assetReturnForm">
+        <fieldset>
+          <legend>Employee Information</legend>
+          <div class="grid">
+            <div class="field">
+              <label for="email">Personal Email <span class="required">*</span></label>
+              <input id="email" name="email" type="email" placeholder="employee@email.com" required>
+            </div>
+
+            <div class="field">
+              <label for="completeName">Complete Name <span class="required">*</span></label>
+              <input id="completeName" name="completeName" type="text" placeholder="First name Last name" required>
+            </div>
+
+            <div class="field">
+              <label for="site">Site <span class="required">*</span></label>
+              <select id="site" name="site" required>
+                <option value="">Select site</option>
+                <option value="EB2">EB2</option>
+                <option value="EB3">EB3</option>
+                <option value="Davao">Davao</option>
+                <option value="CDO">CDO</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="account">Account <span class="required">*</span></label>
+              <input id="account" name="account" type="text" placeholder="Account or department" required>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Purpose of Asset Return</legend>
+          <div class="field">
+            <label for="purpose">Purpose <span class="required">*</span></label>
+            <select id="purpose" name="purpose" required>
+              <option value="">Select purpose</option>
+              <option value="Separation">Separation</option>
+              <option value="Floating">Floating</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+
+          <div id="purposeOtherWrap" class="field hidden" style="margin-top: 14px;">
+            <label for="purposeOtherText">Specify Other Purpose <span class="required">*</span></label>
+            <input id="purposeOtherText" name="purposeOtherText" type="text" placeholder="Enter purpose">
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Asset Details</legend>
+          <div class="choice-group">
+            <span class="group-label">Returned Assets <span class="required">*</span></span>
+            <div class="choices">
+              <label class="choice"><input type="checkbox" name="assets" value="Laptop"> Laptop</label>
+              <label class="choice"><input type="checkbox" name="assets" value="System Unit"> System Unit</label>
+              <label class="choice"><input type="checkbox" name="assets" value="Monitor A"> Monitor A</label>
+              <label class="choice"><input type="checkbox" name="assets" value="Monitor B"> Monitor B</label>
+              <label class="choice"><input type="checkbox" name="assets" value="Mouse"> Mouse</label>
+              <label class="choice"><input type="checkbox" name="assets" value="Keyboard"> Keyboard</label>
+              <label class="choice"><input type="checkbox" name="assets" value="Webcam"> Webcam</label>
+              <label class="choice"><input type="checkbox" name="assets" value="Headset"> Headset</label>
+              <label class="choice"><input type="checkbox" name="assets" value="UPS"> UPS</label>
+              <label class="choice"><input type="checkbox" name="assets" value="Wifi Kit"> Wifi Kit</label>
+              <label class="choice"><input type="checkbox" name="assets" value="Powerbank"> Powerbank</label>
+              <label class="choice"><input id="assetOthers" type="checkbox" name="assets" value="Others"> Others</label>
+            </div>
+          </div>
+
+          <div id="assetOtherWrap" class="field hidden" style="margin-top: 14px;">
+            <label for="assetOtherText">Specify Other Asset <span class="required">*</span></label>
+            <input id="assetOtherText" name="assetOtherText" type="text" placeholder="Enter asset name or details">
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Receiving Personnel</legend>
+          <div class="grid">
+            <div class="field">
+              <label for="itPersonnel">IT Personnel <span class="required">*</span></label>
+              <input id="itPersonnel" name="itPersonnel" type="text" placeholder="IT personnel name" required>
+            </div>
+
+            <div class="field">
+              <label for="securityPersonnel">Security Personnel <span class="required">*</span></label>
+              <input id="securityPersonnel" name="securityPersonnel" type="text" placeholder="Security personnel name" required>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="announcement">
+          Please expect an email notification regarding the Acknowledgement Form, which requires your signature to prevent any delays in your asset clearance.
+        </div>
+
+      <div class="actions">
+        <button class="primary" type="submit">Review Submission</button>
+        <button class="ghost" type="reset">Clear Form</button>
+      </div>
+    </form>
+  </main>
+
+  <div class="modal-backdrop hidden" id="summaryModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <section class="modal-card">
+      <div class="modal-header">
+        <h2 id="modalTitle">Confirm Asset Return</h2>
+        <p>Please review the details, sign below, then confirm your asset clearance submission.</p>
+      </div>
+
+      <div class="modal-body">
+        <dl class="summary-list" id="summaryList"></dl>
+        <div class="signature-area">
+          <h3>Signature <span class="required">*</span></h3>
+          <canvas class="signature-pad" id="signaturePad" aria-label="Signature pad"></canvas>
+          <div class="signature-tools">
+            <button class="ghost" type="button" id="clearSignatureButton">Clear Signature</button>
+          </div>
+        </div>
+        <p id="submissionStatus" class="empty" role="status"></p>
+      </div>
+
+      <div class="modal-actions">
+        <button class="ghost" type="button" id="editButton">Edit Form</button>
+        <button class="secondary download-copy" type="button" id="downloadCopyButton">Download Copy</button>
+        <button class="primary" type="button" id="confirmButton">Confirm and Submit</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const form = document.querySelector("#assetReturnForm");
+    const summaryList = document.querySelector("#summaryList");
+    const summaryModal = document.querySelector("#summaryModal");
+    const submissionStatus = document.querySelector("#submissionStatus");
+    const editButton = document.querySelector("#editButton");
+    const confirmButton = document.querySelector("#confirmButton");
+    const downloadCopyButton = document.querySelector("#downloadCopyButton");
+    const clearSignatureButton = document.querySelector("#clearSignatureButton");
+    const signaturePad = document.querySelector("#signaturePad");
+    const signatureContext = signaturePad.getContext("2d");
+    const purposeSelect = document.querySelector("#purpose");
+    const purposeOtherWrap = document.querySelector("#purposeOtherWrap");
+    const purposeOtherText = document.querySelector("#purposeOtherText");
+    const assetOthers = document.querySelector("#assetOthers");
+    const assetOtherWrap = document.querySelector("#assetOtherWrap");
+    const assetOtherText = document.querySelector("#assetOtherText");
+    let submissionDate = "";
+    let submittedRecord = null;
+    let signatureStarted = false;
+    let isDrawingSignature = false;
+    const TURSO_URL = "https://turso-proxy.rcabil-op360.workers.dev";
+    const TURSO_TOKEN = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJleHAiOjE4MDg0MjkwMjMsImlhdCI6MTc3Njg5MzAyMywiaWQiOiIwMTlkYjcxMS1jNDAxLTdiZDgtODUyNy00MGUzYTEzMmM5MzkiLCJyaWQiOiIwMTY1NjhiOC03NjE0LTRjNjAtYWI3Zi0yZjY5YzQ3MDhjMTYifQ.-rLfhTh8wuECeovdGDgnduzA_WYtMC4L8JJZz-mRQ1nO6mCGAkYvS_YzR_CHAnogNFcLNow7RSRRebuDQfLxCA";
+
+    async function tursoExec(sql, args = []) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
+
+      try {
+        const response = await fetch(`${TURSO_URL}/v2/pipeline`, {
+          method: "POST",
+          signal: ctrl.signal,
+          headers: {
+            "Authorization": `Bearer ${TURSO_TOKEN}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            requests: [
+              {
+                type: "execute",
+                stmt: {
+                  sql,
+                  args: args.map((value) => value === null ? { type: "null" } : { type: "text", value: String(value) })
+                }
+              },
+              { type: "close" }
+            ]
+          })
+        });
+
+        clearTimeout(timer);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        const result = json.results?.[0];
+        if (result?.type === "error") throw new Error(result.error?.message || "Database error");
+        return result?.response?.result || null;
+      } catch (error) {
+        clearTimeout(timer);
+        console.warn("[Asset Return DB]", error.message);
+        return null;
+      }
+    }
+
+    async function initSubmissionTable() {
+      return tursoExec("CREATE TABLE IF NOT EXISTS asset_return_submissions (id TEXT PRIMARY KEY, data TEXT NOT NULL)");
+    }
+
+    function formattedSubmissionDate() {
+      return new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date());
+    }
+
+    function resizeSignaturePad() {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const bounds = signaturePad.getBoundingClientRect();
+      signaturePad.width = bounds.width * ratio;
+      signaturePad.height = bounds.height * ratio;
+      signatureContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+      signatureContext.lineWidth = 2.4;
+      signatureContext.lineCap = "round";
+      signatureContext.lineJoin = "round";
+      signatureContext.strokeStyle = "#081b3a";
+    }
+
+    function clearSignature() {
+      resizeSignaturePad();
+      signatureContext.clearRect(0, 0, signaturePad.width, signaturePad.height);
+      signatureStarted = false;
+    }
+
+    function signaturePoint(event) {
+      const bounds = signaturePad.getBoundingClientRect();
+      return {
+        x: event.clientX - bounds.left,
+        y: event.clientY - bounds.top
+      };
+    }
+
+    function startSignature(event) {
+      event.preventDefault();
+      isDrawingSignature = true;
+      signatureStarted = true;
+      const point = signaturePoint(event);
+      signatureContext.beginPath();
+      signatureContext.moveTo(point.x, point.y);
+    }
+
+    function drawSignature(event) {
+      if (!isDrawingSignature) return;
+      event.preventDefault();
+      const point = signaturePoint(event);
+      signatureContext.lineTo(point.x, point.y);
+      signatureContext.stroke();
+    }
+
+    function stopSignature() {
+      isDrawingSignature = false;
+    }
+
+    function toggleOtherFields() {
+      const needsPurposeOther = purposeSelect.value === "Others";
+      purposeOtherWrap.classList.toggle("hidden", !needsPurposeOther);
+      purposeOtherText.required = needsPurposeOther;
+      if (!needsPurposeOther) purposeOtherText.value = "";
+
+      const needsAssetOther = assetOthers.checked;
+      assetOtherWrap.classList.toggle("hidden", !needsAssetOther);
+      assetOtherText.required = needsAssetOther;
+      if (!needsAssetOther) assetOtherText.value = "";
+    }
+
+    function selectedAssets() {
+      const checked = Array.from(form.querySelectorAll('input[name="assets"]:checked')).map((asset) => asset.value);
+      if (assetOthers.checked && assetOtherText.value.trim()) {
+        return checked.map((asset) => asset === "Others" ? `Others: ${assetOtherText.value.trim()}` : asset);
+      }
+      return checked;
+    }
+
+    function currentPurpose() {
+      if (!purposeSelect.value) return "";
+      if (purposeSelect.value === "Others" && purposeOtherText.value.trim()) {
+        return `Others: ${purposeOtherText.value.trim()}`;
+      }
+      return purposeSelect.value;
+    }
+
+    function summaryRows() {
+      return [
+        ["Personal Email", form.email.value.trim()],
+        ["Complete Name", form.completeName.value.trim()],
+        ["Site", form.site.value],
+        ["Account", form.account.value.trim()],
+        ["Purpose", currentPurpose()],
+        ["Assets", selectedAssets().join(", ")],
+        ["IT Personnel", form.itPersonnel.value.trim()],
+        ["Security Personnel", form.securityPersonnel.value.trim()],
+        ["Submission Date", submissionDate],
+        ["Announcement", "Please expect an email notification regarding the Acknowledgement Form, which requires your signature to prevent any delays in your asset clearance."]
+      ];
+    }
+
+    function updateSummary() {
+      summaryList.replaceChildren();
+      summaryRows().forEach(([label, value]) => {
+        const row = document.createElement("div");
+        const term = document.createElement("dt");
+        const detail = document.createElement("dd");
+
+        row.className = "summary-row";
+        term.textContent = label;
+        detail.textContent = value || "Not provided";
+        if (!value) detail.className = "empty";
+
+        row.append(term, detail);
+        summaryList.append(row);
+      });
+    }
+
+    function openModal() {
+      submissionDate = formattedSubmissionDate();
+      updateSummary();
+      submissionStatus.textContent = "";
+      confirmButton.disabled = false;
+      confirmButton.textContent = "Confirm and Submit";
+      downloadCopyButton.classList.remove("visible");
+      summaryModal.classList.remove("hidden");
+      requestAnimationFrame(clearSignature);
+      editButton.focus();
+    }
+
+    function closeModal() {
+      summaryModal.classList.add("hidden");
+    }
+
+    function buildSubmissionRecord() {
+      const nowIso = new Date().toISOString();
+      return {
+        id: `ars_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        personalEmail: form.email.value.trim(),
+        completeName: form.completeName.value.trim(),
+        site: form.site.value,
+        account: form.account.value.trim(),
+        purpose: currentPurpose(),
+        assets: selectedAssets(),
+        itPersonnel: form.itPersonnel.value.trim(),
+        securityPersonnel: form.securityPersonnel.value.trim(),
+        submissionDate,
+        submissionDateIso: nowIso,
+        signatureDataUrl: signaturePad.toDataURL("image/png")
+      };
+    }
+
+    async function saveSubmissionToDatabase(record) {
+      await initSubmissionTable();
+      return tursoExec(
+        "INSERT OR REPLACE INTO asset_return_submissions (id, data) VALUES (?, ?)",
+        [record.id, JSON.stringify(record)]
+      );
+    }
+
+    function fileSafeName(value) {
+      return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "asset-return";
+    }
+
+    function drawPdfText(doc, label, value, x, y, maxWidth) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(83, 101, 127);
+      doc.text(label.toUpperCase(), x, y);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.setTextColor(8, 27, 58);
+      const lines = doc.splitTextToSize(value || "Not provided", maxWidth);
+      doc.text(lines, x, y + 6);
+      return y + 10 + (lines.length * 5);
+    }
+
+    function downloadPdfCopy() {
+      if (!window.jspdf) {
+        submissionStatus.textContent = "PDF export library is still loading or unavailable. Please check your internet connection and try again.";
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 16;
+      let y = 18;
+
+      doc.setFillColor(11, 45, 92);
+      doc.rect(0, 0, pageWidth, 30, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text("Asset Return Clearance Copy", margin, 18);
+
+      y = 42;
+      summaryRows().filter(([label]) => label !== "Announcement").forEach(([label, value]) => {
+        if (y > 250) {
+          doc.addPage();
+          y = 18;
+        }
+        y = drawPdfText(doc, label, value, margin, y, pageWidth - (margin * 2));
+      });
+
+      if (signatureStarted) {
+        if (y > 215) {
+          doc.addPage();
+          y = 18;
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(8, 27, 58);
+        doc.text("Signature Confirmation", margin, y);
+        y += 12;
+
+        doc.addImage(signaturePad.toDataURL("image/png"), "PNG", margin, y, 82, 30);
+        y += 34;
+
+        doc.setDrawColor(8, 27, 58);
+        doc.line(margin, y, margin + 82, y);
+        y += 6;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(8, 27, 58);
+        doc.text(form.completeName.value.trim(), margin, y);
+        y += 6;
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(83, 101, 127);
+        doc.text(submissionDate, margin, y);
+      }
+
+      const fileName = `${fileSafeName(form.completeName.value)}-asset-return-copy.pdf`;
+      doc.save(fileName);
+    }
+
+    form.addEventListener("change", () => {
+      toggleOtherFields();
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const hasAsset = form.querySelectorAll('input[name="assets"]:checked').length > 0;
+
+      if (!hasAsset) {
+        alert("Please select at least one returned asset.");
+        return;
+      }
+
+      toggleOtherFields();
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      openModal();
+    });
+
+    form.addEventListener("reset", () => {
+      setTimeout(() => {
+        toggleOtherFields();
+        closeModal();
+        summaryList.replaceChildren();
+        submissionDate = "";
+        submittedRecord = null;
+        downloadCopyButton.classList.remove("visible");
+        clearSignature();
+      });
+    });
+
+    editButton.addEventListener("click", closeModal);
+
+    confirmButton.addEventListener("click", async () => {
+      if (!signatureStarted) {
+        submissionStatus.textContent = "Please sign in the signature pad before confirming your submission.";
+        return;
+      }
+
+      confirmButton.disabled = true;
+      confirmButton.textContent = "Submitting...";
+      submissionStatus.textContent = "Saving submission to the database...";
+
+      const record = buildSubmissionRecord();
+      const result = await saveSubmissionToDatabase(record);
+
+      if (!result) {
+        confirmButton.disabled = false;
+        confirmButton.textContent = "Confirm and Submit";
+        submissionStatus.textContent = "Submission could not be saved to the database. Please check the connection and try again.";
+        return;
+      }
+
+      submittedRecord = record;
+      confirmButton.textContent = "Submitted";
+      downloadCopyButton.classList.add("visible");
+      submissionStatus.textContent = "Submission saved to the database. You may download a PDF copy below.";
+    });
+
+    downloadCopyButton.addEventListener("click", downloadPdfCopy);
+
+    clearSignatureButton.addEventListener("click", () => {
+      clearSignature();
+      submissionStatus.textContent = "";
+    });
+
+    signaturePad.addEventListener("pointerdown", startSignature);
+    signaturePad.addEventListener("pointermove", drawSignature);
+    signaturePad.addEventListener("pointerup", stopSignature);
+    signaturePad.addEventListener("pointercancel", stopSignature);
+    signaturePad.addEventListener("pointerleave", stopSignature);
+
+    window.addEventListener("resize", () => {
+      if (!summaryModal.classList.contains("hidden")) {
+        clearSignature();
+      }
+    });
+
+    summaryModal.addEventListener("click", (event) => {
+      if (event.target === summaryModal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !summaryModal.classList.contains("hidden")) {
+        closeModal();
+      }
+    });
+
+    toggleOtherFields();
+    resizeSignaturePad();
+    initSubmissionTable();
+  </script>
+</body>
+</html>
