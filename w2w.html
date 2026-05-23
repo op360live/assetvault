@@ -4,6 +4,20 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>W2W Inventory — Seat Asset Allocation</title>
+  <script>
+    (() => {
+      try {
+        const session = JSON.parse(sessionStorage.getItem('w2w_inventory_session') || 'null');
+        if (session && session.username) return;
+      } catch (e) {}
+      try {
+        const shared = JSON.parse(localStorage.getItem('assetvault_session') || 'null');
+        if (shared && shared.username) return;
+      } catch (e) {}
+      document.documentElement.style.display = 'none';
+      window.location.replace('https://op360live.github.io/assetvault/');
+    })();
+  </script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Cg fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 7h12a2 2 0 0 1 2 2v6H8V9a2 2 0 0 1 2-2Z'/%3E%3Cpath d='M9 15v4a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-4'/%3E%3Cpath d='M16 22v5M11 27h10M8 13h16'/%3E%3C/g%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -106,7 +120,7 @@
     .sidebar-scrim.open { display: block; }
     .login-screen {
       min-height: 100dvh;
-      display: flex;
+      display: none;
       flex-direction: row;
       position: relative;
       overflow: hidden;
@@ -3277,9 +3291,10 @@ function doLogout() {
   document.body.classList.remove('app-ready');
   appStarted = false;
   closeAcctMenu();
-  document.getElementById('login-password').value = '';
-  document.getElementById('login-pin').value = '';
-  document.getElementById('login-username').focus();
+  redirectToSignIn();
+}
+function redirectToSignIn() {
+  window.location.replace('https://op360live.github.io/assetvault/');
 }
 
 function toggleAcctMenu() {
@@ -4775,7 +4790,7 @@ loadTheme();
 if (checkSession()) {
   showApp();
 } else {
-  document.getElementById('login-username').focus();
+  redirectToSignIn();
 }
 </script>
 </body>
