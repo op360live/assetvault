@@ -967,7 +967,7 @@
       border: 1px solid var(--sidebar-border);
       background: var(--surface);
       color: var(--text-2);
-      display: inline-flex;
+      display: none;
       align-items: center;
       justify-content: center;
       box-shadow: var(--sidebar-shadow);
@@ -1048,6 +1048,140 @@
       box-shadow: 0 0 0 2px rgba(220,38,38,.12);
     }
     #syncIcon.spinning { animation: spin 1s linear infinite; transform-origin: center; }
+
+    .topbar {
+      height: 60px;
+      padding: 0 24px 0 18px;
+      box-shadow: 0 1px 2px rgba(15,23,42,.04);
+      z-index: 80;
+    }
+    .topbar-left { flex: 1; min-width: 0; display: flex; align-items: center; gap: 18px; }
+    .topbar-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; width: auto; }
+    .topbar-brand {
+      display:flex; align-items:center; gap:10px;
+      font-weight:700; font-size:16px; color:var(--text-1); text-decoration:none; flex-shrink:0; min-width:188px;
+    }
+    .topbar-brand-mark {
+      width:32px; height:32px; border-radius:8px;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--accent); color:#fff; box-shadow:0 6px 16px var(--accent-glow);
+    }
+    .topbar-brand-text { display:flex; flex-direction:column; line-height:1.1; }
+    .topbar-brand-name { font-size:16px; font-weight:800; letter-spacing:0; color:var(--text-1); }
+    .topbar-brand-sub { font-size:10px; font-weight:700; color:var(--text-4); text-transform:uppercase; letter-spacing:.7px; margin-top:3px; }
+    .topbar-app-nav { display:flex; align-items:center; gap:2px; min-width:0; }
+    .topbar-app-link {
+      display:inline-flex; align-items:center;
+      height:36px; padding:0 10px; border-radius:999px;
+      color:var(--text-3); text-decoration:none;
+      font-size:12.5px; font-weight:700; white-space:nowrap;
+      transition:background .13s,color .13s;
+    }
+    .topbar-app-link:hover,.topbar-app-link.active { background:var(--surface-2); color:var(--accent); }
+    .topbar-menu { position:relative; }
+    .topbar-icon-btn,.tools-menu-btn,.profile-btn {
+      height:38px; border:0; background:transparent; color:var(--text-3);
+      font-family:inherit; cursor:pointer; transition:background .13s,color .13s;
+    }
+    .topbar-icon-btn { position:relative; width:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+    .topbar-icon-btn:hover,.topbar-menu.open>.topbar-icon-btn { background:var(--surface-2); color:var(--text-1); }
+    .topbar-badge {
+      position:absolute; top:6px; right:6px;
+      min-width:16px; height:16px; padding:0 4px; border-radius:999px;
+      display:flex; align-items:center; justify-content:center;
+      background:var(--danger); color:#fff; font-size:9px; font-weight:800;
+      box-shadow:0 0 0 2px var(--topbar-bg);
+    }
+    .tools-menu-btn {
+      display:flex; align-items:center; gap:7px;
+      padding:0 10px; border-radius:999px;
+      font-size:13px; font-weight:600;
+    }
+    .tools-menu-btn:hover,.topbar-menu.open .tools-menu-btn { background:var(--surface-2); color:var(--text-1); }
+    .tools-menu-btn .chev,.profile-btn .chev { transition:transform .15s; }
+    .topbar-menu.open .tools-menu-btn .chev,.topbar-menu.open .profile-btn .chev { transform:rotate(180deg); }
+    .topbar-dropdown,.tools-dropdown {
+      position:absolute; right:0; top:calc(100% + 10px); z-index:220;
+      background:var(--surface); border:1px solid var(--sidebar-border);
+      border-radius:10px; box-shadow:0 14px 34px rgba(15,23,42,.14);
+      opacity:0; visibility:hidden; transform:translateY(-4px);
+      transition:opacity .14s,transform .14s,visibility .14s;
+    }
+    .topbar-menu.open .topbar-dropdown,.topbar-menu.open .tools-dropdown { opacity:1; visibility:visible; transform:translateY(0); }
+    .tools-dropdown { width:238px; padding:6px; }
+    .tools-dropdown button,.acct-dropdown a,.acct-dropdown button,.notification-item {
+      display:flex; align-items:center; gap:10px;
+      width:100%; padding:9px 10px; border-radius:6px;
+      color:var(--text-3); text-decoration:none; font-size:13px; font-weight:600;
+      border:0; background:transparent; font-family:inherit; text-align:left; cursor:pointer;
+      transition:background .13s,color .13s;
+    }
+    .tools-dropdown button:hover,.acct-dropdown a:hover,.acct-dropdown button:hover,.notification-item:hover { background:var(--surface-2); color:var(--accent); }
+    .tools-dropdown-icon,.notification-icon {
+      width:28px; height:28px; border-radius:6px;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, transparent);
+    }
+    .tools-dropdown-name { color:inherit; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .notification-dropdown { width:320px; padding:0; overflow:hidden; }
+    .dropdown-head {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px; border-bottom:1px solid var(--sidebar-border);
+      font-size:13px; font-weight:800; color:var(--text-1);
+    }
+    .dropdown-head span:last-child { font-size:11px; font-weight:700; color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, transparent); padding:2px 7px; border-radius:999px; }
+    .notification-list { padding:6px; }
+    .notification-icon { border-radius:50%; }
+    .notification-copy { min-width:0; flex:1; }
+    .notification-title { font-size:12.5px; font-weight:700; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .notification-meta { display:block; font-size:11px; color:var(--text-4); margin-top:1px; }
+    .dropdown-foot { display:block; padding:10px 14px; border-top:1px solid var(--sidebar-border); text-align:center; color:var(--accent); font-size:12px; font-weight:700; text-decoration:none; }
+    .profile-btn { display:flex; align-items:center; gap:9px; padding:0 8px 0 6px; border-radius:999px; }
+    .profile-btn:hover,.topbar-menu.open>.profile-btn { background:var(--surface-2); color:var(--text-1); }
+    .profile-avatar {
+      width:30px; height:30px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      background:linear-gradient(135deg,var(--accent),var(--accent-h)); color:#fff;
+      font-size:11px; font-weight:800; overflow:hidden; flex-shrink:0;
+    }
+    .profile-name { font-size:13px; font-weight:700; color:var(--text-1); }
+    .view-toolbar {
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      padding:14px 24px; border-bottom:1px solid var(--sidebar-border);
+      background:var(--topbar-bg); flex-shrink:0;
+    }
+    .view-toolbar-title {
+      font-size:15px; font-weight:700; color:var(--text-1);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:0;
+    }
+    .view-toolbar-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .page-footer {
+      width:100%; border-top:1px solid var(--sidebar-border);
+      background:var(--topbar-bg); color:var(--text-4);
+      font-size:12px; flex-shrink:0;
+    }
+    .page-footer-inner {
+      max-width:none; margin:0; padding:8px 24px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
+    .page-footer-brand { font-weight:700; color:var(--text-3); }
+    .footer-sync-status {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:4px 5px 4px 9px; border:1px solid var(--sidebar-border);
+      border-radius:999px; background:var(--surface); color:var(--text-4);
+      font-size:11px; font-weight:700; box-shadow:0 4px 12px rgba(15,23,42,.05);
+    }
+    .footer-sync-dot { width:6px; height:6px; border-radius:50%; background:var(--text-4); box-shadow:0 0 0 2px rgba(148,163,184,.14); }
+    .footer-sync-status.is-syncing .footer-sync-dot { background:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 16%, transparent); }
+    .footer-sync-status.is-online .footer-sync-dot { background:var(--success); box-shadow:0 0 0 2px color-mix(in srgb, var(--success) 16%, transparent); }
+    .footer-sync-status.is-offline .footer-sync-dot { background:var(--danger); box-shadow:0 0 0 2px color-mix(in srgb, var(--danger) 16%, transparent); }
+    .footer-sync-time { color:var(--text-4); font-weight:600; }
+    .footer-sync-sep { width:1px; height:12px; background:var(--sidebar-border); }
+    .footer-sync-btn {
+      height:22px; padding:0 9px; border:0; border-radius:999px;
+      background:var(--accent); color:#fff; font-family:inherit;
+      font-size:10.5px; font-weight:800; cursor:pointer;
+    }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .main-content { flex: 1; }
 
@@ -1057,19 +1191,27 @@
     }
     @media (max-width: 768px) {
       .topbar {
-        height: auto;
-        padding: 10px 12px;
+        height: 56px;
+        padding: 0 12px;
         align-items: center;
         gap: 8px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
       }
-      .topbar-mobile-head { display: flex; width: auto; }
-      .topbar-left { flex: 1; min-width: 0; }
-      .topbar-right { width: 100%; justify-content: space-between; }
-      .topbar-title { font-size: 14px; }
-      .topbar-sub { display: none; }
-      .topbar-stat { display: none; }
-      .db-status-dot { order: 3; width: 100%; justify-content: center; }
+      .topbar-left { flex: 1; min-width: 0; gap:10px; }
+      .topbar-right { width: auto; justify-content: flex-end; gap:6px; }
+      .mobile-menu-btn { display:inline-flex; }
+      .topbar-brand { min-width:0; }
+      .topbar-app-nav { display:none; }
+      .tools-menu-btn span { display:none; }
+      .tools-menu-btn { width:38px; padding:0; justify-content:center; }
+      .tools-menu-btn .chev { display:none; }
+      .profile-name { display:none; }
+      .view-toolbar { padding:12px 14px; }
+      .view-toolbar-title { font-size:16px; }
+      .view-toolbar-actions { width:100%; justify-content:flex-start; }
+      .page-footer-inner { padding:8px 14px; gap:8px; }
+      .notification-dropdown { right:-48px; width:min(320px, calc(100vw - 24px)); }
+      .acct-dropdown { right:-8px; width:min(220px, calc(100vw - 24px)); }
       .main-content { padding: 12px; }
     }
 
@@ -2097,34 +2239,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h6M9 9h1"/></svg>
         <span class="item-label">Audit Logs</span>
       </button>
-      <span class="nav-group-label desktop-only" style="margin-top:4px;">Applications</span>
-      <div class="sidebar-apps desktop-only" id="sidebar-apps">
-        <button class="sidebar-item sidebar-expand" id="sidebar-apps-toggle" type="button">
-          <span style="display:flex; align-items:center; gap:10px;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-            <span class="item-label">Applications</span>
-          </span>
-          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="sidebar-submenu">
-          <a class="sidebar-subitem" href="laptop.html">
-            <span class="sidebar-subicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="2" y1="22" x2="22" y2="22"/></svg></span>
-            <span>Laptop Inventory</span>
-          </a>
-          <a class="sidebar-subitem" href="inventory.html">
-            <span class="sidebar-subicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
-            <span>Asset Register</span>
-          </a>
-          <a class="sidebar-subitem" href="offboarding.html">
-            <span class="sidebar-subicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg></span>
-            <span>Offboarding</span>
-          </a>
-          <a class="sidebar-subitem" href="w2w-inventory.html">
-            <span class="sidebar-subicon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10a2 2 0 012 2v5H5V7a2 2 0 012-2z"/><path d="M6 12v4a3 3 0 003 3h6a3 3 0 003-3v-4"/><path d="M12 19v3M8 22h8M5 10h14"/></svg></span>
-            <span>W2W Inventory</span>
-          </a>
-        </div>
-      </div>
       <span class="nav-group-label" style="margin-top:4px;">Online Users</span>
       <div id="sidebar-online-list" class="sidebar-online-list">
         <div class="sidebar-online-empty">Loading...</div>
@@ -2136,50 +2250,110 @@
         <strong id="sidebar-total">0</strong>
         total seats tracked
       </div>
-      <button class="btn btn-secondary sidebar-theme-toggle" id="btn-theme-toggle" type="button" title="Toggle theme">
-        <svg id="theme-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3c0 .28.02.56.05.83A7 7 0 0021 12.79z"/></svg>
-        <span id="theme-toggle-label">Dark Mode</span>
-      </button>
     </div>
   </aside>
 
   <div class="main-area">
     <div class="topbar">
-      <div class="topbar-mobile-head mobile-only">
+      <div class="topbar-left">
         <button class="mobile-menu-btn" id="mobile-menu-btn" type="button" aria-label="Open navigation">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
-      </div>
-      <div class="topbar-left">
-        <div class="topbar-title" id="topbar-title">Dashboard</div>
-        <div class="topbar-sub">Workstation seat tracking and asset assignment</div>
+        <a href="https://op360live.github.io/assetvault/" class="topbar-brand">
+          <span class="topbar-brand-mark">
+            <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="8" stroke="currentColor" stroke-width="2"/>
+              <path d="M16 8c-2 2.5-3 5-3 8s1 5.5 3 8M16 8c2 2.5 3 5 3 8s-1 5.5-3 8M8 16h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="topbar-brand-text">
+            <span class="topbar-brand-name">IT Hub</span>
+            <span class="topbar-brand-sub">Dashboard</span>
+          </span>
+        </a>
       </div>
       <div class="topbar-right">
-        <span id="dbStatusDot" class="db-status-dot" title="Database connection status">Connecting…</span>
-        <button class="btn btn-secondary" id="btnForceSync" title="Force sync">
-          <svg id="syncIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.13-3.36L23 10M1 14l5.36 4.36A9 9 0 0020.49 15"/></svg>
-          Sync
-        </button>
-        <div class="acct-wrap" id="acct-wrap">
-          <div class="acct-btn" id="acct-btn" title="Account">
-            <div class="avatar" id="user-avatar">--</div>
-            <div>
-              <div class="chip-name" id="user-name">Guest</div>
-              <div class="chip-role" id="user-role">—</div>
-            </div>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="opacity:.55"><polyline points="6 9 12 15 18 9"/></svg>
+        <nav class="topbar-app-nav" aria-label="Applications">
+          <a class="topbar-app-link" href="https://op360live.github.io/assetvault/aaf.html">Accountability</a>
+          <a class="topbar-app-link" href="https://op360live.github.io/assetvault/inventory.html">Asset Register</a>
+          <a class="topbar-app-link" href="https://op360live.github.io/assetvault/laptop.html">Laptop</a>
+          <a class="topbar-app-link" href="https://op360live.github.io/assetvault/offboarding.html">Offboarding</a>
+          <a class="topbar-app-link active" href="https://op360live.github.io/assetvault/w2w.html">W2W</a>
+        </nav>
+        <div class="topbar-menu tools-menu" id="toolsMenu">
+          <button class="tools-menu-btn" id="toolsMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Tools" onclick="toggleTopbarMenu('toolsMenu')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M3 12h18"/><path d="M6 6l12 12"/></svg>
+            <span>Tools</span>
+            <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="tools-dropdown" role="menu">
+            <button type="button" onclick="switchTo('export')" role="menuitem">
+              <span class="tools-dropdown-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </span>
+              <span class="tools-dropdown-name">Import / Export</span>
+            </button>
           </div>
-          <div class="acct-dropdown" id="acct-dropdown">
+        </div>
+        <button class="topbar-icon-btn" id="btn-theme-toggle" type="button" title="Toggle theme">
+          <svg id="theme-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3c0 .28.02.56.05.83A7 7 0 0021 12.79z"/></svg>
+          <span id="theme-toggle-label" style="display:none;">Dark Mode</span>
+        </button>
+        <div class="topbar-menu notification-menu" id="notificationMenu">
+          <button class="topbar-icon-btn" id="notificationMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Notifications" onclick="toggleTopbarMenu('notificationMenu')">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M10 21h4"/></svg>
+            <span class="topbar-badge">3</span>
+          </button>
+          <div class="topbar-dropdown notification-dropdown" role="menu">
+            <div class="dropdown-head"><span>Notifications</span><span>3 New</span></div>
+            <div class="notification-list">
+              <a class="notification-item" href="https://op360live.github.io/assetvault/offboarding.html" role="menuitem">
+                <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-9-9"/></svg></span>
+                <span class="notification-copy"><span class="notification-title">Offboarding queue ready</span><span class="notification-meta">Review retrieval records</span></span>
+              </a>
+              <a class="notification-item" href="https://op360live.github.io/assetvault/inventory.html" role="menuitem">
+                <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
+                <span class="notification-copy"><span class="notification-title">Inventory tools online</span><span class="notification-meta">Open asset register</span></span>
+              </a>
+              <a class="notification-item" href="https://op360live.github.io/assetvault/aaf.html" role="menuitem">
+                <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+                <span class="notification-copy"><span class="notification-title">AAF forms available</span><span class="notification-meta">Launch accountability forms</span></span>
+              </a>
+            </div>
+            <a class="dropdown-foot" href="#section-dashboard">View activity</a>
+          </div>
+        </div>
+        <div class="topbar-menu profile-menu acct-wrap" id="acct-wrap">
+          <button class="profile-btn" id="acct-btn" type="button" aria-haspopup="true" aria-expanded="false" title="Profile">
+            <span class="profile-avatar avatar" id="user-avatar">--</span>
+            <span class="profile-name" id="user-name">Guest</span>
+            <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="acct-dropdown" id="acct-dropdown" role="menu">
             <div class="acct-dd-header">
               <div class="acct-dd-name" id="acct-dd-name">Guest</div>
               <div class="acct-dd-role" id="acct-dd-role">—</div>
             </div>
-            <div class="acct-dd-item danger" id="btn-logout">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              Sign Out
-            </div>
+            <a href="https://op360live.github.io/assetvault/" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              IT Hub
+            </a>
+            <button class="acct-dd-item danger" id="btn-logout" type="button" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout
+            </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="view-toolbar">
+      <h1 class="view-toolbar-title" id="topbar-title">Dashboard</h1>
+      <div class="view-toolbar-actions">
+        <button class="btn btn-secondary" id="btnForceSync" title="Force sync">
+          <svg id="syncIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10M1 14l5.36 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Sync
+        </button>
       </div>
     </div>
 
@@ -2420,6 +2594,19 @@
     </section>
 
     </main>
+
+    <footer class="page-footer">
+      <div class="page-footer-inner">
+        <span><span class="page-footer-brand">IT Hub</span> &copy; 2026 AssetVault</span>
+        <span class="footer-sync-status" id="tursoSyncStatus" role="status" aria-live="polite">
+          <span class="footer-sync-dot" aria-hidden="true"></span>
+          <span id="tursoSyncText">Database: checking...</span>
+          <span class="footer-sync-sep" aria-hidden="true"></span>
+          <span class="footer-sync-time" id="databaseSyncTime">Last sync: never</span>
+          <button class="footer-sync-btn" id="databaseSyncBtn" type="button" onclick="syncNow()">Sync</button>
+        </span>
+      </div>
+    </footer>
   </div>
 </div>
 
@@ -2896,26 +3083,42 @@ function setSyncStatus(msg, isError = false) {
   const dot = document.getElementById('dbStatusDot');
   const icon = document.getElementById('syncIcon');
   const syncBtn = document.getElementById('btnForceSync');
-  if (!dot) return;
+  const footerStatus = document.getElementById('tursoSyncStatus');
+  const footerText = document.getElementById('tursoSyncText');
+  const footerTime = document.getElementById('databaseSyncTime');
+  const footerBtn = document.getElementById('databaseSyncBtn');
 
-  dot.textContent = msg;
-  dot.className = 'db-status-dot';
+  if (dot) {
+    dot.textContent = msg;
+    dot.className = 'db-status-dot';
+  }
 
   if (msg.startsWith('Syncing') || msg.startsWith('Saving') || msg.startsWith('Connecting')) {
-    dot.classList.add('syncing');
+    if (dot) dot.classList.add('syncing');
     if (icon) icon.classList.add('spinning');
     if (syncBtn) syncBtn.disabled = true;
+    if (footerStatus) footerStatus.className = 'footer-sync-status is-syncing';
+    if (footerText) footerText.textContent = msg.startsWith('Saving') ? 'Database: saving...' : 'Database: syncing...';
+    if (footerBtn) footerBtn.disabled = true;
     return;
   }
 
   if (isError) {
-    dot.classList.add('disconnected');
+    if (dot) dot.classList.add('disconnected');
+    if (footerStatus) footerStatus.className = 'footer-sync-status is-offline';
+    if (footerText) footerText.textContent = msg.includes('local') ? 'Database: local only' : 'Database: offline';
+    if (footerTime) footerTime.textContent = msg;
   } else {
-    dot.classList.add('connected');
+    const ts = msg.includes('·') ? msg.split('·').pop().trim() : '';
+    if (dot) dot.classList.add('connected');
+    if (footerStatus) footerStatus.className = 'footer-sync-status is-online';
+    if (footerText) footerText.textContent = 'Database: connected';
+    if (footerTime) footerTime.textContent = 'Last sync: ' + (ts || 'never');
   }
 
   if (icon) icon.classList.remove('spinning');
   if (syncBtn) syncBtn.disabled = false;
+  if (footerBtn) footerBtn.disabled = false;
 }
 
 async function initTursoTables() {
@@ -3298,11 +3501,37 @@ function redirectToSignIn() {
 }
 
 function toggleAcctMenu() {
-  document.getElementById('acct-wrap')?.classList.toggle('open');
+  document.querySelectorAll('.topbar .topbar-menu').forEach(menu => {
+    if (menu.id !== 'acct-wrap') {
+      menu.classList.remove('open');
+      const btn = menu.querySelector('button[aria-expanded]');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+  const wrap = document.getElementById('acct-wrap');
+  const btn = document.getElementById('acct-btn');
+  wrap?.classList.toggle('open');
+  if (btn && wrap) btn.setAttribute('aria-expanded', wrap.classList.contains('open') ? 'true' : 'false');
 }
 
 function closeAcctMenu() {
   document.getElementById('acct-wrap')?.classList.remove('open');
+  document.getElementById('acct-btn')?.setAttribute('aria-expanded', 'false');
+}
+
+function toggleTopbarMenu(id) {
+  const target = document.getElementById(id);
+  if (!target) return;
+  document.querySelectorAll('.topbar .topbar-menu').forEach(menu => {
+    if (menu !== target) {
+      menu.classList.remove('open');
+      const btn = menu.querySelector('button[aria-expanded]');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+  target.classList.toggle('open');
+  const btn = target.querySelector('button[aria-expanded]');
+  if (btn) btn.setAttribute('aria-expanded', target.classList.contains('open') ? 'true' : 'false');
 }
 
 /* ════════════════════════════════════════
@@ -3374,6 +3603,11 @@ function closeMobileSidebar() {
 }
 
 function switchTo(target) {
+  document.querySelectorAll('.topbar .topbar-menu').forEach(menu => {
+    menu.classList.remove('open');
+    const btn = menu.querySelector('button[aria-expanded]');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  });
   sections.forEach(s => s.classList.toggle('active', s.id === `section-${target}`));
   navBtns.forEach(b => b.classList.toggle('active', b.dataset.target === target));
   const activeBtn = [...navBtns].find(b => b.dataset.target === target);
@@ -3432,6 +3666,13 @@ document.getElementById('login-username').addEventListener('keydown', e => {
 document.addEventListener('click', e => {
   const wrap = document.getElementById('acct-wrap');
   if (wrap && !wrap.contains(e.target)) closeAcctMenu();
+  document.querySelectorAll('.topbar .topbar-menu').forEach(menu => {
+    if (!menu.contains(e.target)) {
+      menu.classList.remove('open');
+      const btn = menu.querySelector('button[aria-expanded]');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+  });
 });
 window.addEventListener('beforeunload', () => {
   if (currentUser?.username) setPresence(false);
