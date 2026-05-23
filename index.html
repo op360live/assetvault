@@ -291,8 +291,77 @@ body{
 .hub-panel{display:flex;flex-direction:column;gap:16px;min-width:0;overflow:hidden}
 body.is-logged-out .auth-only{display:none!important}
 body.is-logged-in .guest-only{display:none!important}
+body.is-module-open .hub-grid{display:none}
 body.is-logged-out .page-content{max-width:980px}
 @media(max-width:800px){.hub-grid{grid-template-columns:1fr}}
+
+.native-app-view{display:none}
+body.is-module-open .native-app-view.active{display:block}
+.topbar-app-link.active{background:var(--accent-soft);color:var(--accent)}
+.module-subnav{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  margin:0;padding:6px;border:1px solid var(--border);
+  border-radius:999px;background:var(--card-bg);box-shadow:var(--card-shadow);width:max-content;max-width:100%;
+}
+.module-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.module-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.module-subnav-btn{
+  height:32px;padding:0 13px;border:0;border-radius:999px;
+  background:transparent;color:var(--text2);font-family:inherit;
+  font-size:12px;font-weight:800;cursor:pointer;transition:background .13s,color .13s;
+}
+.module-subnav-btn:hover{background:var(--hover-bg);color:var(--accent)}
+.module-subnav-btn.active{background:var(--accent);color:#fff}
+.module-action-btn{
+  height:34px;padding:0 14px;border:0;border-radius:999px;
+  background:var(--accent);color:#fff;font-family:inherit;
+  font-size:12px;font-weight:850;cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;
+  box-shadow:0 5px 14px var(--accent-glow);
+  transition:opacity .13s,transform .13s;
+}
+.module-action-btn:hover{opacity:.9;transform:translateY(-1px)}
+.accountability-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.accountability-stat{
+  background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-lg);
+  padding:16px;box-shadow:var(--card-shadow);
+}
+.accountability-stat-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:6px}
+.accountability-stat-value{font-size:25px;font-weight:850;color:var(--text);letter-spacing:-.4px}
+.accountability-table-wrap{overflow:auto;border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--card-shadow);background:var(--card-bg)}
+.accountability-table{width:100%;min-width:900px;border-collapse:collapse;font-size:13px}
+.accountability-table th{padding:11px 14px;text-align:left;background:var(--hover-bg);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)}
+.accountability-table td{padding:13px 14px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle}
+.accountability-table tr:last-child td{border-bottom:0}
+.accountability-table tr:hover td{background:var(--hover-bg)}
+.accountability-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.accountability-search{height:36px;min-width:260px;flex:1;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--search-bg);color:var(--text);font-family:inherit;font-size:13px;outline:none}
+.accountability-filter{height:36px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--search-bg);color:var(--text2);font-family:inherit;font-size:13px}
+.accountability-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.accountability-form-grid .span2{grid-column:span 2}
+.accountability-modal-section{font-size:11px;font-weight:850;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.accountability-asset-rows{display:flex;flex-direction:column;gap:8px}
+.accountability-asset-row{display:grid;grid-template-columns:140px 1fr 1fr 28px;gap:8px;align-items:center;background:var(--search-bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px}
+.accountability-asset-row select,.accountability-asset-row input{height:36px;border:1px solid var(--border);border-radius:var(--radius);background:var(--card-bg);color:var(--text);font-family:inherit;font-size:13px;padding:0 10px;outline:none}
+.accountability-asset-row select:focus,.accountability-asset-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.accountability-remove-asset{width:28px;height:28px;border:0;border-radius:999px;background:transparent;color:var(--text3);cursor:pointer}
+.accountability-remove-asset:hover{background:var(--red-bg);color:var(--red)}
+.accountability-error{display:none;margin-top:12px;padding:10px 12px;border-radius:var(--radius);background:var(--red-bg);color:var(--red);font-size:12px;font-weight:800}
+.accountability-error.show{display:block}
+.accountability-site-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.accountability-site-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px 14px;box-shadow:var(--card-shadow)}
+.accountability-site-name{font-size:12px;font-weight:850;color:var(--text);margin-bottom:8px}
+.accountability-progress{height:6px;background:var(--hover-bg);border-radius:999px;overflow:hidden;margin-bottom:8px}
+.accountability-progress span{display:block;height:100%;background:var(--green);border-radius:999px}
+.module-status{font-size:12.5px;color:var(--text3);font-weight:700}
+.module-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}
+.module-badge.green{background:var(--green-bg);color:var(--green)}
+.module-badge.amber{background:var(--amber-bg);color:var(--amber)}
+.module-badge.blue{background:var(--blue-bg);color:var(--blue)}
+.module-badge.gray{background:var(--hover-bg);color:var(--text3)}
+.empty-state{padding:42px 18px;text-align:center;color:var(--text3);font-size:13px;font-weight:700}
+@media(max-width:900px){.accountability-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.accountability-form-grid{grid-template-columns:1fr}.accountability-form-grid .span2{grid-column:1}.accountability-asset-row{grid-template-columns:1fr 28px}.accountability-asset-row select,.accountability-asset-row input{grid-column:1/-1}.accountability-remove-asset{grid-column:2;grid-row:1}}
 
 /* ── INFO CARD ── */
 .info-card{
@@ -537,11 +606,11 @@ body.is-logged-out .page-content{max-width:980px}
   </div>
   <div class="topbar-right">
     <nav class="topbar-app-nav auth-only" aria-label="Applications">
-      <a class="topbar-app-link" href="https://op360live.github.io/assetvault/aaf.html" target="_blank" rel="noopener">Accountability</a>
-      <a class="topbar-app-link" href="https://op360live.github.io/assetvault/inventory.html" target="_blank" rel="noopener">Asset Register</a>
-      <a class="topbar-app-link" href="https://op360live.github.io/assetvault/laptop.html" target="_blank" rel="noopener">Laptop</a>
-      <a class="topbar-app-link" href="https://op360live.github.io/assetvault/offboarding.html" target="_blank" rel="noopener">Offboarding</a>
-      <a class="topbar-app-link" href="https://op360live.github.io/assetvault/w2w.html" target="_blank" rel="noopener">W2W</a>
+      <a class="topbar-app-link" href="https://op360live.github.io/assetvault/aaf.html" data-hub-view="accountability" onclick="showHubView(event,'accountability')">Accountability</a>
+      <a class="topbar-app-link" href="https://op360live.github.io/assetvault/inventory.html">Asset Register</a>
+      <a class="topbar-app-link" href="https://op360live.github.io/assetvault/laptop.html">Laptop</a>
+      <a class="topbar-app-link" href="https://op360live.github.io/assetvault/offboarding.html">Offboarding</a>
+      <a class="topbar-app-link" href="https://op360live.github.io/assetvault/w2w.html">W2W</a>
     </nav>
     <div class="topbar-menu tools-menu auth-only" id="toolsMenu">
       <button class="tools-menu-btn" id="toolsMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Tools">
@@ -573,15 +642,15 @@ body.is-logged-out .page-content{max-width:980px}
       <div class="topbar-dropdown notification-dropdown" role="menu">
         <div class="dropdown-head"><span>Notifications</span><span>3 New</span></div>
         <div class="notification-list">
-          <a class="notification-item" href="https://op360live.github.io/assetvault/offboarding.html" target="_blank" rel="noopener" role="menuitem">
+          <a class="notification-item" href="https://op360live.github.io/assetvault/offboarding.html" role="menuitem">
             <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-9-9"/></svg></span>
             <span class="notification-copy"><span class="notification-title">Offboarding queue ready</span><span class="notification-meta">Review retrieval records</span></span>
           </a>
-          <a class="notification-item" href="https://op360live.github.io/assetvault/inventory.html" target="_blank" rel="noopener" role="menuitem">
+          <a class="notification-item" href="https://op360live.github.io/assetvault/inventory.html" role="menuitem">
             <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
             <span class="notification-copy"><span class="notification-title">Inventory tools online</span><span class="notification-meta">Open asset register</span></span>
           </a>
-          <a class="notification-item" href="https://op360live.github.io/assetvault/aaf.html" target="_blank" rel="noopener" role="menuitem">
+          <a class="notification-item" href="https://op360live.github.io/assetvault/aaf.html" role="menuitem">
             <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
             <span class="notification-copy"><span class="notification-title">AAF forms available</span><span class="notification-meta">Launch accountability forms</span></span>
           </a>
@@ -600,7 +669,7 @@ body.is-logged-out .page-content{max-width:980px}
           <div class="profile-mini-name">IT Admin</div>
           <div class="profile-mini-role">AssetVault Workspace</div>
         </div>
-        <a href="https://op360live.github.io/assetvault/laptop.html" target="_blank" rel="noopener" role="menuitem">
+        <a href="https://op360live.github.io/assetvault/laptop.html" role="menuitem">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           Workspace
         </a>
@@ -618,6 +687,26 @@ body.is-logged-out .page-content{max-width:980px}
 </header>
 
 <main class="page-content">
+
+  <section class="native-app-view auth-only" id="accountabilityView" aria-label="Asset accountability forms">
+    <div class="module-toolbar">
+      <div class="module-subnav" aria-label="Accountability sections">
+        <button class="module-subnav-btn active" type="button" data-accountability-subview="dashboard" onclick="showAccountabilitySubview('dashboard')">Dashboard</button>
+        <button class="module-subnav-btn" type="button" data-accountability-subview="deployments" onclick="showAccountabilitySubview('deployments')">Deployments</button>
+      </div>
+      <div class="module-actions">
+        <button class="module-action-btn" type="button" onclick="openAccountabilityDeployModal()">Add Deployment</button>
+        <button class="module-action-btn" type="button" onclick="loadAccountabilityView(true)">Sync</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <span class="module-status" id="accountabilityStatus">Not synced yet.</span>
+        <span class="module-status">Create, edit, sign, and PDF tools are available in this workspace.</span>
+      </div>
+    </div>
+    <div id="accountabilityContent"></div>
+  </section>
 
   <div class="hub-grid">
     <div class="hub-panel">
@@ -681,6 +770,111 @@ body.is-logged-out .page-content{max-width:980px}
   </div>
 
 </main>
+
+<div class="overlay" id="accountabilityDeployOverlay" onclick="if(event.target===this)closeAccountabilityDeployModal()">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <div class="modal-title">Add Deployment</div>
+      <button class="modal-close" type="button" onclick="closeAccountabilityDeployModal()" aria-label="Close add deployment">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="accountability-modal-section">Employee Information</div>
+      <div class="accountability-form-grid">
+        <div>
+          <label class="field-label" for="ad_employeeName">Employee Name</label>
+          <input class="field-input" id="ad_employeeName" placeholder="Full name">
+        </div>
+        <div>
+          <label class="field-label" for="ad_jobTitle">Job Title</label>
+          <input class="field-input" id="ad_jobTitle" placeholder="e.g. Customer Service Rep">
+        </div>
+        <div>
+          <label class="field-label" for="ad_department">Department</label>
+          <input class="field-input" id="ad_department" placeholder="e.g. Operations">
+        </div>
+        <div>
+          <label class="field-label" for="ad_emailAddress">Email Address</label>
+          <input class="field-input" id="ad_emailAddress" type="email" placeholder="employee@company.com">
+        </div>
+        <div>
+          <label class="field-label" for="ad_site">Site</label>
+          <select class="field-input" id="ad_site">
+            <option value="">Select site</option>
+            <option value="EB2">EB2</option>
+            <option value="EB3">EB3</option>
+            <option value="DMD">DMD</option>
+            <option value="SDP">SDP</option>
+            <option value="WFH">WFH</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label" for="ad_floor">Floor</label>
+          <input class="field-input" id="ad_floor" placeholder="e.g. 5F">
+        </div>
+      </div>
+
+      <div class="accountability-modal-section">Request Details</div>
+      <div class="accountability-form-grid">
+        <div>
+          <label class="field-label" for="ad_fsItamObr">FS/ITAM/OBR #</label>
+          <input class="field-input" id="ad_fsItamObr" placeholder="Ticket/OBR number">
+        </div>
+        <div>
+          <label class="field-label" for="ad_requestedBy">Requested By</label>
+          <input class="field-input" id="ad_requestedBy" placeholder="Requester's name">
+        </div>
+        <div>
+          <label class="field-label" for="ad_dateRequested">Date Requested</label>
+          <input class="field-input" id="ad_dateRequested" type="date">
+        </div>
+        <div>
+          <label class="field-label" for="ad_dateRelease">Date of Release</label>
+          <input class="field-input" id="ad_dateRelease" type="date">
+        </div>
+        <div>
+          <label class="field-label" for="ad_itPersonnel">IT Personnel</label>
+          <input class="field-input" id="ad_itPersonnel" readonly>
+        </div>
+        <div>
+          <label class="field-label" for="ad_status">Status</label>
+          <select class="field-input" id="ad_status">
+            <option value="Active">Active</option>
+            <option value="Pending">Pending</option>
+            <option value="Returned">Returned</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="accountability-modal-section">IT Assets</div>
+      <div class="accountability-asset-rows" id="accountabilityAssetRows"></div>
+      <button class="btn" type="button" style="width:100%;justify-content:center;margin-top:10px" onclick="addAccountabilityAssetRow()">Add Another Asset</button>
+
+      <div class="accountability-modal-section">Policy Defaults</div>
+      <div class="accountability-form-grid">
+        <div class="span2">
+          <label class="field-label" for="ad_assetPurpose">IT Asset Purpose</label>
+          <input class="field-input" id="ad_assetPurpose" placeholder="Company provided/requested asset">
+        </div>
+        <div class="span2">
+          <label class="field-label" for="ad_duration">Duration</label>
+          <input class="field-input" id="ad_duration" placeholder="Entire duration of employment">
+        </div>
+        <div class="span2">
+          <label class="field-label" for="ad_authorityTo">Authority To</label>
+          <input class="field-input" id="ad_authorityTo" readonly>
+        </div>
+      </div>
+      <div class="accountability-error" id="accountabilityDeployError"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--border)">
+      <button class="btn" type="button" onclick="closeAccountabilityDeployModal()">Cancel</button>
+      <button class="btn btn-primary" id="accountabilityDeploySaveBtn" type="button" onclick="saveAccountabilityDeployment()">Save Deployment</button>
+    </div>
+  </div>
+</div>
 
 <div class="overlay" id="hubLoginOverlay" onclick="if(event.target===this)closeHubLogin()">
   <div class="hub-login-modal">
@@ -836,7 +1030,7 @@ function applyHubSession(){
   const user=readHubSession();
   document.body.classList.toggle('is-logged-in',!!user);
   document.body.classList.toggle('is-logged-out',!user);
-  if(!user)return;
+  if(!user){closeHubView();return;}
   const name=user.displayName||user.username||'IT Admin';
   const initials=name.split(/\s+/).filter(Boolean).map(part=>part[0]).join('').slice(0,2).toUpperCase()||'IT';
   document.querySelectorAll('.profile-name,.profile-mini-name').forEach(el=>{el.textContent=name});
@@ -988,9 +1182,386 @@ function doHubLogout(){
   });
   try{localStorage.removeItem('assetvault_session')}catch{}
   setTopbarMenu(null,false);
+  closeHubView();
   applyHubSession();
 }
 window.doHubLogout=doHubLogout;
+
+function showHubView(event,view){
+  event?.preventDefault();
+  if(!readHubSession()){openHubLogin();return}
+  setTopbarMenu(null,false);
+  document.body.classList.add('is-module-open');
+  document.querySelectorAll('.native-app-view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.topbar-app-link[data-hub-view]').forEach(el=>el.classList.toggle('active',el.dataset.hubView===view));
+  if(view==='accountability'){
+    document.getElementById('accountabilityView')?.classList.add('active');
+    loadAccountabilityView();
+  }
+  document.querySelector('.page-content')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.showHubView=showHubView;
+
+function closeHubView(){
+  document.body.classList.remove('is-module-open');
+  document.querySelectorAll('.native-app-view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.topbar-app-link[data-hub-view]').forEach(el=>el.classList.remove('active'));
+}
+window.closeHubView=closeHubView;
+
+let accountabilityRecords=[];
+let accountabilityLoaded=false;
+let accountabilitySubview='dashboard';
+let accountabilitySearch='';
+let accountabilityStatusFilter='';
+let accountabilitySignedFilter='';
+let accountabilityEditId=null;
+function accountabilityAssets(record){
+  if(Array.isArray(record.assets)&&record.assets.length)return record.assets;
+  if(record.assetType||record.assetBrand||record.serialNo)return[{type:record.assetType||'',brand:record.assetBrand||'',serialNo:record.serialNo||''}];
+  return[];
+}
+function accountabilityDate(value){
+  if(!value)return '—';
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime()))return escapeHtml(value);
+  return d.toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'2-digit'});
+}
+function accountabilityBadge(text,type='gray'){
+  return '<span class="module-badge '+type+'">'+escapeHtml(text||'—')+'</span>';
+}
+function showAccountabilitySubview(view){
+  accountabilitySubview=view||'dashboard';
+  document.querySelectorAll('[data-accountability-subview]').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.accountabilitySubview===accountabilitySubview);
+  });
+  renderAccountabilityView();
+}
+window.showAccountabilitySubview=showAccountabilitySubview;
+const ACCOUNTABILITY_ASSET_TYPES=['HEADSET','KEYBOARD','LAN ADAPTOR','LAPTOP','MONITOR','MOUSE','PERIPHERALS','SMARTPHONES','SYSTEM UNIT','UPS','WEBCAM','E-TOKEN','YUBIKEYS'];
+const ACCOUNTABILITY_FIELDS=['employeeName','jobTitle','department','emailAddress','site','floor','fsItamObr','requestedBy','dateRequested','dateRelease','itPersonnel','status','assetPurpose','duration','authorityTo'];
+function accountUid(){
+  return Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+}
+function showAccountabilityDeployError(msg){
+  const el=document.getElementById('accountabilityDeployError');
+  if(!el)return;
+  el.textContent=msg;
+  el.classList.add('show');
+}
+function clearAccountabilityDeployError(){
+  const el=document.getElementById('accountabilityDeployError');
+  if(!el)return;
+  el.textContent='';
+  el.classList.remove('show');
+}
+function openAccountabilityDeployModal(id=''){
+  if(!readHubSession()){openHubLogin();return}
+  accountabilityEditId=id||null;
+  const record=accountabilityEditId?accountabilityRecords.find(item=>item.id===accountabilityEditId):null;
+  const today=new Date().toISOString().slice(0,10);
+  ACCOUNTABILITY_FIELDS.forEach(field=>{
+    const el=document.getElementById('ad_'+field);
+    if(el)el.value=record?.[field]||'';
+  });
+  const user=readHubSession();
+  document.querySelector('#accountabilityDeployOverlay .modal-title').textContent=record?'Edit Deployment':'Add Deployment';
+  if(!record){
+    document.getElementById('ad_dateRequested').value=today;
+    document.getElementById('ad_dateRelease').value=today;
+    document.getElementById('ad_status').value='Active';
+    document.getElementById('ad_assetPurpose').value='Company provided/requested asset';
+    document.getElementById('ad_duration').value='Entire duration of employment';
+    document.getElementById('ad_authorityTo').value='Use only inside company premises and must not be taken outside under any circumstances.';
+  }
+  document.getElementById('ad_itPersonnel').value=record?.itPersonnel||user?.displayName||user?.username||'';
+  document.getElementById('accountabilityAssetRows').innerHTML='';
+  (record?accountabilityAssets(record):[{type:'',brand:'',serialNo:''}]).forEach(asset=>addAccountabilityAssetRow(asset));
+  clearAccountabilityDeployError();
+  document.getElementById('accountabilityDeploySaveBtn').textContent=record?'Save Changes':'Save Deployment';
+  document.getElementById('accountabilityDeployOverlay')?.classList.add('open');
+  setTimeout(()=>document.getElementById('ad_employeeName')?.focus(),80);
+}
+window.openAccountabilityDeployModal=openAccountabilityDeployModal;
+
+function closeAccountabilityDeployModal(){
+  document.getElementById('accountabilityDeployOverlay')?.classList.remove('open');
+  accountabilityEditId=null;
+}
+window.closeAccountabilityDeployModal=closeAccountabilityDeployModal;
+
+function accountAssetTypeOptions(selected=''){
+  return '<option value="">Type</option>'+ACCOUNTABILITY_ASSET_TYPES.map(type=>'<option value="'+type+'" '+(type===selected?'selected':'')+'>'+type+'</option>').join('');
+}
+function addAccountabilityAssetRow(asset={}){
+  const rows=document.getElementById('accountabilityAssetRows');
+  if(!rows)return;
+  const row=document.createElement('div');
+  row.className='accountability-asset-row';
+  row.innerHTML=
+    '<select title="Asset Type">'+accountAssetTypeOptions(asset.type||'')+'</select>'+
+    '<input type="text" placeholder="Brand / Model" value="'+escapeHtml(asset.brand||'')+'">'+
+    '<input type="text" placeholder="Serial No." value="'+escapeHtml(asset.serialNo||'')+'">'+
+    '<button class="accountability-remove-asset" type="button" title="Remove" onclick="this.parentElement.remove()">&times;</button>';
+  rows.appendChild(row);
+}
+window.addAccountabilityAssetRow=addAccountabilityAssetRow;
+
+function collectAccountabilityAssets(){
+  const rows=[...document.querySelectorAll('#accountabilityAssetRows .accountability-asset-row')];
+  const assets=rows.map(row=>{
+    const fields=row.querySelectorAll('select,input');
+    return {
+      type:fields[0]?.value||'',
+      brand:(fields[1]?.value||'').trim(),
+      serialNo:(fields[2]?.value||'').trim()
+    };
+  }).filter(asset=>asset.type||asset.brand||asset.serialNo);
+  return assets.length?assets:[{type:'',brand:'',serialNo:''}];
+}
+
+function findAccountabilityDuplicateSerial(assets){
+  const existing=new Set();
+  accountabilityRecords.forEach(record=>{
+    if(accountabilityEditId&&record.id===accountabilityEditId)return;
+    accountabilityAssets(record).forEach(asset=>{
+      if(asset.serialNo)existing.add(asset.serialNo.trim().toLowerCase());
+    });
+  });
+  const seen=new Set();
+  for(const asset of assets){
+    const serial=(asset.serialNo||'').trim().toLowerCase();
+    if(!serial)continue;
+    if(seen.has(serial))return asset.serialNo;
+    if(existing.has(serial))return asset.serialNo;
+    seen.add(serial);
+  }
+  return '';
+}
+
+async function saveAccountabilityDeployment(){
+  clearAccountabilityDeployError();
+  const name=(document.getElementById('ad_employeeName')?.value||'').trim();
+  if(!name){showAccountabilityDeployError('Employee name is required.');return}
+  const assets=collectAccountabilityAssets();
+  const hasAsset=assets.some(asset=>asset.type||asset.brand||asset.serialNo);
+  if(!hasAsset){showAccountabilityDeployError('Add at least one asset.');return}
+  const duplicate=findAccountabilityDuplicateSerial(assets);
+  if(duplicate){showAccountabilityDeployError('Serial number already exists or is duplicated: '+duplicate);return}
+  const saveBtn=document.getElementById('accountabilityDeploySaveBtn');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving...'}
+  const existing=accountabilityEditId?accountabilityRecords.find(item=>item.id===accountabilityEditId):null;
+  const record={...(existing||{}),id:accountabilityEditId||accountUid(),createdAt:existing?.createdAt||new Date().toISOString().slice(0,10),signature:existing?.signature||null,signedAt:existing?.signedAt||null,assets};
+  ACCOUNTABILITY_FIELDS.forEach(field=>{
+    record[field]=document.getElementById('ad_'+field)?.value||'';
+  });
+  const first=assets[0]||{};
+  record.assetType=first.type||'';
+  record.assetBrand=first.brand||'';
+  record.serialNo=first.serialNo||'';
+  try{
+    await persistAccountabilityRecord(record);
+    if(accountabilityEditId){
+      accountabilityRecords=accountabilityRecords.map(item=>item.id===record.id?record:item);
+    }else{
+      accountabilityRecords.unshift(record);
+    }
+    accountabilityLoaded=true;
+    accountabilitySubview='deployments';
+    closeAccountabilityDeployModal();
+    renderAccountabilityView();
+  }catch(err){
+    showAccountabilityDeployError('Unable to save deployment: '+(err.message||err));
+  }finally{
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent=accountabilityEditId?'Save Changes':'Save Deployment'}
+  }
+}
+window.saveAccountabilityDeployment=saveAccountabilityDeployment;
+
+async function persistAccountabilityRecord(record){
+  await tursoExec('CREATE TABLE IF NOT EXISTS headset_deployments (id TEXT PRIMARY KEY, data TEXT NOT NULL)');
+  const result=await tursoExec('INSERT OR REPLACE INTO headset_deployments (id, data) VALUES (?, ?)',[record.id,JSON.stringify(record)]);
+  if(result?.error)throw new Error(result.error);
+}
+
+async function signAccountabilityRecord(id){
+  const record=accountabilityRecords.find(item=>item.id===id);
+  if(!record)return;
+  const name=prompt('Enter signer name:',record.employeeName||'');
+  if(!name)return;
+  record.signature='Signed electronically by '+name;
+  record.signedAt=new Date().toISOString();
+  try{
+    await persistAccountabilityRecord(record);
+    renderAccountabilityView();
+  }catch(err){
+    alert('Unable to sign record: '+(err.message||err));
+  }
+}
+window.signAccountabilityRecord=signAccountabilityRecord;
+
+function accountabilityPdfHtml(record){
+  const assets=accountabilityAssets(record);
+  const assetRows=assets.map(asset=>'<tr><td>'+escapeHtml(asset.type||'')+'</td><td>'+escapeHtml(asset.brand||'')+'</td><td>'+escapeHtml(asset.serialNo||'')+'</td></tr>').join('');
+  return '<!doctype html><html><head><meta charset="utf-8"><title>Asset Accountability Form</title><style>body{font-family:Arial,sans-serif;color:#111;padding:32px;line-height:1.45}h1{text-align:center;font-size:18px;text-transform:uppercase}table{width:100%;border-collapse:collapse;margin:14px 0}td,th{border:1px solid #333;padding:8px;font-size:12px;text-align:left}.label{background:#f0f0f0;font-weight:bold;width:30%}.policy{font-size:12px;margin-top:18px}.sign{margin-top:42px;text-align:center}.line{border-top:1px solid #111;width:260px;margin:18px auto 4px}</style></head><body>'+
+    '<h1>IT Asset Accountability Form</h1>'+
+    '<table>'+
+      '<tr><td class="label">Employee Name</td><td>'+escapeHtml(record.employeeName||'')+'</td></tr>'+
+      '<tr><td class="label">Job Title</td><td>'+escapeHtml(record.jobTitle||'')+'</td></tr>'+
+      '<tr><td class="label">Department</td><td>'+escapeHtml(record.department||'')+'</td></tr>'+
+      '<tr><td class="label">Site / Floor</td><td>'+escapeHtml([record.site,record.floor].filter(Boolean).join(' / '))+'</td></tr>'+
+      '<tr><td class="label">Requested By</td><td>'+escapeHtml(record.requestedBy||'')+'</td></tr>'+
+      '<tr><td class="label">Date Requested</td><td>'+accountabilityDate(record.dateRequested)+'</td></tr>'+
+      '<tr><td class="label">Date Released</td><td>'+accountabilityDate(record.dateRelease)+'</td></tr>'+
+      '<tr><td class="label">IT Personnel</td><td>'+escapeHtml(record.itPersonnel||'')+'</td></tr>'+
+      '<tr><td class="label">Purpose</td><td>'+escapeHtml(record.assetPurpose||'')+'</td></tr>'+
+      '<tr><td class="label">Duration</td><td>'+escapeHtml(record.duration||'')+'</td></tr>'+
+    '</table>'+
+    '<table><thead><tr><th>Type</th><th>Brand / Model</th><th>Serial No.</th></tr></thead><tbody>'+assetRows+'</tbody></table>'+
+    '<div class="policy">I, <strong>'+escapeHtml(record.employeeName||'')+'</strong>, acknowledge receipt of the listed IT asset(s) and agree to follow company asset accountability policy.</div>'+
+    '<div class="sign">'+escapeHtml(record.signature||'')+'<div class="line"></div><div>Employee Signature'+(record.signedAt?' / '+accountabilityDate(record.signedAt):'')+'</div></div>'+
+    '</body></html>';
+}
+
+function downloadAccountabilityPdf(id){
+  const record=accountabilityRecords.find(item=>item.id===id);
+  if(!record)return;
+  const blob=new Blob([accountabilityPdfHtml(record)],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='IT-Asset-Accountability-Form-'+(record.employeeName||'deployment').replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.html';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+window.downloadAccountabilityPdf=downloadAccountabilityPdf;
+
+async function loadAccountabilityView(force=false){
+  if(accountabilityLoaded&&!force){renderAccountabilityView();return}
+  const status=document.getElementById('accountabilityStatus');
+  const content=document.getElementById('accountabilityContent');
+  if(status)status.textContent='Syncing accountability records...';
+  if(content)content.innerHTML='<div class="card"><div class="empty-state">Loading accountability records...</div></div>';
+  const result=await tursoExec('SELECT data FROM headset_deployments ORDER BY rowid DESC LIMIT 200');
+  if(result?.error){
+    accountabilityRecords=[];
+    accountabilityLoaded=false;
+    if(status)status.textContent='Unable to sync records.';
+    if(content)content.innerHTML='<div class="err-card"><strong>Database error:</strong> '+escapeHtml(result.error)+'</div>';
+    return;
+  }
+  accountabilityRecords=(result?.rows||[]).map(row=>{
+    try{return JSON.parse(row[0]?.value||'{}')}catch{return null}
+  }).filter(Boolean);
+  accountabilityLoaded=true;
+  renderAccountabilityView();
+}
+window.loadAccountabilityView=loadAccountabilityView;
+
+function renderAccountabilityView(){
+  const status=document.getElementById('accountabilityStatus');
+  const content=document.getElementById('accountabilityContent');
+  document.querySelectorAll('[data-accountability-subview]').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.accountabilitySubview===accountabilitySubview);
+  });
+  if(status)status.textContent='Last synced '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+  if(!content)return;
+  if(accountabilitySubview==='deployments')renderAccountabilityDeployments(content);
+  else renderAccountabilityDashboard(content);
+}
+
+function renderAccountabilityDashboard(content){
+  const total=accountabilityRecords.length;
+  const signed=accountabilityRecords.filter(r=>r.signature).length;
+  const unsigned=total-signed;
+  const active=accountabilityRecords.filter(r=>(r.status||'').toLowerCase()==='active').length;
+  const sites=['EB2','EB3','DMD','SDP','WFH'];
+  const siteCards=sites.map(site=>{
+    const rows=accountabilityRecords.filter(r=>r.site===site);
+    const siteSigned=rows.filter(r=>r.signature).length;
+    const pct=rows.length?Math.round(siteSigned/rows.length*100):0;
+    return '<div class="accountability-site-card">'+
+      '<div class="accountability-site-name">'+site+'</div>'+
+      '<div class="accountability-progress"><span style="width:'+pct+'%"></span></div>'+
+      '<div style="display:flex;justify-content:space-between;color:var(--text3);font-size:11px;font-weight:800"><span>'+siteSigned+' signed</span><span>'+rows.length+' total</span></div>'+
+    '</div>';
+  }).join('');
+  const recent=accountabilityRecords.slice(0,8);
+  content.innerHTML=
+    '<div class="accountability-stats">'+
+      [
+        ['Total Forms',total,''],
+        ['Signed',signed,'color:var(--green)'],
+        ['Awaiting Signature',unsigned,'color:var(--amber)'],
+        ['Active',active,'color:var(--blue)']
+      ].map(([label,value,style])=>'<div class="accountability-stat"><div class="accountability-stat-label">'+label+'</div><div class="accountability-stat-value" style="'+style+'">'+value+'</div></div>').join('')+
+    '</div>'+
+    '<div class="accountability-site-grid">'+siteCards+'</div>'+
+    '<div class="card"><div class="card-header"><span class="card-title">Recent Deployments</span><button class="btn" type="button" onclick="showAccountabilitySubview(&quot;deployments&quot;)">View all</button></div><div class="card-body">'+
+      buildAccountabilityTable(recent,total?'No recent accountability records.':'No accountability records found yet.')+
+    '</div></div>';
+}
+
+function filteredAccountabilityRecords(){
+  const q=accountabilitySearch.trim().toLowerCase();
+  return accountabilityRecords.filter(record=>{
+    const statusOk=!accountabilityStatusFilter||record.status===accountabilityStatusFilter;
+    const signedOk=!accountabilitySignedFilter||(accountabilitySignedFilter==='signed'?!!record.signature:!record.signature);
+    const assets=accountabilityAssets(record);
+    const haystack=[
+      record.employeeName,record.emailAddress,record.site,record.floor,record.itPersonnel,record.status,
+      ...assets.flatMap(asset=>[asset.type,asset.brand,asset.serialNo])
+    ].join(' ').toLowerCase();
+    return statusOk&&signedOk&&(!q||haystack.includes(q));
+  });
+}
+
+function renderAccountabilityDeployments(content){
+  const filtered=filteredAccountabilityRecords();
+  content.innerHTML=
+    '<div class="card"><div class="card-header"><span class="card-title">Deployments</span><span class="module-status">'+filtered.length+' of '+accountabilityRecords.length+' records</span></div><div class="card-body">'+
+      '<div class="accountability-toolbar">'+
+        '<input class="accountability-search" placeholder="Search employee, serial, site..." value="'+escapeHtml(accountabilitySearch)+'" oninput="accountabilitySearch=this.value;renderAccountabilityView()">'+
+        '<select class="accountability-filter" onchange="accountabilityStatusFilter=this.value;renderAccountabilityView()">'+
+          '<option value="">All Status</option>'+
+          ['Active','Pending','Returned','Inactive'].map(v=>'<option value="'+v+'" '+(accountabilityStatusFilter===v?'selected':'')+'>'+v+'</option>').join('')+
+        '</select>'+
+        '<select class="accountability-filter" onchange="accountabilitySignedFilter=this.value;renderAccountabilityView()">'+
+          '<option value="">All Signatures</option>'+
+          '<option value="signed" '+(accountabilitySignedFilter==='signed'?'selected':'')+'>Signed</option>'+
+          '<option value="unsigned" '+(accountabilitySignedFilter==='unsigned'?'selected':'')+'>Unsigned</option>'+
+        '</select>'+
+        '<button class="btn" type="button" onclick="accountabilitySearch=&quot;&quot;;accountabilityStatusFilter=&quot;&quot;;accountabilitySignedFilter=&quot;&quot;;renderAccountabilityView()">Reset</button>'+
+      '</div>'+
+      buildAccountabilityTable(filtered,'No deployment records match your filters.')+
+    '</div></div>';
+}
+
+function buildAccountabilityTable(records,emptyMessage){
+  if(!records.length)return '<div class="empty-state">'+escapeHtml(emptyMessage)+'</div>';
+  return '<div class="accountability-table-wrap"><table class="accountability-table"><thead><tr><th>Employee</th><th>Site</th><th>Assets</th><th>Serial No.</th><th>Released</th><th>IT Personnel</th><th>Status</th><th>Signed</th><th>Actions</th></tr></thead><tbody>'+
+    records.map(record=>{
+      const assets=accountabilityAssets(record);
+      const assetNames=assets.map(asset=>[asset.type,asset.brand].filter(Boolean).join(' / ')).filter(Boolean).join(', ')||'—';
+      const serials=assets.map(asset=>asset.serialNo).filter(Boolean).join(', ')||'—';
+      const statusType=record.status==='Active'?'green':record.status==='Pending'?'amber':record.status==='Returned'?'blue':'gray';
+      return '<tr>'+
+        '<td><div style="font-weight:800;color:var(--text)">'+escapeHtml(record.employeeName||'—')+'</div><div style="font-size:11px;color:var(--text3)">'+escapeHtml(record.emailAddress||'')+'</div></td>'+
+        '<td>'+escapeHtml([record.site,record.floor].filter(Boolean).join(' · ')||'—')+'</td>'+
+        '<td>'+escapeHtml(assetNames)+'</td>'+
+        '<td style="font-family:monospace;font-size:12px">'+escapeHtml(serials)+'</td>'+
+        '<td>'+accountabilityDate(record.dateRelease||record.dateRequested||record.createdAt)+'</td>'+
+        '<td>'+escapeHtml(record.itPersonnel||'—')+'</td>'+
+        '<td>'+accountabilityBadge(record.status||'—',statusType)+'</td>'+
+        '<td>'+(record.signature?accountabilityBadge('Signed','green'):accountabilityBadge('Unsigned','gray'))+'</td>'+
+        '<td><div style="display:flex;gap:6px;flex-wrap:wrap">'+
+          '<button class="btn btn-sm" type="button" onclick="openAccountabilityDeployModal(&quot;'+escapeHtml(record.id)+'&quot;)">Edit</button>'+
+          '<button class="btn btn-sm" type="button" onclick="signAccountabilityRecord(&quot;'+escapeHtml(record.id)+'&quot;)">Sign</button>'+
+          '<button class="btn btn-sm" type="button" onclick="downloadAccountabilityPdf(&quot;'+escapeHtml(record.id)+'&quot;)">PDF</button>'+
+        '</div></td>'+
+      '</tr>';
+    }).join('')+'</tbody></table></div>';
+}
 
 /* THEME */
 const htmlEl=document.documentElement;
@@ -1038,6 +1609,7 @@ document.addEventListener('keydown',e=>{
   if(e.key!=='Escape')return;
   setTopbarMenu(null,false);
   closeHubLogin();
+  closeAccountabilityDeployModal();
 });
 
 /* TURSO */
