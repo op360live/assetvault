@@ -6,6 +6,20 @@
 <!-- CSP removed: file:// origin treats 'self' as null, blocking inline scripts and fetch -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AssetVault — Delivery Inventory v2.5</title>
+<script>
+(() => {
+  try {
+    const session = JSON.parse(sessionStorage.getItem('deliveryAssets_session') || 'null');
+    if (session && session.username) return;
+  } catch (e) {}
+  try {
+    const shared = JSON.parse(localStorage.getItem('assetvault_session') || 'null');
+    if (shared && shared.username) return;
+  } catch (e) {}
+  document.documentElement.style.display = 'none';
+  window.location.replace('https://op360live.github.io/assetvault/');
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -480,7 +494,7 @@ body {
    LOGIN SCREEN
 ══════════════════════════════ */
 #loginScreen {
-  min-height: 100vh; display: flex; flex-direction: row;
+  min-height: 100vh; display: none; flex-direction: row;
   position: relative; overflow: hidden;
   background: #f7f8fc;
 }
@@ -3708,7 +3722,7 @@ window.doLogout = function() {
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('assetvault_session');
   currentUser = null;
-  window.location.href = 'index.html';
+  redirectToSignIn();
 };
 
 function checkSession() {
@@ -3721,6 +3735,9 @@ function checkSession() {
     if (s && s.username) { currentUser = applySharedProfile(s); sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); return true; }
   } catch {}
   return false;
+}
+function redirectToSignIn() {
+  window.location.replace('https://op360live.github.io/assetvault/');
 }
 
 function persistSharedProfile(user) {
@@ -6853,7 +6870,8 @@ window.switchView = function(view) {
       document.getElementById('loginScreen').style.display = 'none';
       showApp();
     } else {
-      document.getElementById('loginScreen').style.display = 'flex';
+      redirectToSignIn();
+      return;
     }
   } catch(e) {
     console.error('[init]', e);
