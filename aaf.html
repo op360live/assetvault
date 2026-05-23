@@ -192,46 +192,151 @@ body{font-family:'Segoe UI',Arial,'Helvetica Neue',Helvetica,sans-serif;backgrou
 
 /* ── MAIN AREA ── */
 #mainArea{flex:1;overflow:hidden;display:flex;flex-direction:column}
-.topbar{height:52px;display:flex;align-items:center;gap:12px;padding:0 24px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
-.topbar-title{font-size:15px;font-weight:700;color:var(--text);flex:1}
-.topbar-actions{display:flex;gap:8px;align-items:center;position:relative}
-.topbar-user-chip{height:34px;padding:3px 8px;border:1px solid var(--border);border-radius:999px;background:var(--surface);box-shadow:var(--card-shadow)}
-.topbar-user-chip .btn-logout{margin-left:2px}
-.app-switcher{position:relative}
-.app-switcher-btn{
-  display:inline-flex;align-items:center;gap:7px;
-  height:34px;padding:0 12px;border-radius:var(--radius);
-  border:1px solid var(--border);background:var(--surface);
-  color:var(--text2);font-size:13px;font-weight:600;font-family:inherit;
-  cursor:pointer;transition:background .15s,color .15s,border-color .15s;
+.topbar{
+  position:sticky;top:0;z-index:120;
+  min-height:60px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:16px;padding:0 24px 0 18px;
+  box-shadow:0 1px 2px rgba(15,23,42,.04);
+  flex-shrink:0;
 }
-.app-switcher-btn:hover,.app-switcher.open .app-switcher-btn{background:var(--surface2);color:var(--text);border-color:var(--accent)}
-.app-switcher-btn .app-switcher-chevron{transition:transform .15s}
-.app-switcher.open .app-switcher-btn .app-switcher-chevron{transform:rotate(180deg)}
-.app-switcher-menu{
-  position:absolute;right:0;top:calc(100% + 8px);z-index:1200;
-  width:250px;padding:6px;
+.topbar-left{display:flex;align-items:center;gap:18px;min-width:0;flex:1}
+.topbar-brand{
+  display:flex;align-items:center;gap:10px;
+  font-weight:700;font-size:16px;color:var(--text);text-decoration:none;flex-shrink:0;min-width:188px;
+}
+.topbar-brand-mark{
+  width:32px;height:32px;border-radius:8px;background:var(--accent);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 16px var(--accent-glow);
+}
+.topbar-brand-text{display:flex;flex-direction:column;line-height:1.1}
+.topbar-brand-name{font-size:16px;font-weight:800;letter-spacing:-.2px}
+.topbar-brand-sub{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-top:3px}
+.topbar-app-nav{display:flex;align-items:center;gap:2px;min-width:0}
+.topbar-app-link{
+  display:inline-flex;align-items:center;height:36px;padding:0 10px;border-radius:999px;
+  color:var(--text2);text-decoration:none;font-size:12.5px;font-weight:700;white-space:nowrap;
+  transition:background .13s,color .13s;
+}
+.topbar-app-link:hover,.topbar-app-link.active{background:var(--surface-tint);color:var(--accent)}
+.topbar-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.topbar-menu{position:relative}
+.topbar-icon-btn,.tools-menu-btn,.profile-btn{
+  height:38px;border:0;background:transparent;color:var(--text2);
+  font-family:inherit;cursor:pointer;transition:background .13s,color .13s;
+}
+.topbar-icon-btn{
+  position:relative;width:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+}
+.topbar-icon-btn:hover,.topbar-menu.open>.topbar-icon-btn{background:var(--surface2);color:var(--text)}
+.topbar-badge{
+  position:absolute;top:6px;right:6px;
+  min-width:16px;height:16px;padding:0 4px;border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--red);color:#fff;font-size:9px;font-weight:800;
+  box-shadow:0 0 0 2px var(--surface);
+}
+.tools-menu-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:0 10px;border-radius:999px;
+  font-size:13px;font-weight:600;
+}
+.tools-menu-btn:hover,.topbar-menu.open .tools-menu-btn{background:var(--surface2);color:var(--text)}
+.tools-menu-btn .chev,.profile-btn .chev{transition:transform .15s}
+.topbar-menu.open .tools-menu-btn .chev,.topbar-menu.open .profile-btn .chev{transform:rotate(180deg)}
+.topbar-dropdown,.tools-dropdown{
+  position:absolute;right:0;top:calc(100% + 10px);z-index:120;
   background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius-lg);box-shadow:var(--card-shadow);
+  border-radius:var(--radius-lg);box-shadow:0 14px 34px rgba(15,23,42,.14);
   opacity:0;visibility:hidden;transform:translateY(-4px);
   transition:opacity .14s,transform .14s,visibility .14s;
 }
-.app-switcher.open .app-switcher-menu{opacity:1;visibility:visible;transform:translateY(0)}
-.app-switcher-menu a{
+.topbar-menu.open .topbar-dropdown,.topbar-menu.open .tools-dropdown{opacity:1;visibility:visible;transform:translateY(0)}
+.tools-dropdown{width:238px;padding:6px}
+.tools-dropdown button,.profile-dropdown a,.profile-dropdown button,.notification-item{
   display:flex;align-items:center;gap:10px;
-  padding:9px 10px;border-radius:var(--radius);
+  width:100%;padding:9px 10px;border-radius:var(--radius);
   color:var(--text2);text-decoration:none;font-size:13px;font-weight:600;
+  border:0;background:transparent;font-family:inherit;text-align:left;cursor:pointer;
   transition:background .13s,color .13s;
 }
-.app-switcher-menu a:hover{background:var(--surface-tint);color:var(--accent)}
-.app-switcher-icon{
+.tools-dropdown button:hover,.profile-dropdown a:hover,.profile-dropdown button:hover,.notification-item:hover{background:var(--surface2);color:var(--accent)}
+.tools-dropdown-icon{
   width:28px;height:28px;border-radius:var(--radius);
   display:flex;align-items:center;justify-content:center;flex-shrink:0;
   color:var(--accent);background:var(--accent-light);
 }
-.app-switcher-text{display:flex;flex-direction:column;gap:1px;min-width:0}
-.app-switcher-name{color:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools-dropdown-text{display:flex;flex-direction:column;gap:1px;min-width:0}
+.tools-dropdown-name{color:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notification-dropdown{width:320px;padding:0;overflow:hidden}
+.dropdown-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  font-size:13px;font-weight:800;color:var(--text);
+}
+.dropdown-head span:last-child{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:2px 7px;border-radius:999px}
+.notification-list{padding:6px}
+.notification-icon{
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  color:var(--accent);background:var(--accent-light);
+}
+.notification-copy{min-width:0;flex:1}
+.notification-title{font-size:12.5px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notification-meta{font-size:11px;color:var(--text3);margin-top:1px}
+.dropdown-foot{display:block;padding:10px 14px;border-top:1px solid var(--border);text-align:center;color:var(--accent);font-size:12px;font-weight:700;text-decoration:none}
+.profile-btn{
+  display:flex;align-items:center;gap:9px;
+  padding:0 8px 0 6px;border-radius:999px;
+}
+.profile-btn:hover,.topbar-menu.open>.profile-btn{background:var(--surface2);color:var(--text)}
+.profile-avatar{
+  width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:11px;font-weight:800;letter-spacing:.3px;
+  overflow:hidden;flex-shrink:0;
+}
+.profile-name{font-size:13px;font-weight:700;color:var(--text)}
+.profile-dropdown{width:210px;padding:6px}
+.profile-dropdown .profile-mini{padding:10px 10px 12px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.profile-mini-name{font-size:13px;font-weight:800;color:var(--text)}
+.profile-mini-role{font-size:11px;color:var(--text3);margin-top:1px}
+.profile-dropdown .logout-btn{color:var(--red);border-top:1px solid var(--border);border-radius:0;margin-top:4px;padding-top:11px}
+.profile-dropdown .logout-btn:hover{background:var(--red-bg);color:var(--red);border-radius:var(--radius)}
+.view-toolbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:14px 24px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;
+}
+.view-toolbar-title{font-size:15px;font-weight:700;color:var(--text)}
+.topbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .page-content{flex:1;overflow-y:auto;padding:24px}
+.page-footer{
+  width:100%;border-top:1px solid var(--border);background:var(--surface);color:var(--text3);font-size:12px;flex-shrink:0;
+}
+.page-footer-inner{
+  max-width:none;margin:0;padding:8px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+}
+.page-footer-brand{font-weight:700;color:var(--text2)}
+.page-footer-links{display:flex;align-items:center;gap:10px}
+.footer-sync-status{
+  display:inline-flex;align-items:center;gap:7px;padding:4px 5px 4px 9px;border:1px solid var(--border);
+  border-radius:999px;background:var(--surface);color:var(--text3);font-size:11px;font-weight:700;box-shadow:0 4px 12px rgba(15,23,42,.05);
+}
+.footer-sync-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);box-shadow:0 0 0 2px rgba(148,163,184,.14)}
+.footer-sync-status.is-syncing .footer-sync-dot{background:var(--blue);box-shadow:0 0 0 2px rgba(37,99,235,.16)}
+.footer-sync-status.is-online .footer-sync-dot{background:var(--green);box-shadow:0 0 0 2px rgba(22,163,74,.16)}
+.footer-sync-status.is-offline .footer-sync-dot{background:var(--red);box-shadow:0 0 0 2px rgba(220,38,38,.16)}
+.footer-sync-time{color:var(--text3);font-weight:600}
+.footer-sync-sep{width:1px;height:12px;background:var(--border)}
+.footer-sync-btn{
+  height:22px;padding:0 9px;border:0;border-radius:999px;background:var(--accent);color:#fff;font-family:inherit;
+  font-size:10.5px;font-weight:800;cursor:pointer;transition:opacity .13s,transform .13s;
+}
+.footer-sync-btn:hover{opacity:.9;transform:translateY(-1px)}
+.footer-sync-btn:disabled{opacity:.62;cursor:not-allowed;transform:none}
 
 /* ── THEME PILL ── */
 .pill-track{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 8px;cursor:pointer;transition:background .15s}
@@ -447,8 +552,19 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
   #sidebar,#sidebar.collapsed{position:fixed;left:0;top:0;height:100vh;width:240px!important;min-width:240px!important;z-index:500;transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:4px 0 24px rgba(0,0,0,.2)}
   #sidebar.mobile-open,#sidebar.collapsed.mobile-open{transform:translateX(0)}
   #mainArea{width:100%;min-width:0}
-  .topbar{padding:0 12px;gap:8px}
-  .topbar-title{font-size:14px}
+  .topbar{padding:10px 12px;gap:10px;align-items:flex-start}
+  .topbar-left{gap:10px;align-items:center}
+  .topbar-brand{min-width:0}
+  .topbar-app-nav{display:none}
+  .topbar-right{gap:8px}
+  .tools-menu-btn span{display:none}
+  .tools-menu-btn{width:38px;padding:0;justify-content:center}
+  .tools-menu-btn .chev{display:none}
+  .profile-name{display:none}
+  .view-toolbar{padding:12px}
+  .view-toolbar-title{font-size:14px}
+  .topbar-actions{width:100%;justify-content:flex-start}
+  .page-footer-inner{padding:8px 12px;gap:8px}
   .page-content{padding:12px}
   .stat-grid{grid-template-columns:repeat(3,1fr)!important;gap:8px;margin-bottom:12px}
   .stat-val{font-size:20px}
@@ -487,8 +603,6 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
   .asset-row>*:nth-child(2){grid-column:1/-1;grid-row:2}
   .asset-row>*:nth-child(3){grid-column:1/-1;grid-row:3}
   .asset-row>*:nth-child(4){grid-column:2;grid-row:1}
-  /* DB status → icon only */
-  #dbStatusDot{font-size:0!important;padding:5px 7px!important;border-radius:50%!important}
   /* Toast */
   .toast-container{bottom:12px;right:12px;left:12px}
   .toast{max-width:100%}
@@ -499,13 +613,11 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
 @media(max-width:480px){
   .stat-grid{grid-template-columns:1fr 1fr!important}
   .page-content{padding:10px}
-  .app-switcher-btn span{display:none}
-  .app-switcher-btn{width:34px;padding:0;justify-content:center}
-  .app-switcher-btn .app-switcher-chevron{display:none}
-  .app-switcher-menu{right:-42px;width:min(250px,calc(100vw - 24px))}
+  .topbar{padding:10px}
   .topbar-actions .btn span{display:none}
   .topbar-actions .btn{padding:6px 8px}
-  .topbar-user-chip .user-info{display:none}
+  .notification-dropdown{right:-48px;width:min(320px,calc(100vw - 24px))}
+  .profile-dropdown{right:-8px;width:min(220px,calc(100vw - 24px))}
 }
 
 /* ── PRINT STYLES ── */
@@ -720,30 +832,122 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
   <div id="sbOverlay" onclick="toggleSidebar()"></div>
 
   <div id="mainArea">
-    <div class="topbar">
-      <button id="btnMobileMenu" class="btn-icon" onclick="toggleSidebar()" title="Open menu" style="flex-shrink:0">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-      <div class="topbar-title" id="topbarTitle">Dashboard</div>
-      <div class="topbar-actions" id="topbarActions">
-        <div id="topbarViewActions" style="display:flex;gap:8px;align-items:center"></div>
-      </div>
-      <div id="dbStatusDot" class="db-status-dot" style="margin-left:8px" title="Database sync status">Connecting…</div>
-      <button class="btn-icon" id="btnForceSync" onclick="tursoSyncAll()" title="Refresh from database" style="margin-left:2px">
-        <svg id="syncIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-      </button>
-      <div class="user-chip topbar-user-chip">
-        <div class="user-avatar" id="userAvatar">AU</div>
-        <div class="user-info">
-          <div class="user-name" id="userNameDisplay">Admin</div>
-          <div class="user-role" id="userRoleDisplay">Admin</div>
-        </div>
-        <button class="btn-logout" onclick="doLogout()" title="Sign out">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="btnMobileMenu" class="topbar-icon-btn" onclick="toggleSidebar()" title="Open menu" style="flex-shrink:0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
+        <a href="https://op360live.github.io/assetvault/" class="topbar-brand">
+          <span class="topbar-brand-mark">
+            <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="8" stroke="currentColor" stroke-width="2"/>
+              <path d="M16 8c-2 2.5-3 5-3 8s1 5.5 3 8M16 8c2 2.5 3 5 3 8s-1 5.5-3 8M8 16h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="topbar-brand-text">
+            <span class="topbar-brand-name">IT Hub</span>
+            <span class="topbar-brand-sub">Dashboard</span>
+          </span>
+        </a>
+      </div>
+      <div class="topbar-right">
+        <nav class="topbar-app-nav" aria-label="Applications">
+          <a class="topbar-app-link active" href="https://op360live.github.io/assetvault/aaf.html">Accountability</a>
+          <a class="topbar-app-link" href="https://op360live.github.io/assetvault/inventory.html" target="_blank" rel="noopener">Asset Register</a>
+          <a class="topbar-app-link" href="https://op360live.github.io/assetvault/laptop.html" target="_blank" rel="noopener">Laptop</a>
+          <a class="topbar-app-link" href="https://op360live.github.io/assetvault/offboarding.html" target="_blank" rel="noopener">Offboarding</a>
+          <a class="topbar-app-link" href="https://op360live.github.io/assetvault/w2w-inventory.html" target="_blank" rel="noopener">W2W</a>
+        </nav>
+        <div class="topbar-menu tools-menu" id="toolsMenu">
+          <button class="tools-menu-btn" id="toolsMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Tools">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M3 12h18"/><path d="M6 6l12 12"/></svg>
+            <span>Tools</span>
+            <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="tools-dropdown" id="toolsDropdown" role="menu">
+            <button type="button" onclick="openIndexDeductionCalculator()" role="menuitem">
+              <span class="tools-dropdown-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M3 12h18"/><path d="M6 6l12 12"/></svg>
+              </span>
+              <span class="tools-dropdown-text"><span class="tools-dropdown-name">Deduction Calculator</span></span>
+            </button>
+          </div>
+        </div>
+        <button class="topbar-icon-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+        <div class="topbar-menu notification-menu" id="notificationMenu">
+          <button class="topbar-icon-btn" id="notificationMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Notifications">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M10 21h4"/></svg>
+            <span class="topbar-badge">3</span>
+          </button>
+          <div class="topbar-dropdown notification-dropdown" role="menu">
+            <div class="dropdown-head"><span>Notifications</span><span>3 New</span></div>
+            <div class="notification-list">
+              <a class="notification-item" href="https://op360live.github.io/assetvault/offboarding.html" target="_blank" rel="noopener" role="menuitem">
+                <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-9-9"/></svg></span>
+                <span class="notification-copy"><span class="notification-title">Offboarding queue ready</span><span class="notification-meta">Review retrieval records</span></span>
+              </a>
+              <a class="notification-item" href="https://op360live.github.io/assetvault/inventory.html" target="_blank" rel="noopener" role="menuitem">
+                <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
+                <span class="notification-copy"><span class="notification-title">Inventory tools online</span><span class="notification-meta">Open asset register</span></span>
+              </a>
+              <a class="notification-item" href="https://op360live.github.io/assetvault/aaf.html" target="_blank" rel="noopener" role="menuitem">
+                <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+                <span class="notification-copy"><span class="notification-title">AAF forms available</span><span class="notification-meta">Launch accountability forms</span></span>
+              </a>
+            </div>
+            <a class="dropdown-foot" href="#pageContent">View activity</a>
+          </div>
+        </div>
+        <div class="topbar-menu profile-menu" id="profileMenu">
+          <button class="profile-btn" id="profileMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Profile">
+            <span class="profile-avatar" id="userAvatar">AU</span>
+            <span class="profile-name" id="userNameDisplay">Admin</span>
+            <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="profile-dropdown" role="menu">
+            <div class="profile-mini">
+              <div class="profile-mini-name" id="topbarProfileMiniName">Admin</div>
+              <div class="profile-mini-role" id="userRoleDisplay">Admin</div>
+            </div>
+            <a href="https://op360live.github.io/assetvault/" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              IT Hub
+            </a>
+            <button type="button" onclick="toggleTheme()" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v2"/><path d="M12 19v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M3 12h2"/><path d="M19 12h2"/><circle cx="12" cy="12" r="4"/></svg>
+              Toggle Theme
+            </button>
+            <button class="logout-btn" type="button" onclick="doLogout()" role="menuitem">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="view-toolbar">
+      <div class="view-toolbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-actions" id="topbarActions">
+        <div id="topbarViewActions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"></div>
       </div>
     </div>
     <div class="page-content" id="pageContent"></div>
+    <footer class="page-footer">
+      <div class="page-footer-inner">
+        <span><span class="page-footer-brand">IT Hub</span> &copy; 2026 AssetVault</span>
+        <span class="page-footer-links">
+          <span class="footer-sync-status" id="tursoSyncStatus" role="status" aria-live="polite">
+            <span class="footer-sync-dot" aria-hidden="true"></span>
+            <span id="tursoSyncText">Database: checking...</span>
+            <span class="footer-sync-sep" aria-hidden="true"></span>
+            <span class="footer-sync-time" id="databaseSyncTime">Last sync: never</span>
+            <button class="footer-sync-btn" id="databaseSyncBtn" type="button" onclick="tursoSyncAll()">Sync</button>
+          </span>
+        </span>
+      </div>
+    </footer>
   </div>
 </div>
 
@@ -1205,23 +1409,26 @@ function clearOperationalLocalCache() {
 }
 
 function setSyncStatus(msg, isError = false) {
-  const dot = document.getElementById('dbStatusDot');
-  const icon = document.getElementById('syncIcon');
-  const btn  = document.getElementById('btnForceSync');
-  if (!dot) return;
+  const status = document.getElementById('tursoSyncStatus');
+  const text = document.getElementById('tursoSyncText');
+  const time = document.getElementById('databaseSyncTime');
+  const btn  = document.getElementById('databaseSyncBtn');
+  if (!status || !text || !time) return;
   if (msg.startsWith('Syncing') || msg.startsWith('Saving')) {
-    dot.className = 'db-status-dot syncing'; dot.textContent = 'Syncing\u2026';
-    if (icon) icon.classList.add('spinning');
+    status.className = 'footer-sync-status is-syncing';
+    text.textContent = 'Database: syncing...';
+    time.textContent = _lastSuccessfulSyncTs ? 'Last sync: ' + _lastSuccessfulSyncTs : 'Last sync: never';
     if (btn) btn.disabled = true;
   } else if (isError) {
-    dot.className = 'db-status-dot disconnected'; dot.textContent = 'Not connected';
-    if (icon) icon.classList.remove('spinning');
+    status.className = 'footer-sync-status is-offline';
+    text.textContent = 'Database: offline';
+    time.textContent = _lastSuccessfulSyncTs ? 'Last sync: ' + _lastSuccessfulSyncTs : 'Last sync: never';
     if (btn) btn.disabled = false;
   } else {
     const ts = msg.includes('\u00b7') ? msg.split('\u00b7').pop().trim() : (_lastSuccessfulSyncTs || '');
-    dot.className = 'db-status-dot connected';
-    dot.innerHTML = 'Connected&thinsp;&middot;&thinsp;Last sync&thinsp;<span style="font-variant-numeric:tabular-nums;">' + ts + '</span>';
-    if (icon) icon.classList.remove('spinning');
+    status.className = 'footer-sync-status is-online';
+    text.textContent = 'Database: connected';
+    time.textContent = 'Last sync: ' + (ts || 'never');
     if (btn) btn.disabled = false;
   }
 }
@@ -1471,8 +1678,10 @@ function updateAvatarDisplay() {
   const av = document.getElementById('userAvatar');
   const nm = document.getElementById('userNameDisplay');
   const rl = document.getElementById('userRoleDisplay');
+  const mini = document.getElementById('topbarProfileMiniName');
   if (nm) nm.textContent = currentUser.displayName || currentUser.username;
   if (rl) rl.textContent = roleLabel(currentUser.role);
+  if (mini) mini.textContent = currentUser.displayName || currentUser.username;
   if (av) {
     if (currentUser.avatar) {
       av.innerHTML = `<img src="${currentUser.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="">`;
@@ -1699,6 +1908,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener(ev, () => { if (currentUser) resetInactivityTimer(); }, { passive: true })
   );
   initApplicationsMenu();
+  initTopbarMenus();
 });
 
 function initApplicationsMenu() {
@@ -1723,6 +1933,41 @@ function initApplicationsMenu() {
       wrap.classList.remove('open');
     }
   });
+}
+
+function initTopbarMenus() {
+  const menus = [
+    { wrap: document.getElementById('toolsMenu'), btn: document.getElementById('toolsMenuBtn') },
+    { wrap: document.getElementById('notificationMenu'), btn: document.getElementById('notificationMenuBtn') },
+    { wrap: document.getElementById('profileMenu'), btn: document.getElementById('profileMenuBtn') },
+  ].filter(item => item.wrap && item.btn);
+
+  if (!menus.length) return;
+
+  function closeAll(exceptWrap = null) {
+    menus.forEach(({ wrap, btn }) => {
+      const isOpen = wrap === exceptWrap && !wrap.classList.contains('open');
+      wrap.classList.toggle('open', wrap === exceptWrap ? isOpen : false);
+      btn.setAttribute('aria-expanded', wrap.classList.contains('open') ? 'true' : 'false');
+    });
+  }
+
+  menus.forEach(({ wrap, btn }) => {
+    btn.addEventListener('click', event => {
+      event.stopPropagation();
+      closeAll(wrap);
+    });
+    wrap.addEventListener('click', event => event.stopPropagation());
+  });
+
+  document.addEventListener('click', () => closeAll());
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeAll();
+  });
+}
+
+function openIndexDeductionCalculator() {
+  window.location.href = 'https://op360live.github.io/assetvault/';
 }
 
 /* ══════════════════════════════════════════
