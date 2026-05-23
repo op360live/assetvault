@@ -7,6 +7,22 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Asset Accountability Forms · AssetSign</title>
+<script>
+(() => {
+  const signToken = new URLSearchParams(window.location.search).get('sign');
+  if (signToken) return;
+  try {
+    const session = JSON.parse(sessionStorage.getItem('headsedvault_session') || 'null');
+    if (session && session.username) return;
+  } catch (e) {}
+  try {
+    const shared = JSON.parse(localStorage.getItem('assetvault_session') || 'null');
+    if (shared && shared.username) return;
+  } catch (e) {}
+  document.documentElement.style.display = 'none';
+  window.location.replace('https://op360live.github.io/assetvault/');
+})();
+</script>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Crect x='8' y='5' width='16' height='20' rx='2' fill='white' opacity='.95'/%3E%3Crect x='11' y='9' width='10' height='1.5' rx='.75' fill='%234f46e5' opacity='.5'/%3E%3Crect x='11' y='13' width='10' height='1.5' rx='.75' fill='%234f46e5' opacity='.5'/%3E%3Crect x='11' y='17' width='6' height='1.5' rx='.75' fill='%234f46e5' opacity='.5'/%3E%3Cpolyline points='11,22 13.5,25 21,19' stroke='%2316a34a' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -25,7 +41,7 @@ body{font-family:'Segoe UI',Arial,'Helvetica Neue',Helvetica,sans-serif;backgrou
 
 /* ── LOGIN ── */
 /* ── LOGIN SPLIT-PANEL ── */
-#loginScreen{min-height:100vh;display:flex;flex-direction:row;position:relative;overflow:hidden;background:#f7f8fc}
+#loginScreen{min-height:100vh;display:none;flex-direction:row;position:relative;overflow:hidden;background:#f7f8fc}
 #loginScreen.splash-hidden{display:none!important}
 .login-version{position:fixed;bottom:18px;right:22px;z-index:10;font-size:11px;color:rgba(100,80,140,0.40);font-weight:500;font-family:monospace;pointer-events:none}
 .login-left{width:44%;min-height:100vh;flex-shrink:0;background:linear-gradient(150deg,#312e81 0%,#4f46e5 55%,#6d28d9 100%);display:flex;flex-direction:column;padding:60px 52px;position:relative;overflow:hidden}
@@ -408,7 +424,7 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
 .ab-delete{background:var(--red-bg);color:var(--red)}
 .ab-sign{background:rgba(139,92,246,.12);color:#8b5cf6}
 .audit-empty{text-align:center;padding:64px 24px;color:var(--text3);font-size:14px}
-.audit-pagination{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap}
+.audit-pagination,.table-pagination{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap}
 .page-btn{min-width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 8px;transition:all .15s}
 .page-btn:hover:not(:disabled){background:var(--surface);color:var(--text)}
 .page-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -1485,6 +1501,8 @@ let statusFilter = '';
 let signedFilter = ''; // 'signed' | 'unsigned' | ''
 let siteFilter = '';
 let searchQuery = '';
+let deploymentPage = 1;
+const DEPLOYMENTS_PER_PAGE = 10;
 let currentView = 'dashboard';
 
 /* ══════════════════════════════════════════
@@ -1661,12 +1679,15 @@ function checkSession() {
   } catch(e) {}
   return false;
 }
+function redirectToSignIn() {
+  window.location.replace('https://op360live.github.io/assetvault/');
+}
 function doLogout() {
   stopPresence();
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('assetvault_session');
   currentUser = null;
-  window.location.href = 'index.html';
+  redirectToSignIn();
 }
 document.addEventListener('DOMContentLoaded', () => {
   const lp = document.getElementById('loginPass');
@@ -2021,6 +2042,7 @@ function getFilteredDeployments() {
 function openDeploymentsFiltered(nextSite, nextSigned) {
   siteFilter = nextSite || '';
   signedFilter = nextSigned || '';
+  deploymentPage = 1;
   switchView('deployments');
 }
 
@@ -2029,6 +2051,7 @@ function openPersonnelUnsigned(encodedName) {
   siteFilter = '';
   statusFilter = '';
   signedFilter = 'unsigned';
+  deploymentPage = 1;
   switchView('deployments');
 }
 
@@ -2158,12 +2181,30 @@ function renderDeployments() {
 
   const all = deployments;
   const filtered = getFilteredDeployments();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / DEPLOYMENTS_PER_PAGE));
+  deploymentPage = Math.min(Math.max(1, deploymentPage), totalPages);
+  const startIndex = (deploymentPage - 1) * DEPLOYMENTS_PER_PAGE;
+  const paged = filtered.slice(startIndex, startIndex + DEPLOYMENTS_PER_PAGE);
+  const pageStartLabel = filtered.length ? startIndex + 1 : 0;
+  const pageEndLabel = filtered.length ? startIndex + paged.length : 0;
+  let pagination = '';
+  if (filtered.length > DEPLOYMENTS_PER_PAGE) {
+    pagination += `<button class="page-btn" onclick="goDeploymentPage(${deploymentPage - 1})" ${deploymentPage === 1 ? 'disabled' : ''}>‹</button>`;
+    for (let p = 1; p <= totalPages; p++) {
+      if (p === 1 || p === totalPages || Math.abs(p - deploymentPage) <= 2) {
+        pagination += `<button class="page-btn${p === deploymentPage ? ' active' : ''}" onclick="goDeploymentPage(${p})">${p}</button>`;
+      } else if (Math.abs(p - deploymentPage) === 3) {
+        pagination += `<span style="color:var(--text3);padding:0 4px">…</span>`;
+      }
+    }
+    pagination += `<button class="page-btn" onclick="goDeploymentPage(${deploymentPage + 1})" ${deploymentPage === totalPages ? 'disabled' : ''}>›</button>`;
+  }
 
   document.getElementById('pageContent').innerHTML = `
     <div class="table-toolbar">
       <div class="search-wrap">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input class="search-input" placeholder="Search employee, serial, site…" value="${searchQuery}" oninput="searchQuery=this.value;renderDeployments()">
+        <input class="search-input" placeholder="Search employee, serial, site…" value="${searchQuery}" oninput="searchQuery=this.value;deploymentPage=1;renderDeployments()">
       </div>
       <select class="filter-select" onchange="setStatusFilter(this.value)">
         <option value="" ${!statusFilter?'selected':''}>All Status</option>
@@ -2197,7 +2238,7 @@ function renderDeployments() {
             <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M8 14a8 8 0 0116 0"/><rect x="6" y="14" width="4" height="7" rx="2"/><rect x="22" y="14" width="4" height="7" rx="2"/></svg></div>
             <p>${all.length === 0 ? 'No deployments yet — click Add Deployment to get started.' : 'No records match your search.'}</p>
           </div></td></tr>` :
-          filtered.map(d => `<tr>
+          paged.map(d => `<tr>
             <td data-label="Employee"><div style="font-weight:600;color:var(--text)">${d.employeeName||'—'}</div><div style="font-size:11px;color:var(--text3)">${d.emailAddress||''}</div></td>
             <td data-label="Job Title" style="color:var(--text2)">${d.jobTitle||'—'}</td>
             <td data-label="Site" style="color:var(--text2)">${d.site||'—'}${d.floor?' · '+d.floor:''}</td>
@@ -2227,12 +2268,18 @@ function renderDeployments() {
           </tr>`).join('')}
         </tbody>
       </table>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px">
+      <span style="font-size:12px;color:var(--text3)">${filtered.length ? `Showing ${pageStartLabel}-${pageEndLabel} of ${filtered.length}` : 'Showing 0 of 0'}</span>
+      <div class="table-pagination">${pagination}</div>
     </div>`;
 }
 
-function setStatusFilter(v) { statusFilter = v; switchView('deployments'); }
-function setSiteFilter(v) { siteFilter = v; switchView('deployments'); }
-function setSignedFilter(v) { signedFilter = v; switchView('deployments'); }
+function goDeploymentPage(p) { deploymentPage = p; renderDeployments(); }
+function setStatusFilter(v) { statusFilter = v; deploymentPage = 1; switchView('deployments'); }
+function setSiteFilter(v) { siteFilter = v; deploymentPage = 1; switchView('deployments'); }
+function setSignedFilter(v) { signedFilter = v; deploymentPage = 1; switchView('deployments'); }
 
 function statusBadge(s) {
   const map = { Active:'b-active', Pending:'b-pending', Returned:'b-returned', Inactive:'b-inactive' };
@@ -3400,7 +3447,8 @@ document.getElementById('appScreen').classList.remove('active');
   if (checkSession()) {
     showApp();
   } else {
-    document.getElementById('loginScreen').classList.remove('splash-hidden');
+    redirectToSignIn();
+    return;
   }
   const splash = document.getElementById('splashScreen');
   splash.classList.add('fade-out');
