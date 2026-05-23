@@ -5,6 +5,20 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23d95a6a'/%3E%3Cpath d='M16 7v10M12 11l4-4 4 4M8 21h16M10 25h12' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AssetVault — Employee Offboarding v1.5</title>
+<script>
+(() => {
+  try {
+    const session = JSON.parse(sessionStorage.getItem('offboarding_session') || 'null');
+    if (session && session.username) return;
+  } catch (e) {}
+  try {
+    const shared = JSON.parse(localStorage.getItem('assetvault_session') || 'null');
+    if (shared && shared.username) return;
+  } catch (e) {}
+  document.documentElement.style.display = 'none';
+  window.location.replace('https://op360live.github.io/assetvault/');
+})();
+</script>
 <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -475,7 +489,7 @@ body {
    LOGIN SCREEN
 ══════════════════════════════ */
 #loginScreen {
-  min-height: 100vh; display: flex; flex-direction: row;
+  min-height: 100vh; display: none; flex-direction: row;
   position: relative; overflow: hidden;
   background: #f7f8fc;
 }
@@ -2740,7 +2754,7 @@ window.doLogout = function() {
   sessionStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('assetvault_session');
   currentUser = null;
-  window.location.href = 'index.html';
+  redirectToSignIn();
 };
 
 function checkSession() {
@@ -2753,6 +2767,9 @@ function checkSession() {
     if (s && s.username) { currentUser = applySharedProfile(s); sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); return true; }
   } catch {}
   return false;
+}
+function redirectToSignIn() {
+  window.location.replace('https://op360live.github.io/assetvault/');
 }
 
 function persistSharedProfile(user) {
@@ -5326,7 +5343,7 @@ window.addEventListener('DOMContentLoaded', async function() {
       if (checkSession()) {
         showApp();
       } else {
-        document.getElementById('loginScreen').classList.remove('splash-hidden');
+        redirectToSignIn();
       }
     }, 450);
   }, 1200);
