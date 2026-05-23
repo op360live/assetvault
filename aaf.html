@@ -194,7 +194,7 @@ body{font-family:'Segoe UI',Arial,'Helvetica Neue',Helvetica,sans-serif;backgrou
 #mainArea{flex:1;overflow:hidden;display:flex;flex-direction:column}
 .topbar{
   position:sticky;top:0;z-index:120;
-  min-height:60px;
+  height:60px;
   background:var(--surface);
   border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
@@ -248,7 +248,7 @@ body{font-family:'Segoe UI',Arial,'Helvetica Neue',Helvetica,sans-serif;backgrou
 .tools-menu-btn:hover,.topbar-menu.open .tools-menu-btn{background:var(--surface2);color:var(--text)}
 .tools-menu-btn .chev,.profile-btn .chev{transition:transform .15s}
 .topbar-menu.open .tools-menu-btn .chev,.topbar-menu.open .profile-btn .chev{transform:rotate(180deg)}
-.topbar-dropdown,.tools-dropdown{
+.topbar-dropdown,.tools-dropdown,.profile-dropdown{
   position:absolute;right:0;top:calc(100% + 10px);z-index:120;
   background:var(--surface);border:1px solid var(--border);
   border-radius:var(--radius-lg);box-shadow:0 14px 34px rgba(15,23,42,.14);
@@ -906,7 +906,7 @@ td.mono{font-family:'SF Mono',monospace;font-size:12px;color:var(--text2)}
             <span class="profile-name" id="userNameDisplay">Admin</span>
             <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
-          <div class="profile-dropdown" role="menu">
+          <div class="topbar-dropdown profile-dropdown" role="menu">
             <div class="profile-mini">
               <div class="profile-mini-name" id="topbarProfileMiniName">Admin</div>
               <div class="profile-mini-role" id="userRoleDisplay">Admin</div>
