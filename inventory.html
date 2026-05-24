@@ -1401,6 +1401,53 @@ mark.gsr-highlight {
 .modal-body { padding:22px 26px; }
 .modal-footer { padding:18px 26px; border-top:1px solid var(--glass-border2); display:flex; gap:10px; justify-content:flex-end; }
 
+.sync-modal { max-width:820px; }
+.sync-modal .modal-header { align-items:flex-start; gap:16px; }
+.sync-title-wrap { display:flex; flex-direction:column; gap:8px; min-width:0; }
+.sync-kicker {
+  width:max-content; max-width:100%; display:inline-flex; align-items:center; gap:7px;
+  padding:5px 10px; border-radius:999px; background:var(--accent-glow);
+  color:var(--accent); font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.35px;
+}
+.sync-kicker-dot { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px var(--accent-glow); }
+.sync-title { font-size:22px; font-weight:850; letter-spacing:0; color:var(--text); line-height:1.15; }
+.sync-subtitle { font-size:13px; color:var(--text2); line-height:1.5; }
+.sync-pill-row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+.sync-pill {
+  display:inline-flex; align-items:center; gap:8px; min-height:34px; padding:7px 12px;
+  border-radius:999px; border:1px solid var(--border); background:var(--card-bg);
+  color:var(--text2); font-size:12px; font-weight:750; box-shadow:var(--card-shadow);
+}
+.sync-pill strong { color:var(--text); font-size:15px; line-height:1; }
+.sync-pill.added { border-color:rgba(5,150,105,.25); background:rgba(5,150,105,.08); color:var(--success); }
+.sync-pill.updated { border-color:rgba(37,99,235,.24); background:rgba(37,99,235,.08); color:var(--accent); }
+.sync-pill.review { border-color:rgba(212,135,74,.30); background:var(--amber-bg); color:var(--amber); }
+.sync-note {
+  margin-bottom:18px; padding:12px 14px; border:1px solid var(--border);
+  border-radius:12px; background:var(--search-bg); color:var(--text2); font-size:13px; line-height:1.55;
+}
+.sync-section { margin-top:14px; border:1px solid var(--border); border-radius:14px; overflow:hidden; background:var(--card-bg); box-shadow:var(--card-shadow); }
+.sync-section-head {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 14px; background:var(--search-bg); border-bottom:1px solid var(--border);
+}
+.sync-section-title { display:flex; align-items:center; gap:9px; min-width:0; font-weight:850; color:var(--text); }
+.sync-section-title-dot { width:9px; height:9px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+.sync-section-title-dot.added { background:var(--success); }
+.sync-section-title-dot.updated { background:var(--accent); }
+.sync-section-title-dot.review { background:var(--amber); }
+.sync-section-count {
+  flex-shrink:0; border-radius:999px; padding:4px 9px; background:var(--card-bg);
+  border:1px solid var(--border); color:var(--text2); font-size:12px; font-weight:800;
+}
+.sync-list { max-height:178px; overflow:auto; }
+.sync-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border); }
+.sync-row:last-child { border-bottom:0; }
+.sync-row-main { min-width:0; color:var(--text); font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sync-row-sub { margin-top:2px; color:var(--text3); font-size:11px; font-family:var(--mono, 'IBM Plex Mono', monospace); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sync-empty { padding:16px 14px; color:var(--text3); font-size:13px; }
+.sync-more { padding:9px 14px; color:var(--text3); font-size:12px; border-top:1px solid var(--border); background:var(--search-bg); }
+
 /* ══════════════════════════════
    FORM
 ══════════════════════════════ */
@@ -3312,9 +3359,13 @@ mark.gsr-highlight {
 
 <!-- LAPTOP SYNC SUMMARY MODAL -->
 <div class="overlay" id="laptopSyncOverlay" onclick="if(event.target===this)closeLaptopSyncSummary()">
-  <div class="modal" style="max-width:760px;">
+  <div class="modal sync-modal">
     <div class="modal-header">
-      <span class="modal-title">Laptop Sync Summary</span>
+      <div class="sync-title-wrap">
+        <span class="sync-kicker"><span class="sync-kicker-dot"></span>Sync Complete</span>
+        <span class="sync-title">Laptop Sync Summary</span>
+        <span class="sync-subtitle">Laptop Inventory has been reconciled into the Asset Register.</span>
+      </div>
       <button class="modal-close" onclick="closeLaptopSyncSummary()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -6209,40 +6260,48 @@ async function _fetchLaptopRecordsForSync() {
 
 function _renderLaptopSyncSummary(summary) {
   const escHtml = v => String(v || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const stat = (label, value) => `
-    <div style="background:var(--search-bg);border:1px solid var(--border);border-radius:10px;padding:12px;">
-      <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.3px;">${label}</div>
-      <div style="font-size:24px;font-weight:800;color:var(--text);margin-top:2px;">${value}</div>
-    </div>`;
-  const list = (title, items, emptyText) => `
-    <div style="margin-top:18px;">
-      <div style="font-weight:800;color:var(--text);margin-bottom:8px;">${title}</div>
+  const pill = (label, value, cls = '') => `<span class="sync-pill ${cls}"><strong>${value}</strong>${label}</span>`;
+  const itemSub = item => [
+    item.site ? 'Site ' + item.site : '',
+    item.status ? 'Status ' + item.status : '',
+    item.custodian ? 'Custodian ' + item.custodian : ''
+  ].filter(Boolean).join(' | ');
+  const list = (title, items, emptyText, cls) => `
+    <div class="sync-section">
+      <div class="sync-section-head">
+        <div class="sync-section-title"><span class="sync-section-title-dot ${cls}"></span>${title}</div>
+        <div class="sync-section-count">${items.length}</div>
+      </div>
       ${items.length ? `
-        <div style="max-height:180px;overflow:auto;border:1px solid var(--border);border-radius:10px;">
+        <div class="sync-list">
           ${items.slice(0, 80).map(item => `
-            <div style="padding:9px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);">
-              ${escHtml(_assetMatchLabel(item))}
+            <div class="sync-row">
+              <div style="min-width:0;">
+                <div class="sync-row-main">${escHtml(_assetMatchLabel(item))}</div>
+                <div class="sync-row-sub">${escHtml(itemSub(item) || 'No extra details')}</div>
+              </div>
             </div>`).join('')}
         </div>
-        ${items.length > 80 ? `<div style="font-size:12px;color:var(--text3);margin-top:6px;">Showing first 80 of ${items.length}.</div>` : ''}
-      ` : `<div style="font-size:13px;color:var(--text3);">${emptyText}</div>`}
-    </div>`;
+        ${items.length > 80 ? `<div class="sync-more">Showing first 80 of ${items.length}.</div>` : ''}
+      ` : `<div class="sync-empty">${emptyText}</div>`}
+    </div>
+  `;
 
   const body = document.getElementById('laptopSyncSummaryBody');
   if (!body) return;
   body.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
-      ${stat('Read', summary.totalLaptops)}
-      ${stat('Added', summary.added.length)}
-      ${stat('Updated', summary.updated.length)}
-      ${stat('Review', summary.assetOnly.length)}
+    <div class="sync-pill-row">
+      ${pill('read', summary.totalLaptops)}
+      ${pill('added', summary.added.length, 'added')}
+      ${pill('updated', summary.updated.length, 'updated')}
+      ${pill('for review', summary.assetOnly.length, 'review')}
     </div>
-    <div style="margin-top:14px;font-size:13px;color:var(--text2);line-height:1.6;">
-      Synced Laptop Inventory into Asset Register using serial number first, then asset tag. Asset Register-only laptops were not deleted.
+    <div class="sync-note">
+      Matched records by serial number first, then asset tag. Asset Register-only laptops were kept unchanged and listed for review.
     </div>
-    ${list('Added to Asset Register', summary.added, 'No new laptops were added.')}
-    ${list('Updated in Asset Register', summary.updated, 'No existing laptop assets needed updates.')}
-    ${list('Asset Register Only - review', summary.assetOnly, 'No Asset Register-only laptops found.')}
+    ${list('Added to Asset Register', summary.added, 'No new laptops were added.', 'added')}
+    ${list('Updated in Asset Register', summary.updated, 'No existing laptop assets needed updates.', 'updated')}
+    ${list('Asset Register Only - review', summary.assetOnly, 'No Asset Register-only laptops found.', 'review')}
   `;
   document.getElementById('laptopSyncOverlay')?.classList.add('open');
 }
