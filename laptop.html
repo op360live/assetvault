@@ -1103,6 +1103,8 @@ body {
 [data-theme="light"] .brand-card,
 [data-theme="light"] .site-card,
 [data-theme="light"] .acct-counter-card,
+[data-theme="light"] .history-summary-card,
+[data-theme="light"] .history-timeline-row,
 [data-theme="light"] .trend-card,
 [data-theme="light"] .presence-card {
   background: var(--card-bg) !important;
@@ -1570,6 +1572,98 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 .audit-empty {
   text-align: center; padding: 64px 24px; color: var(--text3);
   font-size: 14px;
+}
+.history-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.history-summary-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+}
+.history-summary-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.history-summary-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.history-summary-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.history-page-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.history-timeline-row {
+  display: grid;
+  grid-template-columns: 38px 150px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border2);
+  border-radius: var(--radius-lg);
+  transition: background 0.12s, transform 0.12s;
+}
+.history-timeline-row:hover {
+  background: var(--glass-bg-hover);
+  transform: translateY(-1px);
+}
+.history-timeline-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.history-timeline-time {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: 'IBM Plex Mono', monospace;
+  white-space: nowrap;
+}
+.history-timeline-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.history-timeline-meta {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+.history-timeline-ref {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.history-timeline-ref:hover { text-decoration: underline; }
+@media(max-width:760px){
+  .history-timeline-row {
+    grid-template-columns: 34px 1fr;
+    align-items: flex-start;
+  }
+  .history-timeline-time,
+  .history-timeline-ref {
+    grid-column: 2;
+  }
 }
 .audit-pagination {
   display: flex; gap: 6px; align-items: center; justify-content: center;
@@ -2892,6 +2986,10 @@ mark.gsr-highlight {
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>
         <span class="sb-item-label">Inventory</span>
       </button>
+      <button class="sb-item" id="tabHistory" onclick="switchView('history')" title="History">
+        <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 2"/></svg>
+        <span class="sb-item-label">History</span>
+      </button>
       <button class="sb-item" id="tabCat" onclick="switchView('cat')" title="Category">
         <svg class="sb-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
         <span class="sb-item-label">Category</span>
@@ -3170,6 +3268,43 @@ mark.gsr-highlight {
         </table>
       </div>
       <div class="audit-pagination" id="invPagination" style="margin-top:12px;"></div>
+    </div>
+
+
+    <!-- ══════════ HISTORY VIEW ══════════ -->
+    <div class="view" id="historyView">
+      <div class="counter-card">
+        <div class="audit-toolbar">
+          <div>
+            <div class="dash-section-title">Asset History</div>
+            <div style="font-size:13px;color:var(--text3);margin-top:4px;">Ownership changes and asset activity</div>
+          </div>
+          <div class="audit-filters">
+            <select class="filter-select" id="historyTypeFilter" onchange="renderHistory()">
+              <option value="">All History</option>
+              <option value="ownership">Ownership</option>
+              <option value="asset">Asset Activity</option>
+            </select>
+            <div class="search-wrap" style="width:260px;flex:none;min-width:220px;">
+              <span class="search-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </span>
+              <input type="text" class="search-input" id="historySearchInput" placeholder="Search owner, asset, serial…" oninput="renderHistory()">
+            </div>
+          </div>
+        </div>
+        <div class="history-summary-grid" id="historySummaryGrid"></div>
+      </div>
+
+      <div class="counter-card" style="margin-top:16px;">
+        <div class="audit-toolbar">
+          <div class="dash-section-title">Timeline</div>
+          <span class="audit-total-badge" id="historyTotalBadge">0 events</span>
+        </div>
+        <div class="history-page-list" id="historyList"></div>
+      </div>
     </div>
 
 
@@ -3648,8 +3783,8 @@ function loadSidebarState(){
 
 /* VIEW SWITCHING */
 function switchView(v){
-  const viewTitles={dash:'Dashboard',inv:'Inventory',cat:'Category',audit:'Audit Log',users:'Users'};
-  ['dash','inv','cat','audit','users'].forEach(id=>{
+  const viewTitles={dash:'Dashboard',inv:'Inventory',history:'History',cat:'Category',audit:'Audit Log',users:'Users'};
+  ['dash','inv','history','cat','audit','users'].forEach(id=>{
     const view=document.getElementById(id+'View');
     const tab=document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1));
     if(view) view.classList.toggle('active',v===id);
@@ -3658,6 +3793,7 @@ function switchView(v){
   const titleEl=document.getElementById('topBarTitle');
   if(titleEl) titleEl.textContent=viewTitles[v]||'AssetVault';
   if(v==='dash') renderDashboard();
+  if(v==='history') renderHistory();
   if(v==='cat') renderCategory();
   if(v==='audit'){ auditPage=1; renderAudit().catch(()=>{}); }
   if(v==='users') renderUsersGrid();
@@ -4450,7 +4586,10 @@ function renderTable(){
   html+=`<button class="page-btn" onclick="goInvPage(${invPage+1})" ${invPage===totalPages?'disabled':''}>›</button>`;
   pag.innerHTML=html;
 }
-function render(){renderStats();updateSiteFilter();renderHeader();renderTable();renderChips();}
+function render(){
+  renderStats();updateSiteFilter();renderHeader();renderTable();renderChips();
+  if(document.getElementById('historyView')?.classList.contains('active')) renderHistory();
+}
 function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderHeader();renderTable();renderDashboard();}
 
 /* ── DASHBOARD RENDER ── */
@@ -4619,8 +4758,96 @@ function dashCardClick(status){
   renderChips();renderStats();renderTable();
 }
 
-/* Escape string for use in inline HTML attribute value (single or double quote safe) */
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+/* Escape string for use in inline HTML or attribute values. */
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+/* ── HISTORY VIEW ── */
+function buildHistoryEvents(){
+  const ownerEvents = records.flatMap(r => (r.ownerHistory||[]).map(h => ({
+    kind: 'ownership',
+    ts: h.to || r.dateModified || r.dateAdded || '',
+    title: `${h.owner||'(unknown)'} was previous owner`,
+    meta: `${r.brand||'—'} ${r.model||''} · ${r.currentOwner?`Current owner: ${r.currentOwner}`:'No current owner'} · Changed by ${h.changedBy||'—'}`,
+    search: [h.owner, h.changedBy, r.currentOwner, r.brand, r.model, r.serialNumber, r.assetTag, r.siteLocation, r.assetStatus].filter(Boolean).join(' '),
+    assetId: r.id,
+    assetRef: r.assetTag || r.serialNumber || 'Open asset'
+  })));
+
+  const auditLabel = {add:'Added', edit:'Modified', delete:'Deleted', import:'Imported', login:'Login'};
+  const assetEvents = auditLog
+    .filter(e => e.type !== 'login')
+    .map(e => {
+      const after = e.meta?.after;
+      const before = e.meta?.before;
+      const rec = after || before || records.find(r => (e.assetRef && (r.assetTag===e.assetRef || r.serialNumber===e.assetRef)));
+      return {
+        kind: 'asset',
+        ts: e.ts || '',
+        title: `${auditLabel[e.type]||e.type||'Activity'}${e.detail?`: ${e.detail}`:''}`,
+        meta: `${e.displayName||e.user||'—'}${e.assetRef?' · '+e.assetRef:''}`,
+        search: [e.type, e.detail, e.assetRef, e.user, e.displayName, rec?.currentOwner, rec?.brand, rec?.model, rec?.serialNumber, rec?.assetTag].filter(Boolean).join(' '),
+        assetId: rec?.id || '',
+        assetRef: e.assetRef || rec?.assetTag || rec?.serialNumber || ''
+      };
+    });
+
+  return [...ownerEvents, ...assetEvents].sort((a,b)=>(b.ts||'').localeCompare(a.ts||''));
+}
+
+function renderHistory(){
+  const list = document.getElementById('historyList');
+  const summary = document.getElementById('historySummaryGrid');
+  if(!list || !summary) return;
+
+  const typeFilter = document.getElementById('historyTypeFilter')?.value || '';
+  const q = (document.getElementById('historySearchInput')?.value || '').toLowerCase().trim();
+  const allEvents = buildHistoryEvents();
+  const ownershipCount = allEvents.filter(e=>e.kind==='ownership').length;
+  const assetCount = allEvents.filter(e=>e.kind==='asset').length;
+  const assetsWithHistory = records.filter(r=>(r.ownerHistory||[]).length).length;
+  const latest = allEvents[0]?.ts ? fmtDate(allEvents[0].ts) : '—';
+
+  summary.innerHTML = [
+    {label:'Ownership Changes', num:ownershipCount, sub:`${assetsWithHistory} asset${assetsWithHistory!==1?'s':''} with history`},
+    {label:'Asset Activity', num:assetCount, sub:'Adds, edits, deletes and imports'},
+    {label:'Total Events', num:allEvents.length, sub:'Combined history entries'},
+    {label:'Latest Event', num:latest, sub:'Most recent recorded activity'}
+  ].map(c=>`<div class="history-summary-card">
+    <div class="history-summary-label">${esc(c.label)}</div>
+    <div class="history-summary-num">${esc(c.num)}</div>
+    <div class="history-summary-sub">${esc(c.sub)}</div>
+  </div>`).join('');
+
+  let filtered = allEvents;
+  if(typeFilter) filtered = filtered.filter(e=>e.kind===typeFilter);
+  if(q) filtered = filtered.filter(e=>(e.search||'').toLowerCase().includes(q));
+
+  const totalBadge = document.getElementById('historyTotalBadge');
+  if(totalBadge) totalBadge.textContent = `${filtered.length} event${filtered.length!==1?'s':''}`;
+
+  if(!filtered.length){
+    list.innerHTML = '<div class="audit-empty">No history found.</div>';
+    return;
+  }
+
+  const iconOwnership = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M4 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="10" cy="7" r="4"/></svg>`;
+  const iconAsset = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>`;
+
+  list.innerHTML = filtered.map(e => {
+    const ref = e.assetId
+      ? `<span class="history-timeline-ref" onclick="openViewModal('${esc(e.assetId)}')">${esc(e.assetRef||'Open asset')}</span>`
+      : `<span class="history-timeline-ref">${esc(e.assetRef||'—')}</span>`;
+    return `<div class="history-timeline-row">
+      <div class="history-timeline-icon">${e.kind==='ownership'?iconOwnership:iconAsset}</div>
+      <div class="history-timeline-time">${esc(fmtDate(e.ts))}</div>
+      <div>
+        <div class="history-timeline-title">${esc(e.title)}</div>
+        <div class="history-timeline-meta">${esc(e.meta)}</div>
+      </div>
+      ${ref}
+    </div>`;
+  }).join('');
+}
 
 /* ── SPEC CARD CLICK — filter inventory by status + processor/RAM combo ── */
 let activeSpecFilter=null;
