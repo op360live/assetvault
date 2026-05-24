@@ -2700,6 +2700,10 @@ mark.gsr-highlight {
         </select>
         <!-- hidden CSV input -->
         <input type="file" id="assetCSVInput" accept=".csv" style="display:none" onchange="handleAssetCSV(event)">
+        <button class="btn" onclick="syncLaptopsToAssetRegister()" title="Sync Laptop Inventory into Asset Register">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.13-3.36L23 10M1 14l5.36 4.36A9 9 0 0020.49 15"/></svg>
+          Sync Laptops
+        </button>
         <button class="btn btn-primary" onclick="openAddAssetModal()" style="margin-left:auto;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Add Asset
@@ -3302,6 +3306,22 @@ mark.gsr-highlight {
         </div>
       </div>
       <button class="btn btn-primary" id="assetSaveBtn" onclick="saveAssetForm()">Save Asset</button>
+    </div>
+  </div>
+</div>
+
+<!-- LAPTOP SYNC SUMMARY MODAL -->
+<div class="overlay" id="laptopSyncOverlay" onclick="if(event.target===this)closeLaptopSyncSummary()">
+  <div class="modal" style="max-width:760px;">
+    <div class="modal-header">
+      <span class="modal-title">Laptop Sync Summary</span>
+      <button class="modal-close" onclick="closeLaptopSyncSummary()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="laptopSyncSummaryBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeLaptopSyncSummary()">Done</button>
     </div>
   </div>
 </div>
@@ -6096,6 +6116,245 @@ async function _persistAsset(asset) {
   _saveAssetsCache();
   await tursoExec('INSERT OR REPLACE INTO assets (id, data) VALUES (?, ?)', [asset.id, JSON.stringify(asset)]);
 }
+
+const LAPTOP_STATUS_TO_ASSET_STATUS = {
+  'Deployed': 'Deployed',
+  'Spare': 'Spare',
+  'Repair': 'For Repair',
+  'Docked': 'Docked',
+  'Borrowed': 'Borrowed',
+  'End of Life': 'For Disposal',
+  'For Return': 'Spare'
+};
+
+function _normAssetKey(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function _laptopAssetStatus(status) {
+  return LAPTOP_STATUS_TO_ASSET_STATUS[status] || 'Untagged';
+}
+
+function _laptopEolStatus(status) {
+  return status === 'End of Life' ? 'YES' : 'NO';
+}
+
+function _ramToGb(value) {
+  const match = String(value || '').match(/\d+(?:\.\d+)?/);
+  return match ? match[0] : '';
+}
+
+function _assetMatchLabel(item) {
+  return [item.assetTag, item.serialNumber, item.manufacturer || item.brand, item.deviceModel || item.model]
+    .filter(Boolean).join(' · ') || item.id || 'Untitled asset';
+}
+
+function _assetLooksLikeLaptop(asset) {
+  return _normAssetKey(asset.assetType) === 'laptop';
+}
+
+function _buildAssetRegisterIndexes() {
+  const bySerial = new Map();
+  const byTag = new Map();
+  assetsDb.forEach(asset => {
+    const serial = _normAssetKey(asset.serialNumber);
+    const tag = _normAssetKey(asset.assetTag);
+    if (serial && !bySerial.has(serial)) bySerial.set(serial, asset);
+    if (tag && !byTag.has(tag)) byTag.set(tag, asset);
+  });
+  return { bySerial, byTag };
+}
+
+function _findAssetForLaptop(laptop, indexes) {
+  const serial = _normAssetKey(laptop.serialNumber);
+  const tag = _normAssetKey(laptop.assetTag);
+  if (serial && indexes.bySerial.has(serial)) return { asset: indexes.bySerial.get(serial), matchedBy: 'serial' };
+  if (tag && indexes.byTag.has(tag)) return { asset: indexes.byTag.get(tag), matchedBy: 'asset tag' };
+  return { asset: null, matchedBy: '' };
+}
+
+function _assetFromLaptop(laptop, existing) {
+  const now = new Date().toISOString();
+  const asset = {
+    ...(existing || {}),
+    id: existing?.id || ('ast_' + Date.now() + '_' + Math.random().toString(36).slice(2,7)),
+    site: (laptop.siteLocation || '').trim(),
+    assetTag: (laptop.assetTag || '').trim(),
+    quantity: existing?.quantity || '1',
+    floor: 'N/A',
+    assetType: 'Laptop',
+    deviceModel: (laptop.model || '').trim(),
+    manufacturer: (laptop.brand || '').trim(),
+    serialNumber: (laptop.serialNumber || '').trim(),
+    custodian: (laptop.currentOwner || '').trim(),
+    assetValue: 'HIGH',
+    eol: _laptopEolStatus(laptop.assetStatus),
+    status: _laptopAssetStatus(laptop.assetStatus),
+    cpuSpecs: (laptop.processor || '').trim(),
+    ramGb: _ramToGb(laptop.ram),
+    updatedAt: now,
+    updatedBy: currentUser?.username || '',
+    sourceSystem: 'Laptop Inventory',
+    sourceLaptopId: laptop.id || ''
+  };
+  if (!asset.quantity) asset.quantity = '1';
+  return asset;
+}
+
+async function _fetchLaptopRecordsForSync() {
+  const res = await tursoExecLong('SELECT data FROM laptops');
+  if (!res || !res.rows) throw new Error('Could not load Laptop Inventory records.');
+  return res.rows.map(row => JSON.parse(row[0].value));
+}
+
+function _renderLaptopSyncSummary(summary) {
+  const escHtml = v => String(v || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const stat = (label, value) => `
+    <div style="background:var(--search-bg);border:1px solid var(--border);border-radius:10px;padding:12px;">
+      <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.3px;">${label}</div>
+      <div style="font-size:24px;font-weight:800;color:var(--text);margin-top:2px;">${value}</div>
+    </div>`;
+  const list = (title, items, emptyText) => `
+    <div style="margin-top:18px;">
+      <div style="font-weight:800;color:var(--text);margin-bottom:8px;">${title}</div>
+      ${items.length ? `
+        <div style="max-height:180px;overflow:auto;border:1px solid var(--border);border-radius:10px;">
+          ${items.slice(0, 80).map(item => `
+            <div style="padding:9px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);">
+              ${escHtml(_assetMatchLabel(item))}
+            </div>`).join('')}
+        </div>
+        ${items.length > 80 ? `<div style="font-size:12px;color:var(--text3);margin-top:6px;">Showing first 80 of ${items.length}.</div>` : ''}
+      ` : `<div style="font-size:13px;color:var(--text3);">${emptyText}</div>`}
+    </div>`;
+
+  const body = document.getElementById('laptopSyncSummaryBody');
+  if (!body) return;
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
+      ${stat('Read', summary.totalLaptops)}
+      ${stat('Added', summary.added.length)}
+      ${stat('Updated', summary.updated.length)}
+      ${stat('Review', summary.assetOnly.length)}
+    </div>
+    <div style="margin-top:14px;font-size:13px;color:var(--text2);line-height:1.6;">
+      Synced Laptop Inventory into Asset Register using serial number first, then asset tag. Asset Register-only laptops were not deleted.
+    </div>
+    ${list('Added to Asset Register', summary.added, 'No new laptops were added.')}
+    ${list('Updated in Asset Register', summary.updated, 'No existing laptop assets needed updates.')}
+    ${list('Asset Register Only - review', summary.assetOnly, 'No Asset Register-only laptops found.')}
+  `;
+  document.getElementById('laptopSyncOverlay')?.classList.add('open');
+}
+
+window.closeLaptopSyncSummary = function() {
+  document.getElementById('laptopSyncOverlay')?.classList.remove('open');
+};
+
+window.syncLaptopsToAssetRegister = async function() {
+  if (!can('edit')) { showToast('You do not have permission to sync assets.', true); return; }
+
+  const overlay  = document.getElementById('importProgressOverlay');
+  const titleEl  = document.getElementById('importProgressTitle');
+  const sub      = document.getElementById('importProgressSub');
+  const bar      = document.getElementById('importProgressBar');
+  const countEl  = document.getElementById('importProgressCount');
+  const pctEl    = document.getElementById('importProgressPct');
+  const errEl    = document.getElementById('importProgressError');
+
+  if (titleEl) titleEl.textContent = 'Syncing Laptops…';
+  if (sub) sub.textContent = 'Loading Laptop Inventory and Asset Register…';
+  if (bar) bar.style.width = '0%';
+  if (countEl) countEl.textContent = '0 / 0';
+  if (pctEl) pctEl.textContent = '0%';
+  if (errEl) errEl.style.display = 'none';
+  if (overlay) overlay.style.display = 'flex';
+
+  let syncSucceeded = false;
+  try {
+    await ensureTursoReady();
+    const [laptops, freshAssets] = await Promise.all([
+      _fetchLaptopRecordsForSync(),
+      tursoFetchAllAssets()
+    ]);
+    assetsDb = freshAssets || [];
+
+    const indexes = _buildAssetRegisterIndexes();
+    const laptopKeys = { serials: new Set(), tags: new Set() };
+    const toSave = [];
+    const summary = { totalLaptops: laptops.length, added: [], updated: [], assetOnly: [] };
+
+    laptops.forEach(laptop => {
+      const serial = _normAssetKey(laptop.serialNumber);
+      const tag = _normAssetKey(laptop.assetTag);
+      if (serial) laptopKeys.serials.add(serial);
+      if (tag) laptopKeys.tags.add(tag);
+
+      const match = _findAssetForLaptop(laptop, indexes);
+      const asset = _assetFromLaptop(laptop, match.asset);
+      toSave.push(asset);
+      if (match.asset) summary.updated.push(asset);
+      else summary.added.push(asset);
+
+      if (serial) indexes.bySerial.set(serial, asset);
+      if (tag) indexes.byTag.set(tag, asset);
+    });
+
+    assetsDb.forEach(asset => {
+      if (!_assetLooksLikeLaptop(asset)) return;
+      const serial = _normAssetKey(asset.serialNumber);
+      const tag = _normAssetKey(asset.assetTag);
+      const inLaptopInventory = (serial && laptopKeys.serials.has(serial)) || (tag && laptopKeys.tags.has(tag));
+      if (!inLaptopInventory) summary.assetOnly.push(asset);
+    });
+
+    if (sub) sub.textContent = `Saving ${toSave.length.toLocaleString()} laptop asset record(s)…`;
+    const CHUNK = 500;
+    let saved = 0;
+    for (let i = 0; i < toSave.length; i += CHUNK) {
+      const chunk = toSave.slice(i, i + CHUNK);
+      const stmts = chunk.map(asset => ({
+        sql: 'INSERT OR REPLACE INTO assets (id, data) VALUES (?, ?)',
+        args: [asset.id, JSON.stringify(asset)]
+      }));
+      const result = await tursoBatchLong(stmts);
+      if (!result) throw new Error('A database batch failed while saving laptop assets.');
+      chunk.forEach(asset => {
+        const idx = assetsDb.findIndex(a => a.id === asset.id);
+        if (idx >= 0) assetsDb[idx] = asset; else assetsDb.push(asset);
+      });
+      saved += chunk.length;
+      const pct = toSave.length ? Math.round((saved / toSave.length) * 100) : 100;
+      if (bar) bar.style.width = pct + '%';
+      if (pctEl) pctEl.textContent = pct + '%';
+      if (countEl) countEl.textContent = `${saved.toLocaleString()} / ${toSave.length.toLocaleString()}`;
+    }
+
+    logAudit('Sync Laptops', `${summary.added.length} added, ${summary.updated.length} updated, ${summary.assetOnly.length} asset-register-only`);
+    refreshInventoryAfterAssetRegisterChange();
+    renderAssets();
+    _renderLaptopSyncSummary(summary);
+    showToast(`Laptop sync complete: ${summary.added.length} added, ${summary.updated.length} updated.`);
+    syncSucceeded = true;
+  } catch(e) {
+    console.warn('[Laptop sync]', e);
+    if (errEl) {
+      errEl.style.display = 'block';
+      errEl.textContent = e.message || 'Laptop sync failed.';
+    }
+    showToast(e.message || 'Laptop sync failed.', true);
+  } finally {
+    if (syncSucceeded) {
+      if (overlay) overlay.style.display = 'none';
+      if (titleEl) titleEl.textContent = 'Importing Assets…';
+    } else {
+      setTimeout(() => {
+        if (overlay) overlay.style.display = 'none';
+        if (titleEl) titleEl.textContent = 'Importing Assets…';
+      }, 3500);
+    }
+  }
+};
 
 async function _deleteAssetFromDb(id) {
   assetsDb = assetsDb.filter(a => a.id !== id);
