@@ -20,7 +20,7 @@
   </script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Cg fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 7h12a2 2 0 0 1 2 2v6H8V9a2 2 0 0 1 2-2Z'/%3E%3Cpath d='M9 15v4a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3v-4'/%3E%3Cpath d='M16 22v5M11 27h10M8 13h16'/%3E%3C/g%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -50,7 +50,7 @@
       --r-lg:        18px;
       --r-xl:        24px;
       --mono: 'IBM Plex Mono', 'Fira Mono', monospace;
-      --ui:   -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+      --ui:   'Inter', -apple-system, 'Helvetica Neue', sans-serif;
       --sidebar-bg:  #ffffff;
       --topbar-bg:   #ffffff;
       --sidebar-border: #e2e8f0;
@@ -2797,7 +2797,7 @@
     <div class="modal-header">
       <div>
         <div class="modal-title">Update Seat</div>
-        <div class="modal-sub">Find a seat, scan barcode or QR labels, then save the updated details.</div>
+        <div class="modal-sub">Find a seat, scan GS1-128 (Code 128) labels, then save the updated details.</div>
       </div>
       <button class="modal-close" id="update-seat-close" aria-label="Close">×</button>
     </div>
@@ -2840,7 +2840,7 @@
       <div class="asset-group">
         <div class="asset-group-head">
           <div class="asset-group-title">Scanned Asset Details</div>
-          <div class="asset-group-sub">Use the camera buttons on mobile, or type/paste values manually.</div>
+          <div class="asset-group-sub">Use the camera buttons for GS1-128 (Code 128), or type/paste values manually.</div>
         </div>
 
         <div class="form-section asset-panel">
@@ -2964,8 +2964,8 @@
   <div class="scanner-box">
     <div class="scanner-head">
       <div>
-        <div class="scanner-title">Scan Barcode / QR</div>
-        <div class="scanner-sub">Point the camera at the asset label.</div>
+        <div class="scanner-title">Scan GS1-128</div>
+        <div class="scanner-sub">Point the camera at the Code 128 asset label.</div>
       </div>
       <button class="modal-close" id="scanner-close" type="button" aria-label="Close scanner">×</button>
     </div>
@@ -2975,7 +2975,7 @@
       <div class="scanner-guide"></div>
     </div>
     <div class="scanner-foot">
-      <span class="scanner-status-text" id="scanner-status">Camera scanner works on supported mobile browsers.</span>
+      <span class="scanner-status-text" id="scanner-status">Camera scanner supports GS1-128 / Code 128 labels on supported mobile browsers.</span>
       <button class="btn btn-primary btn-sm" id="scanner-ocr-capture" type="button" style="display:none;">Capture Text</button>
     </div>
   </div>
@@ -4063,6 +4063,26 @@ let tesseractLoading = null;
 
 const HTML5_QRCODE_SRC = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
 const TESSERACT_SRC = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+const GS1_GROUP_SEPARATOR = String.fromCharCode(29);
+const GS1_AI_DEFS = {
+  '00': { length: 18, type: 'asset' },
+  '01': { length: 14, type: 'asset' },
+  '10': { max: 20, type: 'serial' },
+  '21': { max: 20, type: 'serial' },
+  '22': { max: 20, type: 'serial' },
+  '240': { max: 30, type: 'asset' },
+  '241': { max: 30, type: 'asset' },
+  '250': { max: 30, type: 'serial' },
+  '251': { max: 30, type: 'serial' },
+  '400': { max: 30, type: 'asset' },
+  '401': { max: 30, type: 'asset' },
+  '402': { length: 17, type: 'asset' },
+  '414': { length: 13, type: 'asset' },
+  '8004': { max: 30, type: 'asset' },
+  '8018': { length: 18, type: 'asset' }
+};
+const GS1_SERIAL_AIS = ['21', '250', '251', '10', '22'];
+const GS1_ASSET_AIS = ['8004', '240', '241', '400', '401', '402', '414', '8018', '01', '00'];
 
 function openUpdateSeatModal() {
   updateSeatId = null;
@@ -4204,6 +4224,99 @@ async function saveUpdateSeatForm(e) {
   closeUpdateSeatModal();
 }
 
+function cleanGs1RawValue(value) {
+  return String(value || '')
+    .replace(/^\]C1/, '')
+    .replace(/<GS>|\\u001d|\\x1d/gi, GS1_GROUP_SEPARATOR)
+    .trim();
+}
+
+function parseParenthesizedGs1(value) {
+  const elements = [];
+  const text = String(value || '').trim();
+  const matches = text.matchAll(/\((\d{2,4})\)([^(]*)/g);
+  for (const match of matches) {
+    const ai = match[1];
+    const data = String(match[2] || '').trim();
+    if (GS1_AI_DEFS[ai] && data) elements.push({ ai, data, type: GS1_AI_DEFS[ai].type });
+  }
+  return elements;
+}
+
+function findGs1Ai(data, position) {
+  for (const length of [4, 3, 2]) {
+    const ai = data.slice(position, position + length);
+    if (GS1_AI_DEFS[ai]) return ai;
+  }
+  return '';
+}
+
+function parseCompactGs1(value) {
+  const data = cleanGs1RawValue(value);
+  const elements = [];
+  let index = 0;
+
+  while (index < data.length) {
+    if (data[index] === GS1_GROUP_SEPARATOR) {
+      index += 1;
+      continue;
+    }
+
+    const ai = findGs1Ai(data, index);
+    if (!ai) break;
+
+    const def = GS1_AI_DEFS[ai];
+    index += ai.length;
+    let fieldValue = '';
+
+    if (def.length) {
+      fieldValue = data.slice(index, index + def.length);
+      if (fieldValue.length < def.length) break;
+      index += def.length;
+    } else {
+      const nextSeparator = data.indexOf(GS1_GROUP_SEPARATOR, index);
+      const end = nextSeparator === -1 ? Math.min(data.length, index + def.max) : Math.min(nextSeparator, index + def.max);
+      fieldValue = data.slice(index, end);
+      index = nextSeparator === -1 ? end : nextSeparator + 1;
+    }
+
+    if (fieldValue) elements.push({ ai, data: fieldValue, type: def.type });
+  }
+
+  return elements;
+}
+
+function parseGs1Elements(value) {
+  const text = String(value || '').trim();
+  if (!text) return [];
+  const parenthesized = parseParenthesizedGs1(text);
+  if (parenthesized.length) return parenthesized;
+  return parseCompactGs1(text);
+}
+
+function normalizeScannedBarcodeValue(rawValue, targetId) {
+  const raw = String(rawValue || '').trim();
+  const elements = parseGs1Elements(raw);
+  const isGs1 = raw.startsWith(']C1') || /\(\d{2,4}\)/.test(raw) || elements.length > 0;
+  const wantsSerial = /serial/i.test(targetId || '');
+  const preferredAis = wantsSerial ? GS1_SERIAL_AIS : GS1_ASSET_AIS;
+  const selected = preferredAis.map(ai => elements.find(item => item.ai === ai)).find(Boolean) || elements[0];
+
+  if (selected?.data) {
+    return {
+      value: selected.data.trim(),
+      isGs1,
+      ai: selected.ai
+    };
+  }
+
+  return {
+    value: cleanGs1RawValue(raw).replace(new RegExp(GS1_GROUP_SEPARATOR, 'g'), '').trim(),
+    isGs1,
+    ai: ''
+  };
+}
+
 async function startScanner(targetId) {
   scannerTargetId = targetId;
   scannerMode = 'barcode';
@@ -4220,7 +4333,7 @@ async function startScanner(targetId) {
 
   try {
     const detector = new BarcodeDetector({
-      formats: ['qr_code', 'code_128', 'code_39', 'code_93', 'ean_13', 'ean_8', 'upc_a', 'upc_e']
+      formats: ['code_128']
     });
     const video = document.getElementById('scanner-video');
     const reader = document.getElementById('scanner-reader');
@@ -4230,7 +4343,7 @@ async function startScanner(targetId) {
     video.srcObject = scannerStream;
     await video.play();
     document.getElementById('scanner-overlay').classList.add('active');
-    status.textContent = 'Scanning... keep the label inside the frame.';
+    status.textContent = 'Scanning GS1-128 / Code 128... keep the label inside the frame.';
 
     scannerTimer = window.setInterval(async () => {
       try {
@@ -4252,9 +4365,10 @@ async function startScanner(targetId) {
 function setScannedValue(value) {
   const input = document.getElementById(scannerTargetId);
   if (input && value) {
-    input.value = String(value).trim();
+    const normalized = normalizeScannedBarcodeValue(value, scannerTargetId);
+    input.value = normalized.value;
     input.focus();
-    toast('Scanned value added.', 'success');
+    toast(normalized.isGs1 ? `GS1-128 value added${normalized.ai ? ` from AI (${normalized.ai})` : ''}.` : 'Scanned value added.', 'success');
   }
 }
 
@@ -4285,18 +4399,11 @@ async function startHtml5Scanner(targetId) {
     video.style.display = 'none';
     reader.style.display = 'block';
     reader.innerHTML = '';
-    status.textContent = 'Scanning with fallback scanner... keep the label inside the frame.';
+    status.textContent = 'Scanning GS1-128 / Code 128 with fallback scanner... keep the label inside the frame.';
     document.getElementById('scanner-ocr-capture').style.display = 'none';
 
     const formats = window.Html5QrcodeSupportedFormats ? [
-      Html5QrcodeSupportedFormats.QR_CODE,
-      Html5QrcodeSupportedFormats.CODE_128,
-      Html5QrcodeSupportedFormats.CODE_39,
-      Html5QrcodeSupportedFormats.CODE_93,
-      Html5QrcodeSupportedFormats.EAN_13,
-      Html5QrcodeSupportedFormats.EAN_8,
-      Html5QrcodeSupportedFormats.UPC_A,
-      Html5QrcodeSupportedFormats.UPC_E
+      Html5QrcodeSupportedFormats.CODE_128
     ].filter(Boolean) : undefined;
     html5Scanner = new Html5Qrcode('scanner-reader', formats ? { formatsToSupport: formats } : undefined);
 
