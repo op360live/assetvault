@@ -1789,7 +1789,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
   padding: 16px; background: var(--surface-tint);
   border-radius: var(--radius); margin-bottom: 4px;
 }
-.profile-avatar {
+.profile-avatar-row .profile-avatar {
   width: 56px; height: 56px; border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   display: flex; align-items: center; justify-content: center;
@@ -2207,6 +2207,29 @@ mark.gsr-highlight {
 .act-title { font-size: 13px; font-weight: 600; color: var(--text); }
 .act-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
 .act-time { font-size: 11px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; white-space: nowrap; }
+
+/* dashboard recent modified card */
+.dash-recent-wrap {
+  max-width: 980px;
+  margin: 28px auto 0;
+}
+.dash-recent-card {
+  padding: 24px 28px;
+}
+.dash-recent-card .activity-list {
+  gap: 10px;
+}
+.dash-recent-card .activity-row {
+  padding: 16px 18px;
+}
+.dash-recent-card .act-title {
+  font-size: 14px;
+  font-weight: 800;
+}
+.dash-recent-card .act-sub,
+.dash-recent-card .act-time {
+  font-size: 12px;
+}
 
 /* ── DASHBOARD TWO-COL ── */
 .dash-two-col {
@@ -3192,18 +3215,10 @@ mark.gsr-highlight {
         <div class="site-grid" id="dashSiteGrid"></div>
       </div>
 
-      <div class="dash-two-col" style="margin-top:28px;">
-        <div>
-          <div class="counter-card">
-            <div class="dash-section-title">Additional Statistics</div>
-            <div class="dash-extra-grid" id="dashExtraGrid"></div>
-          </div>
-        </div>
-        <div>
-          <div class="counter-card">
-            <div class="dash-section-title">Recent Modified Asset</div>
-            <div class="activity-list" id="dashRecentModified"></div>
-          </div>
+      <div class="dash-recent-wrap">
+        <div class="counter-card dash-recent-card">
+          <div class="dash-section-title">Recent Modified Asset</div>
+          <div class="activity-list" id="dashRecentModified"></div>
         </div>
       </div>
     </div>
@@ -4606,7 +4621,6 @@ function sortBy(col){sortCol===col?sortDir*=-1:(sortCol=col,sortDir=1);renderHea
 function renderDashboard(){
   const c={total:records.length,Deployed:0,Spare:0,Repair:0,Docked:0,Borrowed:0,'End of Life':0,'For Return':0};
   records.forEach(r=>{if(c[r.assetStatus]!==undefined)c[r.assetStatus]++;});
-  renderDashboardExtras();
   loadPresence();
 
   // Big cards — minimal SVG icons
