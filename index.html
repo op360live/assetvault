@@ -637,12 +637,24 @@ body.is-module-open .native-app-view.active{display:block}
 
 /* ── RESPONSIVE ── */
 @media(max-width:800px){
-  .topbar{padding:0 12px}
-  .topbar-left{gap:10px}
+  .topbar{
+    height:auto;min-height:var(--topbar-h);
+    display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;
+    align-items:center;gap:8px 4px;padding:8px 12px;
+  }
+  .topbar-left{grid-column:1;gap:10px;min-width:0}
+  .topbar-right{display:contents}
   .topbar-brand{min-width:0}
   .topbar-brand-sub{display:none}
   .topbar-brand-name{font-size:15px}
-  .topbar-app-nav{display:none}
+  .topbar-app-nav{
+    grid-column:1/-1;grid-row:2;
+    display:flex;gap:4px;overflow-x:auto;
+    width:100%;padding:2px 0 4px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .topbar-app-nav::-webkit-scrollbar{display:none}
+  .topbar-app-link{height:32px;padding:0 11px;font-size:12px;flex:0 0 auto}
   .profile-name,.profile-btn .chev{display:none}
   .profile-btn{padding:0 4px}
   .tools-menu-btn span{display:none}
