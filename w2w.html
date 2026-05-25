@@ -1130,11 +1130,36 @@
       font-size:13px; font-weight:800; color:var(--text-1);
     }
     .dropdown-head span:last-child { font-size:11px; font-weight:700; color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, transparent); padding:2px 7px; border-radius:999px; }
-    .notification-list { padding:6px; }
+    .notification-list { padding:8px 10px; max-height:340px; overflow:auto; }
     .notification-icon { border-radius:50%; }
-    .notification-copy { min-width:0; flex:1; }
+    .notification-copy { min-width:0; flex:1; display:grid; gap:6px; }
     .notification-title { font-size:12.5px; font-weight:700; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .notification-meta { display:block; font-size:11px; color:var(--text-4); margin-top:1px; }
+    .notification-meta {
+      display:inline-flex; align-items:center; justify-content:center; justify-self:start;
+      min-height:22px; padding:3px 9px; border-radius:999px;
+      font-size:11px; font-weight:800; line-height:1.2;
+      color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, transparent);
+    }
+    .notification-item.unread .notification-title { color:var(--text-1); }
+    .notification-item:not(.unread) .notification-meta { color:var(--text-4); background:var(--surface-2); }
+    .notification-dismiss {
+      width:28px; height:28px; border:0; border-radius:50%;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      color:var(--text-4); background:transparent; cursor:pointer; font-size:22px; line-height:1;
+    }
+    .notification-dismiss:hover { background:var(--surface-2); color:var(--text-1); }
+    .notification-empty { padding:18px 12px; color:var(--text-4); font-size:13px; text-align:center; }
+    .notification-foot {
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:10px 14px; border-top:1px solid var(--sidebar-border);
+      font-size:12px; font-weight:800;
+    }
+    .notification-foot button {
+      border:0; background:transparent; color:var(--text-4);
+      font:inherit; cursor:pointer; padding:0;
+    }
+    .notification-foot button:hover { color:var(--text-1); }
+    .notification-foot a { color:var(--accent); text-decoration:none; }
     .dropdown-foot { display:block; padding:10px 14px; border-top:1px solid var(--sidebar-border); text-align:center; color:var(--accent); font-size:12px; font-weight:700; text-decoration:none; }
     .profile-btn { display:flex; align-items:center; gap:9px; padding:0 8px 0 6px; border-radius:999px; }
     .profile-btn:hover,.topbar-menu.open>.profile-btn { background:var(--surface-2); color:var(--text-1); }
@@ -2280,21 +2305,6 @@
           <a class="topbar-app-link" href="https://op360live.github.io/assetvault/offboarding.html">Offboarding</a>
           <a class="topbar-app-link active" href="https://op360live.github.io/assetvault/w2w.html">W2W</a>
         </nav>
-        <div class="topbar-menu tools-menu" id="toolsMenu">
-          <button class="tools-menu-btn" id="toolsMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Tools" onclick="toggleTopbarMenu('toolsMenu')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M3 12h18"/><path d="M6 6l12 12"/></svg>
-            <span>Tools</span>
-            <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="tools-dropdown" role="menu">
-            <button type="button" onclick="switchTo('export')" role="menuitem">
-              <span class="tools-dropdown-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              </span>
-              <span class="tools-dropdown-name">Import / Export</span>
-            </button>
-          </div>
-        </div>
         <button class="topbar-icon-btn" id="btn-theme-toggle" type="button" title="Toggle theme">
           <svg id="theme-toggle-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3c0 .28.02.56.05.83A7 7 0 0021 12.79z"/></svg>
           <span id="theme-toggle-label" style="display:none;">Dark Mode</span>
@@ -2302,25 +2312,17 @@
         <div class="topbar-menu notification-menu" id="notificationMenu">
           <button class="topbar-icon-btn" id="notificationMenuBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Notifications" onclick="toggleTopbarMenu('notificationMenu')">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M10 21h4"/></svg>
-            <span class="topbar-badge">3</span>
+            <span class="topbar-badge" id="notificationBadge">0</span>
           </button>
           <div class="topbar-dropdown notification-dropdown" role="menu">
-            <div class="dropdown-head"><span>Notifications</span><span>3 New</span></div>
-            <div class="notification-list">
-              <a class="notification-item" href="https://op360live.github.io/assetvault/offboarding.html" role="menuitem">
-                <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 12l2 2 4-4"/><path d="M21 12a9 9 0 1 1-9-9"/></svg></span>
-                <span class="notification-copy"><span class="notification-title">Offboarding queue ready</span><span class="notification-meta">Review retrieval records</span></span>
-              </a>
-              <a class="notification-item" href="https://op360live.github.io/assetvault/inventory.html" role="menuitem">
-                <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
-                <span class="notification-copy"><span class="notification-title">Inventory tools online</span><span class="notification-meta">Open asset register</span></span>
-              </a>
-              <a class="notification-item" href="https://op360live.github.io/assetvault/aaf.html" role="menuitem">
-                <span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
-                <span class="notification-copy"><span class="notification-title">AAF forms available</span><span class="notification-meta">Launch accountability forms</span></span>
-              </a>
+            <div class="dropdown-head"><span>Notifications</span><span id="notificationSummary">0 New</span></div>
+            <div class="notification-list" id="notificationList">
+              <div class="notification-empty">Loading notifications...</div>
             </div>
-            <a class="dropdown-foot" href="#section-dashboard">View activity</a>
+            <div class="notification-foot">
+              <button type="button" id="markNotificationsReadBtn">Mark all read</button>
+              <a href="index.html#releaseNotes">View updates</a>
+            </div>
           </div>
         </div>
         <div class="topbar-menu profile-menu acct-wrap" id="acct-wrap">
@@ -5023,6 +5025,110 @@ document.addEventListener('keydown', e => {
 
 document.getElementById('btnForceSync').addEventListener('click', syncNow);
 
+(function initW2WReleaseNotifications(){
+  const notificationBadge=document.getElementById('notificationBadge');
+  const notificationSummary=document.getElementById('notificationSummary');
+  const notificationList=document.getElementById('notificationList');
+  const markNotificationsReadBtn=document.getElementById('markNotificationsReadBtn');
+  if(!notificationBadge||!notificationSummary||!notificationList)return;
+
+  const RELEASE_NOTES_TABLE='release_notes';
+  const NOTIFICATION_READ_KEY='ithub_notification_read';
+  const NOTIFICATION_DISMISSED_KEY='ithub_notification_dismissed';
+  let releaseNotesRecords=[];
+  let releaseNotesLoaded=false;
+
+  function escapeNotificationHtml(str){
+    return String(str??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function formatNotificationDate(value){
+    const date=value?new Date(value):new Date();
+    if(Number.isNaN(date.getTime()))return '';
+    return date.toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'2-digit'});
+  }
+  function readNotificationState(key){
+    try{
+      const value=JSON.parse(localStorage.getItem(key));
+      if(Array.isArray(value))return value;
+    }catch{}
+    return [];
+  }
+  function saveNotificationState(key,ids){
+    localStorage.setItem(key,JSON.stringify([...new Set(ids)]));
+  }
+  function notificationId(note){
+    return 'release:'+note.id;
+  }
+  function releaseNoteNotifications(){
+    const dismissed=readNotificationState(NOTIFICATION_DISMISSED_KEY);
+    return releaseNotesRecords
+      .filter(note=>note.id&&note.id!=='default'&&!dismissed.includes(notificationId(note)))
+      .slice(0,10);
+  }
+  function renderNotifications(){
+    const read=readNotificationState(NOTIFICATION_READ_KEY);
+    const notes=releaseNoteNotifications();
+    const unread=notes.filter(note=>!read.includes(notificationId(note))).length;
+    notificationBadge.textContent=String(unread);
+    notificationBadge.style.display=unread?'flex':'none';
+    notificationSummary.textContent=unread+' New';
+    if(markNotificationsReadBtn)markNotificationsReadBtn.disabled=!unread;
+    if(!notes.length){
+      notificationList.innerHTML='<div class="notification-empty">'+(releaseNotesLoaded?'No new release note notifications.':'Loading notifications...')+'</div>';
+      return;
+    }
+    notificationList.innerHTML=notes.map(note=>{
+      const id=notificationId(note);
+      const isUnread=!read.includes(id);
+      return '<div class="notification-item '+(isUnread?'unread':'')+'" role="menuitem" data-notification-id="'+escapeNotificationHtml(id)+'">'
+        +'<span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/></svg></span>'
+        +'<span class="notification-copy"><span class="notification-title">'+escapeNotificationHtml(note.title||'Release Note')+'</span><span class="notification-meta">New release note · '+escapeNotificationHtml(formatNotificationDate(note.createdAt))+'</span></span>'
+        +'<button class="notification-dismiss" type="button" title="Dismiss" data-dismiss-id="'+escapeNotificationHtml(id)+'">&times;</button>'
+        +'</div>';
+    }).join('');
+  }
+  async function loadReleaseNoteNotifications(force=false){
+    if(releaseNotesLoaded&&!force){renderNotifications();return}
+    try{
+      await tursoExec('CREATE TABLE IF NOT EXISTS '+RELEASE_NOTES_TABLE+' (id TEXT PRIMARY KEY, data TEXT NOT NULL)');
+      const result=await tursoExec('SELECT data FROM '+RELEASE_NOTES_TABLE+' ORDER BY rowid DESC LIMIT 50');
+      releaseNotesRecords=(result?.rows||[]).map(row=>{
+        try{return JSON.parse(row[0]?.value||'{}')}catch{return null}
+      }).filter(Boolean);
+    }catch{
+      releaseNotesRecords=[];
+    }
+    releaseNotesLoaded=true;
+    renderNotifications();
+  }
+
+  notificationList.addEventListener('click',event=>{
+    const dismiss=event.target.closest('[data-dismiss-id]');
+    if(dismiss){
+      const id=dismiss.dataset.dismissId;
+      saveNotificationState(NOTIFICATION_DISMISSED_KEY,[...readNotificationState(NOTIFICATION_DISMISSED_KEY),id]);
+      saveNotificationState(NOTIFICATION_READ_KEY,[...readNotificationState(NOTIFICATION_READ_KEY),id]);
+      renderNotifications();
+      return;
+    }
+    const item=event.target.closest('[data-notification-id]');
+    if(item){
+      saveNotificationState(NOTIFICATION_READ_KEY,[...readNotificationState(NOTIFICATION_READ_KEY),item.dataset.notificationId]);
+      renderNotifications();
+    }
+  });
+  markNotificationsReadBtn?.addEventListener('click',event=>{
+    event.stopPropagation();
+    const ids=releaseNoteNotifications().map(notificationId);
+    saveNotificationState(NOTIFICATION_READ_KEY,[...readNotificationState(NOTIFICATION_READ_KEY),...ids]);
+    renderNotifications();
+  });
+
+  renderNotifications();
+  loadReleaseNoteNotifications(true);
+  setInterval(()=>{if(!document.hidden)loadReleaseNoteNotifications(true)},60000);
+})();
+
 /* ════════════════════════════════════════
    INIT
 ════════════════════════════════════════ */
@@ -5034,6 +5140,5 @@ if (checkSession()) {
   redirectToSignIn();
 }
 </script>
-<script src="release-notifications.js"></script>
 </body>
 </html>
