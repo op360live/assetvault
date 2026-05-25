@@ -670,7 +670,6 @@ body {
   position: relative; overflow: hidden;
   background: #f7f8fc;
 }
-#loginScreen.splash-hidden { display: none !important; }
 .login-bg-canvas { display: none; }
 .login-version { position: fixed; bottom: 18px; right: 22px; z-index: 10; font-size: 11px; color: rgba(100,80,140,0.40); font-weight: 500; font-family: monospace; pointer-events: none; }
 
@@ -1578,20 +1577,6 @@ mark.gsr-highlight {
 .toast-dot.err { background:var(--red); }
 
 /* ══════════════════════════════
-   SPLASH
-══════════════════════════════ */
-#splashScreen { position:fixed; inset:0; z-index:10000; background:linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 60%,#2563eb 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; transition:opacity 0.45s ease; animation: splash-css-fallback 0.5s ease 5s forwards; }
-[data-theme="dark"] #splashScreen { background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 60%,#1e293b 100%); }
-#splashScreen.fade-out { opacity:0; pointer-events:none; }
-@keyframes splash-css-fallback { to { opacity:0; pointer-events:none; visibility:hidden; } }
-.splash-logo { width:64px; height:64px; border-radius:18px; background:rgba(255,255,255,0.22); border:1.5px solid rgba(255,255,255,0.40); display:flex; align-items:center; justify-content:center; margin-bottom:4px; box-shadow:0 8px 24px rgba(0,0,0,0.15); }
-.splash-title { font-size:28px; font-weight:800; color:#fff; letter-spacing:-0.6px; }
-.splash-sub   { font-size:14px; color:rgba(255,255,255,0.70); margin-top:-12px; }
-.splash-spinner { width:32px; height:32px; border-radius:50%; border:3px solid rgba(255,255,255,0.25); border-top-color:#fff; animation:splashSpin 0.8s linear infinite; margin-top:8px; }
-.splash-msg { font-size:13px; color:rgba(255,255,255,0.60); font-weight:500; }
-@keyframes splashSpin { to{transform:rotate(360deg)} }
-
-/* ══════════════════════════════
    LIGHT MODE — white cards
 ══════════════════════════════ */
 [data-theme="light"] .stat-card,
@@ -2091,22 +2076,6 @@ mark.gsr-highlight {
 </style>
 </head>
 <body>
-
-<!-- ════════════════════════════════
-     SPLASH
-════════════════════════════════ -->
-<div id="splashScreen">
-  <div class="splash-logo">
-    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
-      <line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/>
-    </svg>
-  </div>
-  <div class="splash-title">AssetVault</div>
-  <div class="splash-sub">Delivery Inventory</div>
-  <div class="splash-spinner"></div>
-  <div class="splash-msg" id="splashMsg">Loading…</div>
-</div>
 
 <!-- ════════════════════════════════
      LOGIN SCREEN
@@ -7444,16 +7413,6 @@ window.switchView = function(view) {
 
 // ── INIT ──
 (async function init() {
-  const splash = document.getElementById('splashScreen');
-
-  // Hard fallback: remove splash after 3s no matter what
-  const splashKill = setTimeout(() => {
-    if (splash && splash.parentNode) {
-      splash.classList.add('fade-out');
-      setTimeout(() => { if (splash.parentNode) splash.remove(); }, 450);
-    }
-  }, 3000);
-
   try {
     loadTheme();
     ensureTursoReady(); // fire-and-forget; sync awaits this before querying
@@ -7471,14 +7430,6 @@ window.switchView = function(view) {
     }
   } catch(e) {
     console.error('[init]', e);
-  } finally {
-    clearTimeout(splashKill);
-    setTimeout(() => {
-      if (splash && splash.parentNode) {
-        splash.classList.add('fade-out');
-        setTimeout(() => { if (splash.parentNode) splash.remove(); }, 450);
-      }
-    }, 600);
   }
 })();
 
