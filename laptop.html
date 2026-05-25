@@ -1585,6 +1585,15 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
   border-radius: var(--radius-lg);
   padding: 14px 16px;
 }
+.history-summary-card.is-clickable {
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.history-summary-card.is-clickable:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
 .history-summary-label {
   font-size: 10px;
   font-weight: 700;
@@ -1599,8 +1608,33 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
   line-height: 1.1;
   margin-top: 4px;
   font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 .history-summary-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.history-serial-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.history-serial-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid rgba(29,78,216,0.18);
+  font-size: 11px;
+  font-weight: 800;
+  font-family: 'IBM Plex Mono', monospace;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.history-serial-chip:hover { border-color: var(--accent); background: var(--glass-bg-hover); }
 .history-page-list {
   display: flex;
   flex-direction: column;
@@ -1608,7 +1642,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
 }
 .history-timeline-row {
   display: grid;
-  grid-template-columns: 38px 150px 1fr auto;
+  grid-template-columns: 38px 160px 1fr auto;
   gap: 14px;
   align-items: center;
   padding: 14px 16px;
@@ -1651,6 +1685,7 @@ td.date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: 
   font-size: 11px;
   color: var(--accent);
   font-weight: 700;
+  font-family: 'IBM Plex Mono', monospace;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -3276,22 +3311,17 @@ mark.gsr-highlight {
       <div class="counter-card">
         <div class="audit-toolbar">
           <div>
-            <div class="dash-section-title">Asset History</div>
-            <div style="font-size:13px;color:var(--text3);margin-top:4px;">Ownership changes and asset activity</div>
+            <div class="dash-section-title">Laptop Redeployment</div>
+            <div style="font-size:13px;color:var(--text3);margin-top:4px;">Serial-first ownership movement</div>
           </div>
           <div class="audit-filters">
-            <select class="filter-select" id="historyTypeFilter" onchange="renderHistory()">
-              <option value="">All History</option>
-              <option value="ownership">Ownership</option>
-              <option value="asset">Asset Activity</option>
-            </select>
             <div class="search-wrap" style="width:260px;flex:none;min-width:220px;">
               <span class="search-icon">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
                   <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
               </span>
-              <input type="text" class="search-input" id="historySearchInput" placeholder="Search owner, asset, serial…" oninput="renderHistory()">
+              <input type="text" class="search-input" id="historySearchInput" placeholder="Search serial, owner, model…" oninput="renderHistory()">
             </div>
           </div>
         </div>
@@ -3300,7 +3330,7 @@ mark.gsr-highlight {
 
       <div class="counter-card" style="margin-top:16px;">
         <div class="audit-toolbar">
-          <div class="dash-section-title">Timeline</div>
+          <div class="dash-section-title">Redeployment Timeline</div>
           <span class="audit-total-badge" id="historyTotalBadge">0 events</span>
         </div>
         <div class="history-page-list" id="historyList"></div>
@@ -4763,35 +4793,23 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 
 /* ── HISTORY VIEW ── */
 function buildHistoryEvents(){
-  const ownerEvents = records.flatMap(r => (r.ownerHistory||[]).map(h => ({
-    kind: 'ownership',
-    ts: h.to || r.dateModified || r.dateAdded || '',
-    title: `${h.owner||'(unknown)'} was previous owner`,
-    meta: `${r.brand||'—'} ${r.model||''} · ${r.currentOwner?`Current owner: ${r.currentOwner}`:'No current owner'} · Changed by ${h.changedBy||'—'}`,
-    search: [h.owner, h.changedBy, r.currentOwner, r.brand, r.model, r.serialNumber, r.assetTag, r.siteLocation, r.assetStatus].filter(Boolean).join(' '),
-    assetId: r.id,
-    assetRef: r.assetTag || r.serialNumber || 'Open asset'
-  })));
-
-  const auditLabel = {add:'Added', edit:'Modified', delete:'Deleted', import:'Imported', login:'Login'};
-  const assetEvents = auditLog
-    .filter(e => e.type !== 'login')
-    .map(e => {
-      const after = e.meta?.after;
-      const before = e.meta?.before;
-      const rec = after || before || records.find(r => (e.assetRef && (r.assetTag===e.assetRef || r.serialNumber===e.assetRef)));
+  return records.flatMap(r => {
+    const hist = [...(r.ownerHistory||[])].sort((a,b)=>(a.to||'').localeCompare(b.to||''));
+    return hist.map((h, idx) => {
+      const nextOwner = hist[idx+1]?.owner || r.currentOwner || 'No current owner';
+      const serial = r.serialNumber || 'No serial';
       return {
-        kind: 'asset',
-        ts: e.ts || '',
-        title: `${auditLabel[e.type]||e.type||'Activity'}${e.detail?`: ${e.detail}`:''}`,
-        meta: `${e.displayName||e.user||'—'}${e.assetRef?' · '+e.assetRef:''}`,
-        search: [e.type, e.detail, e.assetRef, e.user, e.displayName, rec?.currentOwner, rec?.brand, rec?.model, rec?.serialNumber, rec?.assetTag].filter(Boolean).join(' '),
-        assetId: rec?.id || '',
-        assetRef: e.assetRef || rec?.assetTag || rec?.serialNumber || ''
+        ts: h.to || r.dateModified || r.dateAdded || '',
+        serial,
+        previousOwner: h.owner || '(unknown)',
+        nextOwner,
+        title: `${serial} redeployed`,
+        meta: `${h.owner||'(unknown)'} -> ${nextOwner} · ${r.brand||'—'} ${r.model||''} · ${r.siteLocation||'No site'} · Changed by ${h.changedBy||'—'}`,
+        search: [serial, h.owner, nextOwner, h.changedBy, r.brand, r.model, r.siteLocation, r.assetStatus].filter(Boolean).join(' '),
+        assetId: r.id
       };
     });
-
-  return [...ownerEvents, ...assetEvents].sort((a,b)=>(b.ts||'').localeCompare(a.ts||''));
+  }).sort((a,b)=>(b.ts||'').localeCompare(a.ts||''));
 }
 
 function renderHistory(){
@@ -4799,46 +4817,51 @@ function renderHistory(){
   const summary = document.getElementById('historySummaryGrid');
   if(!list || !summary) return;
 
-  const typeFilter = document.getElementById('historyTypeFilter')?.value || '';
   const q = (document.getElementById('historySearchInput')?.value || '').toLowerCase().trim();
   const allEvents = buildHistoryEvents();
-  const ownershipCount = allEvents.filter(e=>e.kind==='ownership').length;
-  const assetCount = allEvents.filter(e=>e.kind==='asset').length;
   const assetsWithHistory = records.filter(r=>(r.ownerHistory||[]).length).length;
-  const latest = allEvents[0]?.ts ? fmtDate(allEvents[0].ts) : '—';
+  const latest = allEvents[0];
+  const recentSerials = [];
+  allEvents.forEach(e => {
+    if(e.assetId && !recentSerials.some(x=>x.serial===e.serial)) recentSerials.push(e);
+  });
 
   summary.innerHTML = [
-    {label:'Ownership Changes', num:ownershipCount, sub:`${assetsWithHistory} asset${assetsWithHistory!==1?'s':''} with history`},
-    {label:'Asset Activity', num:assetCount, sub:'Adds, edits, deletes and imports'},
-    {label:'Total Events', num:allEvents.length, sub:'Combined history entries'},
-    {label:'Latest Event', num:latest, sub:'Most recent recorded activity'}
-  ].map(c=>`<div class="history-summary-card">
+    {label:'Redeployments', num:allEvents.length, sub:'Owner-to-owner transfers'},
+    {label:'Serials Redeployed', num:assetsWithHistory, sub:'Unique laptops with owner history'},
+    latest
+      ? {label:'Latest Serial', num:latest.serial, sub:`To ${latest.nextOwner}`, assetId:latest.assetId}
+      : {label:'Latest Serial', num:'—', sub:'No redeployment yet'},
+  ].map(c=>`<div class="history-summary-card${c.assetId?' is-clickable':''}" ${c.assetId?`onclick="openViewModal('${esc(c.assetId)}')"`:''}>
     <div class="history-summary-label">${esc(c.label)}</div>
     <div class="history-summary-num">${esc(c.num)}</div>
     <div class="history-summary-sub">${esc(c.sub)}</div>
-  </div>`).join('');
+  </div>`).join('') + `<div class="history-summary-card">
+    <div class="history-summary-label">Recent Serials</div>
+    <div class="history-serial-list">
+      ${recentSerials.length
+        ? recentSerials.slice(0,5).map(e=>`<span class="history-serial-chip" onclick="openViewModal('${esc(e.assetId)}')" title="Open ${esc(e.serial)}">${esc(e.serial)}</span>`).join('')
+        : '<span class="history-summary-sub">No redeployments yet</span>'}
+    </div>
+  </div>`;
 
   let filtered = allEvents;
-  if(typeFilter) filtered = filtered.filter(e=>e.kind===typeFilter);
   if(q) filtered = filtered.filter(e=>(e.search||'').toLowerCase().includes(q));
 
   const totalBadge = document.getElementById('historyTotalBadge');
-  if(totalBadge) totalBadge.textContent = `${filtered.length} event${filtered.length!==1?'s':''}`;
+  if(totalBadge) totalBadge.textContent = `${filtered.length} redeployment${filtered.length!==1?'s':''}`;
 
   if(!filtered.length){
-    list.innerHTML = '<div class="audit-empty">No history found.</div>';
+    list.innerHTML = '<div class="audit-empty">No redeployments found.</div>';
     return;
   }
 
-  const iconOwnership = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M20 21v-2a4 4 0 0 0-3-3.87"/><path d="M4 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="10" cy="7" r="4"/></svg>`;
-  const iconAsset = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="0" y1="20" x2="24" y2="20"/></svg>`;
+  const iconRedeploy = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`;
 
   list.innerHTML = filtered.map(e => {
-    const ref = e.assetId
-      ? `<span class="history-timeline-ref" onclick="openViewModal('${esc(e.assetId)}')">${esc(e.assetRef||'Open asset')}</span>`
-      : `<span class="history-timeline-ref">${esc(e.assetRef||'—')}</span>`;
+    const ref = `<span class="history-timeline-ref" onclick="openViewModal('${esc(e.assetId)}')">${esc(e.serial)}</span>`;
     return `<div class="history-timeline-row">
-      <div class="history-timeline-icon">${e.kind==='ownership'?iconOwnership:iconAsset}</div>
+      <div class="history-timeline-icon">${iconRedeploy}</div>
       <div class="history-timeline-time">${esc(fmtDate(e.ts))}</div>
       <div>
         <div class="history-timeline-title">${esc(e.title)}</div>
