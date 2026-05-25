@@ -3727,6 +3727,110 @@ document.getElementById('appScreen').classList.remove('active');
   setTimeout(() => { splash.style.display = 'none'; }, 420);
 })();
 </script>
-<script src="release-notifications.js"></script>
+<script>
+(function initAafReleaseNotifications(){
+  const notificationBadge=document.getElementById('notificationBadge');
+  const notificationSummary=document.getElementById('notificationSummary');
+  const notificationList=document.getElementById('notificationList');
+  const markNotificationsReadBtn=document.getElementById('markNotificationsReadBtn');
+  if(!notificationBadge||!notificationSummary||!notificationList)return;
+
+  const RELEASE_NOTES_TABLE='release_notes';
+  const NOTIFICATION_READ_KEY='ithub_notification_read';
+  const NOTIFICATION_DISMISSED_KEY='ithub_notification_dismissed';
+  let releaseNotesRecords=[];
+  let releaseNotesLoaded=false;
+
+  function escapeNotificationHtml(str){
+    return String(str??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function formatNotificationDate(value){
+    const date=value?new Date(value):new Date();
+    if(Number.isNaN(date.getTime()))return '';
+    return date.toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'2-digit'});
+  }
+  function readNotificationState(key){
+    try{
+      const value=JSON.parse(localStorage.getItem(key));
+      if(Array.isArray(value))return value;
+    }catch{}
+    return [];
+  }
+  function saveNotificationState(key,ids){
+    localStorage.setItem(key,JSON.stringify([...new Set(ids)]));
+  }
+  function notificationId(note){
+    return 'release:'+note.id;
+  }
+  function releaseNoteNotifications(){
+    const dismissed=readNotificationState(NOTIFICATION_DISMISSED_KEY);
+    return releaseNotesRecords
+      .filter(note=>note.id&&note.id!=='default'&&!dismissed.includes(notificationId(note)))
+      .slice(0,10);
+  }
+  function renderNotifications(){
+    const read=readNotificationState(NOTIFICATION_READ_KEY);
+    const notes=releaseNoteNotifications();
+    const unread=notes.filter(note=>!read.includes(notificationId(note))).length;
+    notificationBadge.textContent=String(unread);
+    notificationBadge.style.display=unread?'flex':'none';
+    notificationSummary.textContent=unread+' New';
+    if(markNotificationsReadBtn)markNotificationsReadBtn.disabled=!unread;
+    if(!notes.length){
+      notificationList.innerHTML='<div class="notification-empty">'+(releaseNotesLoaded?'No new release note notifications.':'Loading notifications...')+'</div>';
+      return;
+    }
+    notificationList.innerHTML=notes.map(note=>{
+      const id=notificationId(note);
+      const isUnread=!read.includes(id);
+      return '<div class="notification-item '+(isUnread?'unread':'')+'" role="menuitem" data-notification-id="'+escapeNotificationHtml(id)+'">'
+        +'<span class="notification-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/></svg></span>'
+        +'<span class="notification-copy"><span class="notification-title">'+escapeNotificationHtml(note.title||'Release Note')+'</span><span class="notification-meta">New release note · '+escapeNotificationHtml(formatNotificationDate(note.createdAt))+'</span></span>'
+        +'<button class="notification-dismiss" type="button" title="Dismiss" data-dismiss-id="'+escapeNotificationHtml(id)+'">&times;</button>'
+        +'</div>';
+    }).join('');
+  }
+  async function loadReleaseNoteNotifications(force=false){
+    if(releaseNotesLoaded&&!force){renderNotifications();return}
+    try{
+      await tursoExec('CREATE TABLE IF NOT EXISTS '+RELEASE_NOTES_TABLE+' (id TEXT PRIMARY KEY, data TEXT NOT NULL)');
+      const result=await tursoExec('SELECT data FROM '+RELEASE_NOTES_TABLE+' ORDER BY rowid DESC LIMIT 50');
+      releaseNotesRecords=(result?.rows||[]).map(row=>{
+        try{return JSON.parse(row[0]?.value||'{}')}catch{return null}
+      }).filter(Boolean);
+    }catch{
+      releaseNotesRecords=[];
+    }
+    releaseNotesLoaded=true;
+    renderNotifications();
+  }
+
+  notificationList.addEventListener('click',event=>{
+    const dismiss=event.target.closest('[data-dismiss-id]');
+    if(dismiss){
+      const id=dismiss.dataset.dismissId;
+      saveNotificationState(NOTIFICATION_DISMISSED_KEY,[...readNotificationState(NOTIFICATION_DISMISSED_KEY),id]);
+      saveNotificationState(NOTIFICATION_READ_KEY,[...readNotificationState(NOTIFICATION_READ_KEY),id]);
+      renderNotifications();
+      return;
+    }
+    const item=event.target.closest('[data-notification-id]');
+    if(item){
+      saveNotificationState(NOTIFICATION_READ_KEY,[...readNotificationState(NOTIFICATION_READ_KEY),item.dataset.notificationId]);
+      renderNotifications();
+    }
+  });
+  markNotificationsReadBtn?.addEventListener('click',event=>{
+    event.stopPropagation();
+    const ids=releaseNoteNotifications().map(notificationId);
+    saveNotificationState(NOTIFICATION_READ_KEY,[...readNotificationState(NOTIFICATION_READ_KEY),...ids]);
+    renderNotifications();
+  });
+
+  renderNotifications();
+  loadReleaseNoteNotifications(true);
+  setInterval(()=>{if(!document.hidden)loadReleaseNoteNotifications(true)},60000);
+})();
+</script>
 </body>
 </html>
