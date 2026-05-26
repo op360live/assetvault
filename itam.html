@@ -513,8 +513,12 @@
     }
 
     .action-nav {
+      position: sticky;
+      top: var(--topbar-h);
+      z-index: 90;
       border-bottom: 1px solid var(--border);
       background: var(--topbar-bg);
+      box-shadow: 0 1px 2px rgba(15,23,42,.04);
     }
 
     .action-nav-inner {
@@ -533,6 +537,106 @@
       font-weight: 800;
       letter-spacing: .05em;
       text-transform: uppercase;
+    }
+
+    .action-nav-center {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .action-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .online-users {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .online-label {
+      color: var(--text3);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .online-avatar {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--topbar-bg);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      box-shadow: 0 0 0 1px var(--border), 0 4px 10px rgba(15,23,42,.10);
+      background-size: cover;
+      background-position: center;
+      cursor: default;
+      flex: 0 0 auto;
+    }
+
+    .online-avatar::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 9px);
+      z-index: 140;
+      width: max-content;
+      max-width: 240px;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--topbar-bg);
+      color: var(--text);
+      box-shadow: 0 12px 28px rgba(15,23,42,.18);
+      font-size: 11px;
+      font-weight: 750;
+      line-height: 1.35;
+      white-space: normal;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 4px);
+      transition: opacity .13s, transform .13s;
+    }
+
+    .online-avatar:hover::after {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .online-avatar.is-active::before {
+      content: "";
+      position: absolute;
+      right: -1px;
+      bottom: -1px;
+      width: 8px;
+      height: 8px;
+      border: 2px solid var(--topbar-bg);
+      border-radius: 50%;
+      background: #3db48c;
+    }
+
+    .online-empty {
+      color: var(--text3);
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
     }
 
     h1 {
@@ -1109,6 +1213,21 @@
         padding: 8px 0;
       }
 
+      .action-nav {
+        top: 106px;
+      }
+
+      .action-nav-center {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .action-nav-actions {
+        justify-content: space-between;
+        width: 100%;
+      }
+
       .page-footer-inner {
         width: min(100% - 18px, 760px);
         gap: 8px;
@@ -1214,10 +1333,18 @@
   <nav class="action-nav" aria-label="ITAM actions">
     <div class="action-nav-inner">
       <span class="action-nav-title">Deployment Records</span>
-      <button class="module-action-btn secondary" type="button" id="exportButton">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
-        Export
-      </button>
+      <div class="action-nav-actions">
+        <button class="module-action-btn secondary" type="button" id="exportButton">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          Export
+        </button>
+        <div class="action-nav-center">
+          <div class="online-users" id="onlineUsers" aria-label="Online users">
+            <span class="online-label">Online</span>
+            <span class="online-empty">Checking...</span>
+          </div>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -1386,6 +1513,7 @@
     const tursoSyncText = document.querySelector("#tursoSyncText");
     const databaseSyncTime = document.querySelector("#databaseSyncTime");
     const databaseSyncBtn = document.querySelector("#databaseSyncBtn");
+    const onlineUsers = document.querySelector("#onlineUsers");
 
     function applyTheme(theme) {
       document.documentElement.dataset.theme = theme;
@@ -1460,6 +1588,7 @@
     }
 
     function doHubLogout() {
+      setPresence(false);
       localStorage.removeItem("assetvault_session");
       sessionStorage.removeItem(SESSION_KEY);
       sessionStorage.removeItem("offboarding_session");
@@ -1533,10 +1662,72 @@
       if (!tursoReadyPromise) {
         tursoReadyPromise = Promise.all([
           tursoExec(`CREATE TABLE IF NOT EXISTS ${DB_TABLE} (id TEXT PRIMARY KEY, data TEXT NOT NULL)`),
-          tursoExec("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, data TEXT NOT NULL)")
+          tursoExec("CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, data TEXT NOT NULL)"),
+          tursoExec("CREATE TABLE IF NOT EXISTS presence (username TEXT PRIMARY KEY, data TEXT NOT NULL)")
         ]);
       }
       return tursoReadyPromise;
+    }
+
+    async function setPresence(online = true) {
+      const user = readProfile();
+      if (!user?.username) return;
+      try {
+        await ensureTursoReady();
+        if (online) {
+          const data = {
+            username: user.username,
+            displayName: user.displayName || user.username,
+            role: user.role || "member",
+            page: "ITAM · Asset Deployment",
+            location: "ITAM",
+            avatar: user.avatar || null,
+            lastSeen: new Date().toISOString(),
+            online: true
+          };
+          await tursoExec("INSERT OR REPLACE INTO presence (username, data) VALUES (?, ?)", [user.username, JSON.stringify(data)]);
+        } else {
+          await tursoExec("DELETE FROM presence WHERE username = ?", [user.username]);
+        }
+      } catch (error) {
+        console.warn("[ITAM presence]", error);
+      }
+    }
+
+    async function loadPresence() {
+      if (!onlineUsers) return;
+      try {
+        await ensureTursoReady();
+        const result = await tursoExec("SELECT data FROM presence");
+        const now = Date.now();
+        const activeUsers = (result?.rows || [])
+          .map((row) => {
+            try { return JSON.parse(row[0].value); } catch { return null; }
+          })
+          .filter(Boolean)
+          .filter((person) => person.lastSeen && (now - new Date(person.lastSeen).getTime()) < 15 * 60 * 1000)
+          .sort((a, b) => new Date(b.lastSeen) - new Date(a.lastSeen));
+
+        if (!activeUsers.length) {
+          onlineUsers.innerHTML = `<span class="online-label">Online</span><span class="online-empty">No active users</span>`;
+          return;
+        }
+
+        onlineUsers.innerHTML = `
+          <span class="online-label">Online</span>
+          ${activeUsers.map((person) => {
+            const name = person.displayName || person.username || "User";
+            const page = person.page || person.location || "AssetVault";
+            const active = (now - new Date(person.lastSeen).getTime()) < 5 * 60 * 1000;
+            const tooltip = `${name} · ${page}`;
+            const initials = initialsFromName(name);
+            const avatarStyle = person.avatar ? ` style="background-image:url('${escapeAttribute(person.avatar)}')"` : "";
+            return `<span class="online-avatar ${active ? "is-active" : ""}"${avatarStyle} data-tooltip="${escapeAttribute(tooltip)}" title="${escapeAttribute(tooltip)}">${person.avatar ? "" : escapeHtml(initials)}</span>`;
+          }).join("")}
+        `;
+      } catch (error) {
+        onlineUsers.innerHTML = `<span class="online-label">Online</span><span class="online-empty">Unavailable</span>`;
+      }
     }
 
     function today() {
@@ -1555,6 +1746,10 @@
       const div = document.createElement("div");
       div.textContent = value || "";
       return div.innerHTML;
+    }
+
+    function escapeAttribute(value) {
+      return escapeHtml(value).replaceAll('"', "&quot;");
     }
 
     function loadDeployments() {
@@ -1946,17 +2141,33 @@
       if (!profileMenu.contains(event.target)) closeProfileMenu();
     });
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && navigator.onLine) tursoSyncAll(true);
+      if (!document.hidden && navigator.onLine) {
+        setPresence(true);
+        loadPresence();
+        tursoSyncAll(true);
+      }
+    });
+    window.addEventListener("beforeunload", () => {
+      setPresence(false);
     });
 
     initTheme();
     updateProfileDetails();
     loadDeployments();
     renderDeployments();
+    setPresence(true);
+    loadPresence();
     tursoSyncAll(false);
     setInterval(() => {
-      if (!document.hidden && navigator.onLine) tursoSyncAll(true);
+      if (!document.hidden && navigator.onLine) {
+        setPresence(true);
+        loadPresence();
+        tursoSyncAll(true);
+      }
     }, 30000);
+    setInterval(() => {
+      if (!document.hidden && navigator.onLine) loadPresence();
+    }, 60000);
   </script>
 </body>
 </html>
