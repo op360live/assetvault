@@ -697,9 +697,9 @@
     .summary-panel,
     .asset-row,
     .modal-card {
-      border: 1px solid var(--line);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      background: var(--card);
+      background: var(--card-bg);
     }
 
     .deployment-card {
@@ -708,10 +708,23 @@
       gap: 10px;
       align-items: center;
       padding: 9px 12px;
+      box-shadow: var(--card-shadow);
     }
 
     .deployment-card > div {
       min-width: 0;
+    }
+
+    .deployment-card > div:not(:last-child) {
+      padding: 7px 9px;
+      border: 1px solid var(--line-dark);
+      border-radius: 8px;
+      background: var(--field-bg);
+    }
+
+    [data-theme="dark"] .deployment-card > div:not(:last-child) {
+      border-color: var(--line);
+      background: rgba(255,255,255,0.045);
     }
 
     .meta-label {
@@ -724,6 +737,7 @@
 
     .meta-value {
       margin-top: 2px;
+      color: var(--ink);
       font-size: 13px;
       font-weight: 500;
       white-space: nowrap;
@@ -830,21 +844,21 @@
     }
 
     .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 20;
-      display: grid;
-      place-items: center;
-      padding: 14px;
-      background: rgba(68, 76, 100, 0.46);
+      position: relative;
+      z-index: 15;
+      display: block;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--page-bg);
       animation: fadeIn 160ms ease-out;
     }
 
     .modal-card {
-      width: min(1320px, 100%);
-      max-height: min(94vh, 860px);
+      width: min(1420px, calc(100% - 28px));
+      max-height: none;
+      margin: 0 auto;
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-rows: auto auto auto;
       overflow: hidden;
       background: rgba(248, 249, 252, 0.94);
       animation: popIn 210ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -889,7 +903,6 @@
     }
 
     .modal-body {
-      overflow: auto;
       padding: 20px 28px;
     }
 
@@ -912,6 +925,7 @@
       grid-template-columns: 1fr;
       gap: 10px;
       padding: 14px;
+      background: var(--panel);
     }
 
     .details-grid {
@@ -1134,13 +1148,8 @@
         width: 100%;
       }
 
-      .modal-backdrop {
-        align-items: end;
-        padding: 8px;
-      }
-
       .modal-card {
-        max-height: calc(100vh - 16px);
+        width: min(100% - 18px, 760px);
       }
     }
   </style>
@@ -1212,48 +1221,7 @@
     </div>
   </nav>
 
-  <div class="page">
-    <main class="content">
-      <div class="page-heading">
-        <div class="title-block">
-          <h1>Asset Deployment</h1>
-          <p class="subtitle">Create, review, and track IT asset deployment records.</p>
-        </div>
-        <div class="module-actions">
-          <button class="module-action-btn secondary" type="button" id="seedButton">Load Sample</button>
-          <button class="module-action-btn" type="button" id="newDeploymentButton">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-            New Deployment
-          </button>
-        </div>
-      </div>
-      <div class="toolbar">
-        <input class="search" id="searchInput" type="search" placeholder="Search employee, email, asset, serial number...">
-        <span class="count" id="recordCount">0 records</span>
-        <button class="btn danger" type="button" id="clearAllButton">Clear All</button>
-      </div>
-
-      <section class="deployment-list" id="deploymentList" aria-live="polite"></section>
-      <nav class="pagination hidden" id="paginationControls" aria-label="Deployment list pagination"></nav>
-    </main>
-  </div>
-
-  <footer class="page-footer">
-    <div class="page-footer-inner">
-      <span><span class="page-footer-brand">IT Hub</span> &copy; 2026 AssetVault</span>
-      <span class="page-footer-links">
-        <span class="footer-sync-status" id="tursoSyncStatus" role="status" aria-live="polite">
-          <span class="footer-sync-dot" aria-hidden="true"></span>
-          <span id="tursoSyncText">Database: checking...</span>
-          <span class="footer-sync-sep" aria-hidden="true"></span>
-          <span class="footer-sync-time" id="databaseSyncTime">Last sync: never</span>
-          <button class="footer-sync-btn" id="databaseSyncBtn" type="button">Sync</button>
-        </span>
-      </span>
-    </div>
-  </footer>
-
-  <div class="modal-backdrop hidden" id="deploymentModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-backdrop hidden" id="deploymentModal" role="dialog" aria-modal="false" aria-labelledby="modalTitle">
     <form class="modal-card" id="deploymentForm">
       <div class="modal-header">
         <h2 class="modal-title" id="modalTitle">New Deployment</h2>
@@ -1334,6 +1302,46 @@
     </form>
   </div>
 
+  <div class="page">
+    <main class="content">
+      <div class="page-heading">
+        <div class="title-block">
+          <h1>Asset Deployment</h1>
+          <p class="subtitle">Create, review, and track IT asset deployment records.</p>
+        </div>
+        <div class="module-actions">
+          <button class="module-action-btn" type="button" id="newDeploymentButton">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            New Deployment
+          </button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <input class="search" id="searchInput" type="search" placeholder="Search employee, email, asset, serial number...">
+        <span class="count" id="recordCount">0 records</span>
+        <button class="btn danger" type="button" id="clearAllButton">Clear All</button>
+      </div>
+
+      <section class="deployment-list" id="deploymentList" aria-live="polite"></section>
+      <nav class="pagination hidden" id="paginationControls" aria-label="Deployment list pagination"></nav>
+    </main>
+  </div>
+
+  <footer class="page-footer">
+    <div class="page-footer-inner">
+      <span><span class="page-footer-brand">IT Hub</span> &copy; 2026 AssetVault</span>
+      <span class="page-footer-links">
+        <span class="footer-sync-status" id="tursoSyncStatus" role="status" aria-live="polite">
+          <span class="footer-sync-dot" aria-hidden="true"></span>
+          <span id="tursoSyncText">Database: checking...</span>
+          <span class="footer-sync-sep" aria-hidden="true"></span>
+          <span class="footer-sync-time" id="databaseSyncTime">Last sync: never</span>
+          <button class="footer-sync-btn" id="databaseSyncBtn" type="button">Sync</button>
+        </span>
+      </span>
+    </div>
+  </footer>
+
   <script>
     const TURSO_URL = "https://turso-proxy.rcabil-op360.workers.dev";
     const TURSO_TOKEN = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJleHAiOjE4MDg0MjkwMjMsImlhdCI6MTc3Njg5MzAyMywiaWQiOiIwMTlkYjcxMS1jNDAxLTdiZDgtODUyNy00MGUzYTEzMmM5MzkiLCJyaWQiOiIwMTY1NjhiOC03NjE0LTRjNjAtYWI3Zi0yZjY5YzQ3MDhjMTYifQ.-rLfhTh8wuECeovdGDgnduzA_WYtMC4L8JJZz-mRQ1nO6mCGAkYvS_YzR_CHAnogNFcLNow7RSRRebuDQfLxCA";
@@ -1413,6 +1421,11 @@
         .join("")
         .slice(0, 2)
         .toUpperCase() || "IT";
+    }
+
+    function activeUserDisplayName() {
+      const user = readProfile();
+      return user?.displayName || user?.username || "";
     }
 
     function updateProfileDetails() {
@@ -1829,11 +1842,12 @@
       document.querySelector("#itamNumber").value = record?.itamNumber || "";
       document.querySelector("#employeeName").value = record?.employeeName || "";
       document.querySelector("#emailAddress").value = record?.emailAddress || "";
-      document.querySelector("#itTech").value = record?.itTech || "";
+      document.querySelector("#itTech").value = record?.itTech || activeUserDisplayName();
       document.querySelector("#dateRequested").value = record?.dateRequested || today();
       document.querySelector("#dateDeployed").value = record?.dateDeployed || "";
       document.querySelector("#assetStatus").value = record?.assetStatus || "Requested";
       deploymentModal.classList.remove("hidden");
+      deploymentModal.scrollIntoView({ behavior: "smooth", block: "start" });
       document.querySelector("#employeeId").focus();
     }
 
@@ -1849,34 +1863,6 @@
       deployments = deployments.filter((item) => item.id !== id);
       renderDeployments();
       await deleteDeploymentFromDb(id);
-    }
-
-    async function seedSample() {
-      const sample = {
-        id: `itam_${Date.now()}`,
-        itamNumber: "ITAM-2026-0001",
-        employeeId: "OP360-10482",
-        employeeName: "Edgar Angelo Martinez",
-        emailAddress: "edgar.martinez@example.com",
-        itTech: "IT Deployment Team",
-        dateRequested: "2026-05-23",
-        dateDeployed: "2026-05-24",
-        assetStatus: "Deployed",
-        assets: [
-          { type: "System Unit", brand: "Bosston", serialNumber: "CEB-WFHSAL1396", assetTag: "AV-SU-0001" },
-          { type: "Monitor A", brand: "NVision", serialNumber: "IP24V120Q101227", assetTag: "AV-MON-0001" },
-          { type: "Monitor B", brand: "AOC", serialNumber: "XC24SA2006010233", assetTag: "AV-MON-0002" },
-          { type: "UPS", brand: "Phoenix", serialNumber: "-", assetTag: "AV-UPS-0001" },
-          { type: "Webcam", brand: "Logi", serialNumber: "2138AP07HJC8", assetTag: "AV-WEB-0001" },
-          { type: "Headset", brand: "Addasound Epic 512", serialNumber: "CDAU9045316", assetTag: "AV-HS-0001" },
-          { type: "Others", brand: "", serialNumber: "", assetTag: "" }
-        ]
-      };
-
-      deployments = [sample, ...deployments.filter((record) => record.employeeId !== sample.employeeId)];
-      currentPage = 1;
-      renderDeployments();
-      await persistDeployment(sample);
     }
 
     deploymentForm.addEventListener("submit", async (event) => {
@@ -1926,7 +1912,6 @@
     profileLogoutButton.addEventListener("click", doHubLogout);
     document.querySelector("#closeModalButton").addEventListener("click", closeDeploymentModal);
     document.querySelector("#cancelButton").addEventListener("click", closeDeploymentModal);
-    document.querySelector("#seedButton").addEventListener("click", seedSample);
     document.querySelector("#exportButton").addEventListener("click", exportDeployments);
     databaseSyncBtn.addEventListener("click", () => tursoSyncAll(false));
     document.querySelector("#clearAllButton").addEventListener("click", async () => {
