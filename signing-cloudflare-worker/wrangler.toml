@@ -1,0 +1,7 @@
+name = "workspace-aaf-signer"
+main = "src/index.js"
+compatibility_date = "2026-06-09"
+
+[vars]
+ALLOWED_ORIGIN = "https://YOUR_GITHUB_USERNAME.github.io"
+

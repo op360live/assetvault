@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Workspace · Accountability Signer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#f5f7ff;
+      --card:rgba(255,255,255,.84);
+      --line:rgba(99,102,241,.16);
+      --text:#0f172a;
+      --muted:#64748b;
+      --soft:#eef2ff;
+      --accent:#4f46e5;
+      --accent2:#7c3aed;
+      --green:#059669;
+      --red:#dc2626;
+      --amber:#b45309;
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:
+      radial-gradient(circle at 12% 8%,rgba(124,58,237,.14),transparent 34%),
+      radial-gradient(circle at 88% 12%,rgba(37,99,235,.14),transparent 30%),
+      linear-gradient(135deg,#f8fafc,#eef2ff);color:var(--text)}
+    .shell{width:min(980px,calc(100% - 28px));margin:0 auto;padding:26px 0 38px}
+    .hero{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px}
+    .eyebrow{font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+    h1{margin:6px 0 5px;font-size:clamp(28px,5vw,48px);letter-spacing:-.055em;line-height:1;
+      background:linear-gradient(105deg,#4f46e5,#7c3aed,#2563eb,#6d28d9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .subtitle{margin:0;color:var(--muted);font-weight:700;font-size:15px}
+    .identity{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.74);box-shadow:0 14px 38px rgba(79,70,229,.08)}
+    .avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;font-weight:900}
+    .card{border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 24px 70px rgba(79,70,229,.12),inset 0 1px 0 rgba(255,255,255,.8);backdrop-filter:blur(18px)}
+    .notice{padding:14px 16px;border-radius:18px;margin-bottom:14px;border:1px solid var(--line);background:rgba(255,255,255,.72);color:var(--muted);font-weight:800}
+    .notice.error{border-color:rgba(220,38,38,.22);background:rgba(254,242,242,.86);color:var(--red)}
+    .notice.success{border-color:rgba(5,150,105,.22);background:rgba(236,253,245,.86);color:var(--green)}
+    .notice.warn{border-color:rgba(180,83,9,.22);background:rgba(255,251,235,.86);color:var(--amber)}
+    .content{padding:22px}
+    .summary{display:grid;grid-template-columns:1fr 1.2fr;gap:14px;margin-bottom:16px}
+    .mini{border:1px solid rgba(148,163,184,.2);border-radius:18px;padding:14px;background:rgba(255,255,255,.62)}
+    .label{font-size:11px;font-weight:900;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+    .value{font-size:15px;font-weight:900}
+    .assets{display:grid;gap:8px}
+    .asset{display:flex;justify-content:space-between;gap:12px;border:1px solid rgba(99,102,241,.14);border-radius:14px;padding:11px 12px;background:var(--soft)}
+    .asset strong{display:block;font-size:13px}
+    .asset span{color:var(--muted);font-size:12px;font-weight:800;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .policy{max-height:320px;overflow:auto;border:1px solid rgba(148,163,184,.22);border-radius:18px;background:rgba(248,250,252,.78);padding:16px;color:#475569;font-size:13px;line-height:1.65}
+    .policy strong{color:var(--text)}
+    .signbox{margin-top:16px;border-top:1px solid rgba(148,163,184,.24);padding-top:16px}
+    .tabs{display:flex;gap:8px;margin-bottom:10px}
+    .tab{border:1px solid rgba(99,102,241,.16);border-radius:999px;background:#fff;color:var(--muted);height:36px;padding:0 14px;font-weight:900;cursor:pointer}
+    .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+    .canvas-wrap{position:relative;border:1px solid rgba(148,163,184,.32);border-radius:18px;background:#fff;overflow:hidden}
+    canvas{display:block;width:100%;height:170px;touch-action:none;cursor:crosshair}
+    .hint{position:absolute;inset:0;display:grid;place-items:center;color:#94a3b8;font-weight:800;pointer-events:none}
+    .typed{width:100%;border:1px solid rgba(148,163,184,.32);border-radius:18px;padding:16px 18px;font-size:28px;text-align:center;font-family:"Brush Script MT","Segoe Script",cursive}
+    .actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;flex-wrap:wrap}
+    button{font:inherit}
+    .btn{height:44px;border:1px solid rgba(99,102,241,.18);border-radius:13px;background:white;color:var(--muted);font-weight:900;padding:0 16px;cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 12px 30px rgba(79,70,229,.22)}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .hidden{display:none!important}
+    @media(max-width:720px){.hero,.summary{grid-template-columns:1fr;display:grid}.identity{justify-self:start}.content{padding:16px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">Workspace Accountability</div>
+        <h1>Review & Sign</h1>
+        <p class="subtitle">Secure public signing page for IT Asset Accountability Forms.</p>
+      </div>
+      <div class="identity">
+        <div class="avatar" id="avatar">IT</div>
+        <div>
+          <div style="font-weight:900" id="identityName">Workspace</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:800">Public signer</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="notice" id="notice">Loading your form…</div>
+
+    <section class="card hidden" id="formCard">
+      <div class="content">
+        <div class="summary">
+          <div class="mini">
+            <div class="label">Employee</div>
+            <div class="value" id="employeeName">—</div>
+            <div style="color:var(--muted);font-weight:800;font-size:13px;margin-top:4px" id="employeeMeta">—</div>
+          </div>
+          <div class="mini">
+            <div class="label">Assets Issued</div>
+            <div class="assets" id="assets"></div>
+          </div>
+        </div>
+
+        <div class="policy">
+          <p><strong>IT Asset Accountability Policy</strong></p>
+          <p>I acknowledge receipt of the asset(s) listed above and confirm that I have read and understood the IT Asset Accountability Policy.</p>
+          <p>I understand that any loss of or damage to the IT asset(s) entrusted to me may be subject to review under company policy, and I accept personal responsibility for the asset(s) while under my custody.</p>
+          <p>I agree to return the asset(s) to the IT Department when requested, on or before the end of the approved possession period, or upon separation from the company.</p>
+        </div>
+
+        <div class="signbox" id="signBox">
+          <div class="label">Signature</div>
+          <div class="tabs">
+            <button class="tab active" id="drawTab" type="button">Draw</button>
+            <button class="tab" id="typeTab" type="button">Type Name</button>
+          </div>
+          <div id="drawPanel">
+            <div class="canvas-wrap">
+              <canvas id="signatureCanvas" width="900" height="220"></canvas>
+              <div class="hint" id="canvasHint">Sign here with mouse or finger</div>
+            </div>
+            <div class="actions">
+              <button class="btn" id="clearBtn" type="button">Clear</button>
+              <button class="btn primary" id="submitDrawBtn" type="button">Submit Signature</button>
+            </div>
+          </div>
+          <div id="typePanel" class="hidden">
+            <input class="typed" id="typedName" placeholder="Type your full name">
+            <div class="actions">
+              <span style="color:var(--muted);font-weight:800;font-size:13px">This will generate a typed signature image.</span>
+              <button class="btn primary" id="submitTypeBtn" type="button">Submit Signature</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="notice success hidden" id="signedBox">This form has been signed. You may now close this page.</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script>
+    const API_BASE = (window.WORKSPACE_SIGNER_CONFIG?.API_BASE || '').replace(/\/$/, '');
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code') || params.get('sign') || '';
+    let form = null;
+    let mode = 'draw';
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function setNotice(type, text) {
+      const notice = document.getElementById('notice');
+      notice.className = 'notice ' + (type || '');
+      notice.textContent = text;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    }
+
+    function initials(name) {
+      return String(name || 'IT').trim().split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'IT';
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: '2-digit' });
+    }
+
+    function renderForm(data) {
+      form = data;
+      document.getElementById('formCard').classList.remove('hidden');
+      document.getElementById('employeeName').textContent = data.employeeName || '—';
+      document.getElementById('employeeMeta').textContent = [data.jobTitle, data.site, data.floor].filter(Boolean).join(' · ') || '—';
+      document.getElementById('identityName').textContent = data.employeeName || 'Workspace';
+      document.getElementById('avatar').textContent = initials(data.employeeName);
+      document.getElementById('assets').innerHTML = (data.assets || []).map(asset => {
+        const name = [asset.brand, asset.type].filter(Boolean).join(' ') || 'Asset';
+        return `<div class="asset"><strong>${escapeHtml(name)}</strong><span>${escapeHtml(asset.serialNo || 'No serial')}</span></div>`;
+      }).join('') || '<div class="asset"><strong>No assets listed</strong><span>—</span></div>';
+
+      if (data.signature) {
+        document.getElementById('signBox').classList.add('hidden');
+        document.getElementById('signedBox').classList.remove('hidden');
+        setNotice('success', `Already signed${data.signedAt ? ' on ' + formatDate(data.signedAt) : ''}.`);
+      } else {
+        setNotice('warn', 'Please review the asset details carefully before signing.');
+      }
+    }
+
+    async function api(path, options = {}) {
+      if (!API_BASE || API_BASE.includes('YOUR_SUBDOMAIN')) {
+        throw new Error('Signer API is not configured. Edit config.js with your Cloudflare Worker URL.');
+      }
+      const response = await fetch(API_BASE + path, {
+        ...options,
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Request failed.');
+      return data;
+    }
+
+    async function loadForm() {
+      if (!code) {
+        setNotice('error', 'Missing signing code.');
+        return;
+      }
+      try {
+        const data = await api('/form?code=' + encodeURIComponent(code));
+        renderForm(data.form);
+      } catch (error) {
+        setNotice('error', error.message);
+      }
+    }
+
+    function setMode(next) {
+      mode = next;
+      document.getElementById('drawTab').classList.toggle('active', next === 'draw');
+      document.getElementById('typeTab').classList.toggle('active', next === 'type');
+      document.getElementById('drawPanel').classList.toggle('hidden', next !== 'draw');
+      document.getElementById('typePanel').classList.toggle('hidden', next !== 'type');
+    }
+
+    function getPos(event) {
+      const rect = canvas.getBoundingClientRect();
+      const source = event.touches ? event.touches[0] : event;
+      return [
+        (source.clientX - rect.left) * (canvas.width / rect.width),
+        (source.clientY - rect.top) * (canvas.height / rect.height),
+      ];
+    }
+
+    function startDraw(event) {
+      event.preventDefault();
+      isDrawing = true;
+      [lastX, lastY] = getPos(event);
+      document.getElementById('canvasHint').style.display = 'none';
+    }
+
+    function moveDraw(event) {
+      if (!isDrawing) return;
+      event.preventDefault();
+      const [x, y] = getPos(event);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+      [lastX, lastY] = [x, y];
+    }
+
+    function stopDraw() {
+      isDrawing = false;
+    }
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      document.getElementById('canvasHint').style.display = '';
+    }
+
+    function canvasBlank() {
+      return ctx.getImageData(0, 0, canvas.width, canvas.height).data.every(value => value === 0);
+    }
+
+    function typedSignature() {
+      const name = document.getElementById('typedName').value.trim();
+      if (!name) throw new Error('Please type your full name.');
+      const temp = document.createElement('canvas');
+      temp.width = 900;
+      temp.height = 220;
+      const tctx = temp.getContext('2d');
+      tctx.fillStyle = '#fff';
+      tctx.fillRect(0, 0, temp.width, temp.height);
+      tctx.fillStyle = '#111827';
+      tctx.font = '72px "Brush Script MT", "Segoe Script", cursive';
+      tctx.textAlign = 'center';
+      tctx.textBaseline = 'middle';
+      tctx.fillText(name, temp.width / 2, temp.height / 2);
+      return { signature: temp.toDataURL('image/png'), signedName: name };
+    }
+
+    async function submitSignature(signature, signedName = '') {
+      const buttons = document.querySelectorAll('.btn.primary');
+      buttons.forEach(button => button.disabled = true);
+      try {
+        setNotice('', 'Submitting signature…');
+        const data = await api('/sign', {
+          method: 'POST',
+          body: JSON.stringify({ code, signature, signedName }),
+        });
+        renderForm(data.form);
+        document.getElementById('signBox').classList.add('hidden');
+        document.getElementById('signedBox').classList.remove('hidden');
+        setNotice('success', 'Signature submitted. IT has been notified.');
+      } catch (error) {
+        setNotice('error', error.message);
+        buttons.forEach(button => button.disabled = false);
+      }
+    }
+
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', moveDraw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', moveDraw, { passive: false });
+    canvas.addEventListener('touchend', stopDraw);
+    document.getElementById('drawTab').addEventListener('click', () => setMode('draw'));
+    document.getElementById('typeTab').addEventListener('click', () => setMode('type'));
+    document.getElementById('clearBtn').addEventListener('click', clearCanvas);
+    document.getElementById('submitDrawBtn').addEventListener('click', () => {
+      if (canvasBlank()) {
+        setNotice('error', 'Please draw your signature first.');
+        return;
+      }
+      submitSignature(canvas.toDataURL('image/png'));
+    });
+    document.getElementById('submitTypeBtn').addEventListener('click', () => {
+      try {
+        const generated = typedSignature();
+        submitSignature(generated.signature, generated.signedName);
+      } catch (error) {
+        setNotice('error', error.message);
+      }
+    });
+
+    loadForm();
+  </script>
+</body>
+</html>
+
