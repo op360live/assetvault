@@ -103,9 +103,27 @@
 
         <div class="policy">
           <p><strong>IT Asset Accountability Policy</strong></p>
-          <p>I acknowledge receipt of the asset(s) listed above and confirm that I have read and understood the IT Asset Accountability Policy.</p>
-          <p>I understand that any loss of or damage to the IT asset(s) entrusted to me may be subject to review under company policy, and I accept personal responsibility for the asset(s) while under my custody.</p>
-          <p>I agree to return the asset(s) to the IT Department when requested, on or before the end of the approved possession period, or upon separation from the company.</p>
+          <p><strong>I. Policies and Procedures</strong></p>
+          <p>1. OfficePartners, 360 Inc. recognizes the need to set careful controls over IT assets which are used for storage, processing and transmission of information.</p>
+          <p>2. While the term "IT assets" covers all company-owned information, system or hardware used in the course of business activities, for the purposes of this policy, it shall be understood to mean the portable physical IT assets, or assets capable of being taken in and out of company premises. These include, but are not limited to, company computers and parts/accessories of the computer system (i.e. keyboard, mouse, security cord, etc.), laptops, tablets, headsets, LCD projectors, conference call devices such as Polycoms, cables, and all other assets maintained and/or under the custody and/or control of the IT Department.</p>
+          <p>3. To guard against the unauthorized destruction, corruption or alteration of these assets, their removal and/or relocation from company premises or its designated location, whether temporarily or permanently, should be done only with the approval of the IT Director.</p>
+          <p>4. Employees who are issued IT assets, or are requesting to take the IT assets out of company premises/relocate the assets from one site to another, must fill out the IT Asset Accountability Form annexed in this document. Requests may be made or endorsed only by account managers/directors. (a.) Requests made via any other channel shall not be entertained by IT.</p>
+          <p>5. The signatory of the form shall be held personally liable for any loss of or damage to the asset/s indicated in the IT Asset Accountability Form.</p>
+          <p>6. Employees who have been granted custody over IT assets have no proprietary or equitable rights over them, or the information stored therein. They shall hold these assets in trust for the company's benefit.</p>
+          <p>7. Employees who have been granted custody over IT assets must only use the assets in accordance with the purpose for which the asset was turned over to them, as indicated by the IT Asset Accountability Form, or as necessary to fulfill their work functions.</p>
+          <p>8. Employees must return the IT asset/s to the IT Department on or before the expiration of the leave granted by the company, as indicated in the IT Asset Accountability Form, or upon the employee's separation from the company, when the asset has been personally-issued to the employee.</p>
+          <p>9. Employees must return the IT asset/s to the IT Department in the same condition as when it/they were lent or issued. Any damage, as determined by the inspecting IT personnel, shall be for the employee's account. (a.) Employees shall not be liable for normal wear and tear from regular use of the asset, as prescribed or designated.</p>
+          <p>10. Employees shall not be liable for any loss or damage caused by fortuitous events when he/she possesses the asset within the period indicated in the IT Asset Accountability Form and he/she is free from any negligence. Should the employee cease to possess the asset in good faith, such as when there is delay in the return of the asset, or the employee was negligent, he/she shall be held liable for any loss or damage even when due to a fortuitous event.</p>
+          <p>11. Damage to company property is a <strong>Type C offense</strong> and may merit the corresponding sanction per Employee Handbook.</p>
+          <p>12. IT shall quantify the loss or amount of the damage. The liable employee cannot choose to replace the lost or damaged IT asset.</p>
+          <p>13. The liability shall be deducted from the employee's next pay period, payable in installments. Each installment shall not be more than half of the employee's net pay prior to the deduction. (a.) The entire unpaid amount shall automatically be deducted from the last pay should the liability remain unsatisfied by the time the employee separates from the company.</p>
+          <p><strong>II. Repealing Clause</strong></p>
+          <p>All rules and regulations, policies, Employee Handbook, House Rules, Memoranda or parts thereof, which are inconsistent with this Security Access Policy shall be deemed repealed or modified accordingly.</p>
+          <p><strong>III. Effectivity Date</strong></p>
+          <p>This new policy is effective immediately.</p>
+          <p>I, <strong id="policyEmployeeName">the employee</strong>, have fully read and understood the OfficePartners360, Inc. IT Asset Accountability Policy and undertake to adhere to all the rules indicated therein.</p>
+          <p>I understand that any loss of or damage to the IT asset/s entrusted to me for my possession and/or use is a <strong>Type C offense</strong> and may merit the prescribed sanction in the Employee Handbook which may lead to my dismissal from employment.</p>
+          <p>I further understand and accept my <strong>personal liability</strong> for any loss of or damage to the asset/s indicated in this IT Asset Accountability Form. I authorize OfficePartners360, Inc. to automatically deduct the value of the lost or damaged IT asset/s from my pay, in equal installments, with each installment not more than half of my net pay prior to the deduction, or the full amount of my unpaid obligation at the date of my separation.</p>
         </div>
 
         <div class="signbox" id="signBox">
@@ -178,6 +196,7 @@
       document.getElementById('employeeMeta').textContent = [data.jobTitle, data.site, data.floor].filter(Boolean).join(' · ') || '—';
       document.getElementById('identityName').textContent = data.employeeName || 'Workspace';
       document.getElementById('avatar').textContent = initials(data.employeeName);
+      document.getElementById('policyEmployeeName').textContent = data.employeeName || 'the employee';
       document.getElementById('assets').innerHTML = (data.assets || []).map(asset => {
         const name = [asset.brand, asset.type].filter(Boolean).join(' ') || 'Asset';
         return `<div class="asset"><strong>${escapeHtml(name)}</strong><span>${escapeHtml(asset.serialNo || 'No serial')}</span></div>`;
@@ -336,4 +355,3 @@
   </script>
 </body>
 </html>
-
