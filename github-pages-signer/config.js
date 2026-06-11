@@ -1,4 +1,3 @@
 window.WORKSPACE_SIGNER_CONFIG = {
-  API_BASE: 'https://workspace-aaf-signer.YOUR_SUBDOMAIN.workers.dev',
+  API_BASE: 'https://workspace-aaf-signer.rcabil-op360.workers.dev',
 };
-
