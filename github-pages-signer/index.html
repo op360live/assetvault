@@ -40,6 +40,7 @@
     .notice.error{border-color:rgba(220,38,38,.22);background:rgba(254,242,242,.86);color:var(--red)}
     .notice.success{border-color:rgba(5,150,105,.22);background:rgba(236,253,245,.86);color:var(--green)}
     .notice.warn{border-color:rgba(180,83,9,.22);background:rgba(255,251,235,.86);color:var(--amber)}
+    #signedBox{margin-top:18px;padding:18px 20px;line-height:1.55}
     .content{padding:22px}
     .summary{display:grid;grid-template-columns:1fr 1.2fr;gap:14px;margin-bottom:16px}
     .mini{border:1px solid rgba(148,163,184,.2);border-radius:18px;padding:14px;background:rgba(255,255,255,.62)}
@@ -72,15 +73,14 @@
   <main class="shell">
     <header class="hero">
       <div>
-        <div class="eyebrow">Workspace Accountability</div>
         <h1>Review & Sign</h1>
-        <p class="subtitle">Secure public signing page for IT Asset Accountability Forms.</p>
+        <p class="subtitle">Please read the full IT Asset Accountability Policy carefully before signing.</p>
       </div>
       <div class="identity">
         <div class="avatar" id="avatar">IT</div>
         <div>
           <div style="font-weight:900" id="identityName">Workspace</div>
-          <div style="font-size:12px;color:var(--muted);font-weight:800">Public signer</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:800" id="identityDateRelease">Date release: —</div>
         </div>
       </div>
     </header>
@@ -195,6 +195,7 @@
       document.getElementById('employeeName').textContent = data.employeeName || '—';
       document.getElementById('employeeMeta').textContent = [data.jobTitle, data.site, data.floor].filter(Boolean).join(' · ') || '—';
       document.getElementById('identityName').textContent = data.employeeName || 'Workspace';
+      document.getElementById('identityDateRelease').textContent = `Date release: ${formatDate(data.dateRelease)}`;
       document.getElementById('avatar').textContent = initials(data.employeeName);
       document.getElementById('policyEmployeeName').textContent = data.employeeName || 'the employee';
       document.getElementById('assets').innerHTML = (data.assets || []).map(asset => {
