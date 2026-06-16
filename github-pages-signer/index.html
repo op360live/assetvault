@@ -62,6 +62,18 @@
     .typed{width:100%;border:1px solid rgba(148,163,184,.32);border-radius:18px;padding:16px 18px;font-size:28px;text-align:center;font-family:"Brush Script MT","Segoe Script",cursive}
     .actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;flex-wrap:wrap}
     .signed-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .toast-stack{position:fixed;top:18px;right:18px;display:grid;gap:10px;z-index:50;pointer-events:none}
+    .toast{min-width:min(320px,calc(100vw - 32px));max-width:420px;padding:14px 16px;border-radius:18px;border:1px solid rgba(99,102,241,.16);background:rgba(255,255,255,.94);box-shadow:0 18px 48px rgba(15,23,42,.14);backdrop-filter:blur(18px);color:var(--text);font-weight:800;line-height:1.45;pointer-events:auto;transform:translateY(-8px);opacity:0;animation:toast-in .24s ease forwards}
+    .toast.success{border-color:rgba(5,150,105,.22);box-shadow:0 18px 48px rgba(5,150,105,.16)}
+    .toast.error{border-color:rgba(220,38,38,.22);box-shadow:0 18px 48px rgba(220,38,38,.16)}
+    .toast.info{border-color:rgba(79,70,229,.22);box-shadow:0 18px 48px rgba(79,70,229,.16)}
+    .toast-title{display:block;font-size:13px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+    .toast-body{font-size:14px}
+    .toast-link{display:inline-flex;margin-top:10px;color:var(--accent);text-decoration:none;font-weight:900}
+    .btn.loading{position:relative;color:transparent!important;pointer-events:none}
+    .btn.loading::after{content:'';position:absolute;top:50%;left:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid rgba(99,102,241,.18);border-top-color:var(--accent);animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes toast-in{to{transform:translateY(0);opacity:1}}
     button{font:inherit}
     .btn{height:44px;border:1px solid rgba(99,102,241,.18);border-radius:13px;background:white;color:var(--muted);font-weight:900;padding:0 16px;cursor:pointer}
     .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent;box-shadow:0 12px 30px rgba(79,70,229,.22)}
@@ -71,6 +83,7 @@
   </style>
 </head>
 <body>
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
   <main class="shell">
     <header class="hero">
       <div>
@@ -172,13 +185,42 @@
     let isDrawing = false;
     let lastX = 0;
     let lastY = 0;
+    let lastDownloadUrl = '';
     const canvas = document.getElementById('signatureCanvas');
     const ctx = canvas.getContext('2d');
+    const downloadCopyBtn = document.getElementById('downloadCopyBtn');
 
     function setNotice(type, text) {
       const notice = document.getElementById('notice');
       notice.className = 'notice ' + (type || '');
       notice.textContent = text;
+    }
+
+    function showToast(type, message, options = {}) {
+      const stack = document.getElementById('toastStack');
+      if (!stack) return;
+      const toast = document.createElement('div');
+      toast.className = `toast ${type || 'info'}`;
+      toast.innerHTML = `
+        <span class="toast-title">${escapeHtml(options.title || (type === 'error' ? 'Download issue' : type === 'success' ? 'Done' : 'Notice'))}</span>
+        <div class="toast-body">${escapeHtml(message || '')}</div>
+        ${options.linkHref ? `<a class="toast-link" href="${escapeHtml(options.linkHref)}" target="_blank" rel="noopener noreferrer">${escapeHtml(options.linkLabel || 'Open download link')}</a>` : ''}
+      `;
+      stack.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-8px)';
+      }, options.duration || 4200);
+      setTimeout(() => toast.remove(), (options.duration || 4200) + 280);
+    }
+
+    function setButtonLoading(button, isLoading, label) {
+      if (!button) return;
+      if (!button.dataset.defaultLabel) button.dataset.defaultLabel = button.textContent.trim();
+      button.classList.toggle('loading', Boolean(isLoading));
+      button.disabled = Boolean(isLoading);
+      button.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+      button.textContent = isLoading ? (label || button.dataset.defaultLabel) : button.dataset.defaultLabel;
     }
 
     function escapeHtml(value) {
@@ -202,14 +244,18 @@
     async function downloadSignedCopy() {
       if (!form) {
         setNotice('error', 'Form details are still loading.');
+        showToast('error', 'The form details are still loading. Please try again in a moment.');
         return;
       }
       if (!code) {
         setNotice('error', 'Missing signing code.');
+        showToast('error', 'This page is missing its signing code, so the PDF cannot be generated.');
         return;
       }
+      setButtonLoading(downloadCopyBtn, true, 'Preparing copy');
       try {
-        const response = await fetch(`${API_BASE}/download?code=${encodeURIComponent(code)}`, {
+        lastDownloadUrl = `${API_BASE}/download?code=${encodeURIComponent(code)}`;
+        const response = await fetch(lastDownloadUrl, {
           method: 'GET',
           headers: { Accept: 'application/pdf' },
         });
@@ -222,11 +268,22 @@
         const link = document.createElement('a');
         link.href = url;
         link.download = `IT-Asset-Accountability-Form-${fileSafeName(form.employeeName)}.pdf`;
+        document.body.appendChild(link);
         link.click();
+        link.remove();
         setTimeout(() => URL.revokeObjectURL(url), 5000);
+        showToast('success', 'Your signed accountability copy is downloading now.', { title: 'Download ready' });
       } catch (error) {
         console.error('[Signer PDF] Download failed', error);
         setNotice('error', error.message || 'Unable to generate the signed copy right now.');
+        showToast('error', error.message || 'Unable to generate the signed copy right now.', {
+          title: 'Download failed',
+          linkHref: lastDownloadUrl || '',
+          linkLabel: lastDownloadUrl ? 'Try direct download' : '',
+          duration: 5600,
+        });
+      } finally {
+        setButtonLoading(downloadCopyBtn, false);
       }
     }
 
