@@ -163,7 +163,6 @@
   </main>
 
   <script src="config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script>
     const API_BASE = (window.WORKSPACE_SIGNER_CONFIG?.API_BASE || '').replace(/\/$/, '');
     const params = new URLSearchParams(location.search);
@@ -200,159 +199,35 @@
       return String(value || 'accountability-form').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'accountability-form';
     }
 
-    function policyParagraphs() {
-      return [
-        '1. OfficePartners, 360 Inc. recognizes the need to set careful controls over IT assets which are used for storage, processing and transmission of information.',
-        '2. While the term \"IT assets\" covers all company-owned information, system or hardware used in the course of business activities, for the purposes of this policy, it shall be understood to mean the portable physical IT assets, or assets capable of being taken in and out of company premises.',
-        '3. To guard against the unauthorized destruction, corruption or alteration of these assets, their removal and/or relocation from company premises or its designated location, whether temporarily or permanently, should be done only with the approval of the IT Director.',
-        '4. Employees who are issued IT assets, or are requesting to take the IT assets out of company premises/relocate the assets from one site to another, must fill out the IT Asset Accountability Form annexed in this document.',
-        '5. The signatory of the form shall be held personally liable for any loss of or damage to the asset/s indicated in the IT Asset Accountability Form.',
-        '6. Employees who have been granted custody over IT assets have no proprietary or equitable rights over them, or the information stored therein.',
-        '7. Employees who have been granted custody over IT assets must only use the assets in accordance with the purpose for which the asset was turned over to them.',
-        '8. Employees must return the IT asset/s to the IT Department on or before the expiration of the leave granted by the company, or upon separation from the company.',
-        '9. Employees must return the IT asset/s to the IT Department in the same condition as when it or they were lent or issued.',
-        '10. Employees shall not be liable for any loss or damage caused by fortuitous events when he or she possesses the asset within the period indicated in the form and is free from negligence.',
-        '11. Damage to company property is a Type C offense and may merit the corresponding sanction per Employee Handbook.',
-        '12. IT shall quantify the loss or amount of the damage. The liable employee cannot choose to replace the lost or damaged IT asset.',
-        '13. The liability shall be deducted from the employee’s next pay period, payable in installments, or from the employee’s final pay if separation occurs before the obligation is fully satisfied.'
-      ];
-    }
-
     async function downloadSignedCopy() {
       if (!form) {
         setNotice('error', 'Form details are still loading.');
         return;
       }
-      if (!window.jspdf?.jsPDF) {
-        setNotice('error', 'PDF generator is not available right now.');
+      if (!code) {
+        setNotice('error', 'Missing signing code.');
         return;
       }
-
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 16;
-      const contentWidth = pageWidth - margin * 2;
-      let y = 20;
-
-      const ensureSpace = needed => {
-        if (y + needed <= pageHeight - 18) return;
-        doc.addPage();
-        y = 20;
-      };
-
-      const drawLabelValue = (label, value, options = {}) => {
-        const val = value || '—';
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8.5);
-        doc.setTextColor(100, 116, 139);
-        doc.text(String(label).toUpperCase(), margin, y);
-        y += 5;
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(options.size || 11);
-        doc.setTextColor(15, 23, 42);
-        const lines = doc.splitTextToSize(String(val), options.width || contentWidth);
-        doc.text(lines, margin, y);
-        y += lines.length * ((options.lineHeight || 5.2)) + 5;
-      };
-
-      doc.setFillColor(79, 70, 229);
-      doc.roundedRect(margin, y, contentWidth, 24, 5, 5, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(18);
-      doc.setTextColor(255, 255, 255);
-      doc.text('IT Asset Accountability Form', margin + 10, y + 10);
-      doc.setFontSize(9);
-      doc.text('Employee signed copy', margin + 10, y + 17);
-      y += 34;
-
-      drawLabelValue('Employee', form.employeeName);
-      drawLabelValue('Details', [form.jobTitle, form.department, form.site, form.floor].filter(Boolean).join(' · '));
-      drawLabelValue('Email Address', form.emailAddress);
-      drawLabelValue('Date Release', formatDate(form.dateRelease));
-      drawLabelValue('Signed On', formatDate(form.signedAt || form.signedAtIso || form.dateRelease));
-      drawLabelValue('Signed Name', form.signedName || form.employeeName);
-      drawLabelValue('IT Personnel', form.itPersonnel);
-
-      ensureSpace(18);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.setTextColor(15, 23, 42);
-      doc.text('ASSETS ISSUED', margin, y);
-      y += 8;
-
-      const assets = Array.isArray(form.assets) && form.assets.length ? form.assets : [{ type: 'Asset', brand: '', serialNo: '' }];
-      assets.forEach((asset, index) => {
-        ensureSpace(16);
-        doc.setDrawColor(226, 232, 240);
-        doc.setFillColor(245, 247, 255);
-        doc.roundedRect(margin, y, contentWidth, 13, 3, 3, 'FD');
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        doc.setTextColor(15, 23, 42);
-        const assetName = [asset.brand, asset.type].filter(Boolean).join(' ') || `Asset ${index + 1}`;
-        doc.text(assetName, margin + 4, y + 8);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
-        doc.setTextColor(100, 116, 139);
-        doc.text(asset.serialNo || 'No serial', pageWidth - margin - 4, y + 8, { align: 'right' });
-        y += 18;
-      });
-
-      ensureSpace(24);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.setTextColor(15, 23, 42);
-      doc.text('POLICY ACKNOWLEDGEMENT', margin, y);
-      y += 8;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9.2);
-      doc.setTextColor(71, 85, 105);
-      for (const paragraph of policyParagraphs()) {
-        const lines = doc.splitTextToSize(paragraph, contentWidth);
-        ensureSpace(lines.length * 4.6 + 4);
-        doc.text(lines, margin, y);
-        y += lines.length * 4.6 + 3;
-      }
-
-      const acknowledgement = `I, ${form.employeeName || 'the employee'}, have fully read and understood the IT Asset Accountability Policy and undertake to adhere to all the rules indicated therein. I further understand and accept my personal liability for any loss of or damage to the asset or assets indicated in this IT Asset Accountability Form.`;
-      const ackLines = doc.splitTextToSize(acknowledgement, contentWidth);
-      ensureSpace(ackLines.length * 4.8 + 18);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9.6);
-      doc.setTextColor(15, 23, 42);
-      doc.text(ackLines, margin, y);
-      y += ackLines.length * 4.8 + 10;
-
-      if (form.signature) {
-        ensureSpace(32);
-        try {
-          doc.addImage(form.signature, 'PNG', margin, y, 62, 24);
-        } catch (error) {
-          console.warn('[Signer PDF] Signature image embed failed', error);
+      try {
+        const response = await fetch(`${API_BASE}/download?code=${encodeURIComponent(code)}`, {
+          method: 'GET',
+          headers: { Accept: 'application/pdf' },
+        });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Unable to download the signed copy.');
         }
-        y += 27;
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `IT-Asset-Accountability-Form-${fileSafeName(form.employeeName)}.pdf`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      } catch (error) {
+        console.error('[Signer PDF] Download failed', error);
+        setNotice('error', error.message || 'Unable to generate the signed copy right now.');
       }
-
-      doc.setDrawColor(148, 163, 184);
-      doc.line(margin, y, margin + 78, y);
-      doc.line(pageWidth - margin - 52, y, pageWidth - margin, y);
-      y += 5;
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9.5);
-      doc.setTextColor(15, 23, 42);
-      doc.text(form.signedName || form.employeeName || 'Employee signature', margin, y);
-      doc.text(formatDate(form.signedAt || form.signedAtIso || form.dateRelease), pageWidth - margin - 52, y);
-      y += 5;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(100, 116, 139);
-      doc.text('Employee signature / printed name', margin, y);
-      doc.text('Date signed', pageWidth - margin - 52, y);
-
-      doc.save(`it-asset-accountability-form-${fileSafeName(form.employeeName)}.pdf`);
     }
 
     function renderForm(data) {
